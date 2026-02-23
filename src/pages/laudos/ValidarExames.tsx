@@ -5,11 +5,21 @@ import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
 import { ShieldCheck, CheckCircle, ArrowLeft, Search, Save } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+
+interface ExamParam {
+  id: string;
+  exam_id: string;
+  section: string;
+  name: string;
+  unit: string | null;
+  reference_range: string | null;
+  sort_order: number | null;
+}
 
 const SECTOR_COLORS = [
   { color: "from-blue-800 to-blue-600", glow: "shadow-blue-500/30" },
@@ -56,6 +66,39 @@ const ValidarExames = () => {
       return data;
     },
   });
+
+  // Fetch exam parameters for composite exams
+  const { data: allExamParams = [] } = useQuery<ExamParam[]>({
+    queryKey: ["exam_parameters_all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("exam_parameters")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch exam catalog with ids for mapping
+  const { data: examCatalogFull = [] } = useQuery({
+    queryKey: ["exam_catalog_full"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("exam_catalog").select("id, name, sector").eq("status", "active");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const examNameToId = new Map(examCatalogFull.map(e => [e.name, e.id]));
+  const examParamsByExamId = useMemo(() => {
+    const map = new Map<string, ExamParam[]>();
+    for (const p of allExamParams) {
+      if (!map.has(p.exam_id)) map.set(p.exam_id, []);
+      map.get(p.exam_id)!.push(p);
+    }
+    return map;
+  }, [allExamParams]);
 
   const examSectorMap = new Map(examCatalog.map(e => [e.name, e.sector]));
   const uniqueSectors = [...new Set(examCatalog.map(e => e.sector).filter(Boolean))] as string[];
@@ -273,7 +316,29 @@ const ValidarExames = () => {
       return null;
     }
 
+    // Helper: parse stored JSON values for composite exams
+    const getParamValues = (r: any): Record<string, string> => {
+      const raw = editedValues[r.id] ?? r.value ?? "";
+      try {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) return parsed;
+      } catch {}
+      return {};
+    };
+
+    const setParamValue = (resultId: string, paramName: string, val: string, currentResult: any) => {
+      const existing = getParamValues(currentResult);
+      const updated = { ...existing, [paramName]: val };
+      handleValueChange(resultId, JSON.stringify(updated));
+    };
+
     const allFilled = patient.results.every((r: any) => {
+      const examId = examNameToId.get(r.exam);
+      const params = examId ? examParamsByExamId.get(examId) : undefined;
+      if (params && params.length > 0) {
+        const vals = getParamValues(r);
+        return params.every(p => vals[p.name] && vals[p.name].trim() !== "");
+      }
       const val = editedValues[r.id] ?? r.value;
       return val && val.trim() !== "";
     });
@@ -301,77 +366,161 @@ const ValidarExames = () => {
           </Button>
         </div>
 
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Exame</TableHead>
-                  <TableHead>Resultado</TableHead>
-                  <TableHead>Unidade</TableHead>
-                  <TableHead>Ref.</TableHead>
-                  <TableHead>Flag</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {patient.results.map((r: any) => {
-                  const currentValue = editedValues[r.id] ?? r.value ?? "";
-                  const currentFlag = editedFlags[r.id] ?? r.flag ?? "normal";
-                  const hasUnsaved = editedValues[r.id] !== undefined || editedFlags[r.id] !== undefined;
-                  const isFilled = currentValue.trim() !== "";
+        {patient.results.map((r: any) => {
+          const examId = examNameToId.get(r.exam);
+          const params = examId ? examParamsByExamId.get(examId) : undefined;
+          const hasParams = params && params.length > 0;
+          const hasUnsaved = editedValues[r.id] !== undefined || editedFlags[r.id] !== undefined;
 
-                  return (
-                    <TableRow key={r.id} className={cn(!isFilled && "bg-muted/30")}>
-                      <TableCell className="font-medium">{r.exam}</TableCell>
-                      <TableCell>
-                        <Input
-                          value={currentValue}
-                          onChange={e => handleValueChange(r.id, e.target.value)}
-                          onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
-                          placeholder="Digitar resultado..."
-                          className={cn("max-w-[160px] font-mono", !isFilled && "border-destructive/50")}
-                        />
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{r.unit}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
-                      <TableCell>
-                        <select
-                          value={currentFlag}
-                          onChange={e => handleFlagChange(r.id, e.target.value)}
-                          className="text-xs border rounded px-2 py-1 bg-background"
-                        >
-                          <option value="normal">Normal</option>
-                          <option value="high">Alto</option>
-                          <option value="low">Baixo</option>
-                          <option value="critical">Crítico</option>
-                        </select>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {hasUnsaved && (
-                            <Button size="sm" variant="ghost" onClick={() => handleSaveValue(r.id)} disabled={saveValueMutation.isPending}>
-                              <Save className="w-3.5 h-3.5" />
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => validateMutation.mutate([r.id])}
-                            disabled={validateMutation.isPending || !isFilled}
-                            title={!isFilled ? "Preencha o resultado" : ""}
+          if (!hasParams) {
+            // Simple exam — single row
+            const currentValue = editedValues[r.id] ?? r.value ?? "";
+            const currentFlag = editedFlags[r.id] ?? r.flag ?? "normal";
+            const isFilled = currentValue.trim() !== "";
+            return (
+              <Card key={r.id}>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Exame</TableHead>
+                        <TableHead>Resultado</TableHead>
+                        <TableHead>Unidade</TableHead>
+                        <TableHead>Ref.</TableHead>
+                        <TableHead>Flag</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow className={cn(!isFilled && "bg-muted/30")}>
+                        <TableCell className="font-medium">{r.exam}</TableCell>
+                        <TableCell>
+                          <Input
+                            value={currentValue}
+                            onChange={e => handleValueChange(r.id, e.target.value)}
+                            onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
+                            placeholder="Digitar resultado..."
+                            className={cn("max-w-[160px] font-mono", !isFilled && "border-destructive/50")}
+                          />
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{r.unit}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
+                        <TableCell>
+                          <select
+                            value={currentFlag}
+                            onChange={e => handleFlagChange(r.id, e.target.value)}
+                            className="text-xs border rounded px-2 py-1 bg-background"
                           >
-                            <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Validar
-                          </Button>
-                        </div>
-                      </TableCell>
+                            <option value="normal">Normal</option>
+                            <option value="high">Alto</option>
+                            <option value="low">Baixo</option>
+                            <option value="critical">Crítico</option>
+                          </select>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            {hasUnsaved && (
+                              <Button size="sm" variant="ghost" onClick={() => handleSaveValue(r.id)} disabled={saveValueMutation.isPending}>
+                                <Save className="w-3.5 h-3.5" />
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => validateMutation.mutate([r.id])}
+                              disabled={validateMutation.isPending || !isFilled}
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Validar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            );
+          }
+
+          // Composite exam — show all parameters grouped by section
+          const paramValues = getParamValues(r);
+          const sections = new Map<string, ExamParam[]>();
+          for (const p of params!) {
+            const sec = p.section || "";
+            if (!sections.has(sec)) sections.set(sec, []);
+            sections.get(sec)!.push(p);
+          }
+
+          const allParamsFilled = params!.every(p => paramValues[p.name]?.trim());
+
+          return (
+            <Card key={r.id}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base font-bold">{r.exam}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    {hasUnsaved && (
+                      <Button size="sm" variant="ghost" onClick={() => handleSaveValue(r.id)} disabled={saveValueMutation.isPending}>
+                        <Save className="w-3.5 h-3.5 mr-1" /> Salvar
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => validateMutation.mutate([r.id])}
+                      disabled={validateMutation.isPending || !allParamsFilled}
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Validar
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Parâmetro</TableHead>
+                      <TableHead>Resultado</TableHead>
+                      <TableHead>Unidade</TableHead>
+                      <TableHead>Referência</TableHead>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {[...sections.entries()].map(([sectionName, sectionParams]) => (
+                      <>{sectionName && (
+                          <TableRow key={`section-${sectionName}`} className="bg-muted/50">
+                            <TableCell colSpan={4} className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-1.5">
+                              {sectionName}
+                            </TableCell>
+                          </TableRow>
+                        )}
+                        {sectionParams.map(param => {
+                          const val = paramValues[param.name] || "";
+                          return (
+                            <TableRow key={param.id} className={cn(!val.trim() && "bg-muted/20")}>
+                              <TableCell className="font-medium text-sm">{param.name}</TableCell>
+                              <TableCell>
+                                <Input
+                                  value={val}
+                                  onChange={e => setParamValue(r.id, param.name, e.target.value, r)}
+                                  onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
+                                  placeholder="..."
+                                  className={cn("max-w-[160px] font-mono text-sm", !val.trim() && "border-destructive/50")}
+                                />
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">{param.unit || ""}</TableCell>
+                              <TableCell className="text-xs text-muted-foreground">{param.reference_range || ""}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     );
   }
