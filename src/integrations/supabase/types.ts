@@ -14,6 +14,249 @@ export type Database = {
   }
   public: {
     Tables: {
+      equipment: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          last_maintenance: string | null
+          manufacturer: string | null
+          model: string | null
+          name: string
+          next_maintenance: string | null
+          notes: string | null
+          protocol: string | null
+          sector: string | null
+          serial_number: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_maintenance?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          name: string
+          next_maintenance?: string | null
+          notes?: string | null
+          protocol?: string | null
+          sector?: string | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_maintenance?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          name?: string
+          next_maintenance?: string | null
+          notes?: string | null
+          protocol?: string | null
+          sector?: string | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      exam_catalog: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          material: string | null
+          method: string | null
+          name: string
+          notes: string | null
+          price: number | null
+          reference_range: string | null
+          sector: string | null
+          status: string
+          turnaround_hours: number | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          material?: string | null
+          method?: string | null
+          name: string
+          notes?: string | null
+          price?: number | null
+          reference_range?: string | null
+          sector?: string | null
+          status?: string
+          turnaround_hours?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          material?: string | null
+          method?: string | null
+          name?: string
+          notes?: string | null
+          price?: number | null
+          reference_range?: string | null
+          sector?: string | null
+          status?: string
+          turnaround_hours?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      insurance_plans: {
+        Row: {
+          billing_type: string | null
+          code: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          discount_percent: number | null
+          id: string
+          name: string
+          notes: string | null
+          payment_deadline_days: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          billing_type?: string | null
+          code?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          discount_percent?: number | null
+          id?: string
+          name: string
+          notes?: string | null
+          payment_deadline_days?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          billing_type?: string | null
+          code?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          discount_percent?: number | null
+          id?: string
+          name?: string
+          notes?: string | null
+          payment_deadline_days?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      integrations: {
+        Row: {
+          api_key_name: string | null
+          created_at: string
+          endpoint_url: string | null
+          id: string
+          last_sync: string | null
+          name: string
+          notes: string | null
+          protocol: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          api_key_name?: string | null
+          created_at?: string
+          endpoint_url?: string | null
+          id?: string
+          last_sync?: string | null
+          name: string
+          notes?: string | null
+          protocol?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key_name?: string | null
+          created_at?: string
+          endpoint_url?: string | null
+          id?: string
+          last_sync?: string | null
+          name?: string
+          notes?: string | null
+          protocol?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lab_settings: {
+        Row: {
+          address: string | null
+          city: string | null
+          cnpj: string
+          crm_responsible: string
+          email: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          phone: string | null
+          state: string | null
+          technical_responsible: string
+          updated_at: string
+          updated_by: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          cnpj?: string
+          crm_responsible?: string
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          state?: string | null
+          technical_responsible?: string
+          updated_at?: string
+          updated_by?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          cnpj?: string
+          crm_responsible?: string
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          state?: string | null
+          technical_responsible?: string
+          updated_at?: string
+          updated_by?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
