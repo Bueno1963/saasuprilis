@@ -5,12 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, FlaskConical } from "lucide-react";
+import { FlaskConical, Printer } from "lucide-react";
 
 const CadastroLaudos = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
 
   const { data: exams = [] } = useQuery({
     queryKey: ["exam-catalog-all"],
@@ -35,17 +33,17 @@ const CadastroLaudos = () => {
     ? exams.filter((e) => (e.sector || "Outros") === selectedSector)
     : [];
 
-  const filtered = sectorExams.filter(
-    (e) =>
-      e.name.toLowerCase().includes(search.toLowerCase()) ||
-      e.code.toLowerCase().includes(search.toLowerCase())
-  );
+  // Group exams by name prefix to create sections (e.g. all hemograma params together)
+  const groupExams = (examList: typeof sectorExams) => {
+    // For now, each exam is its own entry in the template
+    return examList;
+  };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Cadastro de Laudos</h1>
-        <p className="text-muted-foreground text-sm">Exames do catálogo organizados por setor</p>
+        <p className="text-muted-foreground text-sm">Modelo de exames por setor para digitação de resultados</p>
       </div>
 
       {!selectedSector ? (
@@ -69,71 +67,90 @@ const CadastroLaudos = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => { setSelectedSector(null); setSearch(""); }}>
-              ← Setores
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={() => setSelectedSector(null)}>
+                ← Setores
+              </Button>
+              <h2 className="text-lg font-semibold text-foreground">{selectedSector}</h2>
+              <Badge variant="outline">{sectorExams.length} exames</Badge>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Printer className="w-4 h-4 mr-1" /> Imprimir
             </Button>
-            <h2 className="text-lg font-semibold text-foreground">{selectedSector}</h2>
-            <Badge variant="outline">{filtered.length} exames</Badge>
           </div>
 
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome ou código..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+          {/* Laudo-style template */}
+          <Card className="border-border print:border print:shadow-none">
+            <CardContent className="p-6 space-y-1">
+              {/* Header */}
+              <div className="border-b-2 border-foreground pb-3 mb-4">
+                <h2 className="text-lg font-bold tracking-wide text-foreground uppercase">
+                  {selectedSector}
+                </h2>
+              </div>
 
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Código</TableHead>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Material</TableHead>
-                  <TableHead>Método</TableHead>
-                  <TableHead>Unidade</TableHead>
-                  <TableHead>Valor de Referência</TableHead>
-                  <TableHead>Equipamento</TableHead>
-                  <TableHead>Prazo (h)</TableHead>
-                  <TableHead>Preço</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
-                      Nenhum exame encontrado neste setor
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filtered.map((exam) => (
-                    <TableRow key={exam.id}>
-                      <TableCell className="font-mono text-xs">{exam.code}</TableCell>
-                      <TableCell className="font-medium">{exam.name}</TableCell>
-                      <TableCell className="text-sm">{exam.material || "—"}</TableCell>
-                      <TableCell className="text-sm">{exam.method || "—"}</TableCell>
-                      <TableCell className="text-sm">{exam.unit || "—"}</TableCell>
-                      <TableCell className="text-sm">{exam.reference_range || "—"}</TableCell>
-                      <TableCell className="text-sm">{exam.equipment || "—"}</TableCell>
-                      <TableCell className="text-sm text-center">{exam.turnaround_hours ?? "—"}</TableCell>
-                      <TableCell className="text-sm">
-                        {exam.price != null ? `R$ ${Number(exam.price).toFixed(2)}` : "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={exam.status === "active" ? "default" : "secondary"}>
-                          {exam.status === "active" ? "Ativo" : "Inativo"}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+              {/* Exam rows in laudo style */}
+              <div className="font-mono text-sm space-y-0">
+                {/* Table header */}
+                <div className="flex items-center gap-2 pb-2 border-b border-border mb-2">
+                  <span className="flex-1 font-bold text-foreground">Exame</span>
+                  <span className="w-20 font-bold text-foreground text-center">Material</span>
+                  <span className="w-20 font-bold text-foreground text-center">Método</span>
+                  <span className="w-28 font-bold text-foreground text-center">Resultado</span>
+                  <span className="w-16 font-bold text-foreground text-center">Unidade</span>
+                  <span className="w-44 font-bold text-foreground text-center">Referências</span>
+                </div>
+
+                {groupExams(sectorExams).map((exam, idx) => (
+                  <div
+                    key={exam.id}
+                    className={`flex items-center gap-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm`}
+                  >
+                    {/* Exam name with dotted leader */}
+                    <span className="flex-1 flex items-baseline overflow-hidden">
+                      <span className="font-medium text-foreground whitespace-nowrap">{exam.name}</span>
+                      <span className="flex-1 border-b border-dotted border-muted-foreground mx-1 mb-0.5" />
+                    </span>
+
+                    {/* Material */}
+                    <span className="w-20 text-center text-muted-foreground text-xs">
+                      {exam.material || "—"}
+                    </span>
+
+                    {/* Method */}
+                    <span className="w-20 text-center text-muted-foreground text-xs">
+                      {exam.method || "—"}
+                    </span>
+
+                    {/* Result input */}
+                    <div className="w-28">
+                      <Input
+                        className="h-7 text-xs text-center font-bold border-dashed"
+                        placeholder="___"
+                      />
+                    </div>
+
+                    {/* Unit */}
+                    <span className="w-16 text-center text-muted-foreground text-xs">
+                      {exam.unit || "—"}
+                    </span>
+
+                    {/* Reference range */}
+                    <span className="w-44 text-center text-muted-foreground text-xs">
+                      {exam.reference_range || "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer */}
+              <div className="pt-6 mt-6 border-t border-border text-center">
+                <p className="text-xs text-muted-foreground">
+                  Modelo de laudo — {selectedSector} — {sectorExams.length} exame(s) cadastrado(s)
+                </p>
+              </div>
+            </CardContent>
           </Card>
         </div>
       )}
