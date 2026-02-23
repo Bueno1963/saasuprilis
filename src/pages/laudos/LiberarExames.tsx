@@ -170,28 +170,12 @@ const LiberarExames = () => {
     );
   }
 
-  // Group results by patient
-  const patientGroups = filteredResults.reduce((acc: Record<string, { patientName: string; orderNumber: string; orderId: string; results: any[] }>, r: any) => {
-    const key = r.order_id;
-    if (!acc[key]) {
-      acc[key] = {
-        patientName: r.orders?.patients?.name || "—",
-        orderNumber: r.orders?.order_number || "—",
-        orderId: r.order_id,
-        results: [],
-      };
-    }
-    acc[key].results.push(r);
-    return acc;
-  }, {});
-
-  const patients = Object.values(patientGroups) as { patientName: string; orderNumber: string; orderId: string; results: any[] }[];
-
   const searchLower = searchQuery.toLowerCase();
-  const filteredPatients = patients.filter(p =>
-    p.patientName.toLowerCase().includes(searchLower) ||
-    p.orderNumber.toLowerCase().includes(searchLower)
-  );
+  const searchedResults = filteredResults.filter((r: any) => {
+    const patientName = r.orders?.patients?.name || "";
+    const orderNumber = r.orders?.order_number || "";
+    return patientName.toLowerCase().includes(searchLower) || orderNumber.toLowerCase().includes(searchLower) || r.exam.toLowerCase().includes(searchLower);
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -203,7 +187,7 @@ const LiberarExames = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">{selectedSector}</h1>
             <p className="text-sm text-muted-foreground">
-              {patients.length} paciente{patients.length !== 1 ? "s" : ""} · {filteredResults.length} exame{filteredResults.length !== 1 ? "s" : ""} aguardando liberação
+              {filteredResults.length} exame{filteredResults.length !== 1 ? "s" : ""} aguardando liberação
             </p>
           </div>
         </div>
@@ -214,11 +198,11 @@ const LiberarExames = () => {
         )}
       </div>
 
-      {patients.length > 0 && (
+      {filteredResults.length > 0 && (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar paciente ou pedido..."
+            placeholder="Buscar paciente, pedido ou exame..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -226,7 +210,7 @@ const LiberarExames = () => {
         </div>
       )}
 
-      {patients.length === 0 ? (
+      {filteredResults.length === 0 ? (
         <Card>
           <CardContent className="py-12">
             <div className="text-center space-y-2">
@@ -235,64 +219,43 @@ const LiberarExames = () => {
             </div>
           </CardContent>
         </Card>
-      ) : filteredPatients.length === 0 ? (
-        <p className="text-center py-8 text-muted-foreground">Nenhum paciente encontrado para "{searchQuery}"</p>
+      ) : searchedResults.length === 0 ? (
+        <p className="text-center py-8 text-muted-foreground">Nenhum resultado encontrado para "{searchQuery}"</p>
       ) : (
-        <div className="space-y-4">
-          {filteredPatients.map((patient) => (
-            <Card key={patient.orderId}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base">{patient.patientName}</CardTitle>
-                    <p className="text-xs text-muted-foreground font-mono mt-0.5">Pedido: {patient.orderNumber}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      const ids = patient.results.map((r: any) => r.id);
-                      Promise.all(ids.map((id: string) => releaseMutation.mutateAsync(id)));
-                    }}
-                    disabled={releaseMutation.isPending}
-                  >
-                    <CheckCircle className="w-3.5 h-3.5 mr-1" /> Liberar Paciente ({patient.results.length})
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Exame</TableHead>
-                      <TableHead>Resultado</TableHead>
-                      <TableHead>Ref.</TableHead>
-                      <TableHead>Flag</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Ação</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {patient.results.map((r: any) => (
-                      <TableRow key={r.id}>
-                        <TableCell className="font-medium">{r.exam}</TableCell>
-                        <TableCell className="font-mono font-semibold">{r.value} {r.unit}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
-                        <TableCell><StatusBadge status={r.flag} /></TableCell>
-                        <TableCell><StatusBadge status={r.status} /></TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={releaseMutation.isPending}>
-                            <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cadastro</TableHead>
+                  <TableHead>Paciente</TableHead>
+                  <TableHead>Exame</TableHead>
+                  <TableHead>Resultado</TableHead>
+                  <TableHead>Ref.</TableHead>
+                  <TableHead>Flag</TableHead>
+                  <TableHead className="text-right">Ação</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {searchedResults.map((r: any) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-mono text-xs">{r.orders?.order_number || "—"}</TableCell>
+                    <TableCell className="font-medium">{r.orders?.patients?.name || "—"}</TableCell>
+                    <TableCell>{r.exam}</TableCell>
+                    <TableCell className="font-mono font-semibold">{r.value} {r.unit}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
+                    <TableCell><StatusBadge status={r.flag} /></TableCell>
+                    <TableCell className="text-right">
+                      <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={releaseMutation.isPending}>
+                        <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
