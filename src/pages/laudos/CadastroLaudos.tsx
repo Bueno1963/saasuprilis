@@ -20,11 +20,12 @@ interface ExamForm {
   equipment: string;
   turnaround_hours: number;
   price: number;
+  section_group: string;
 }
 
 const emptyForm: ExamForm = {
   code: "", name: "", material: "Sangue", method: "", unit: "",
-  reference_range: "", equipment: "", turnaround_hours: 24, price: 0,
+  reference_range: "", equipment: "", turnaround_hours: 24, price: 0, section_group: "",
 };
 
 const CadastroLaudos = () => {
@@ -81,9 +82,24 @@ const CadastroLaudos = () => {
   }, {} as Record<string, number>);
   const sectorExams = selectedSector ? exams.filter((e) => (e.sector || "Outros") === selectedSector) : [];
 
-  const openAdd = () => {
+  // Group exams by section_group
+  const groupedSections = sectorExams.reduce((acc, exam) => {
+    const section = (exam as any).section_group || "";
+    if (!acc.has(section)) acc.set(section, []);
+    acc.get(section)!.push(exam);
+    return acc;
+  }, new Map<string, typeof sectorExams>());
+
+  // Sort: named sections first (alphabetical), then ungrouped
+  const sortedSections = [...groupedSections.entries()].sort(([a], [b]) => {
+    if (!a && b) return 1;
+    if (a && !b) return -1;
+    return a.localeCompare(b);
+  });
+
+  const openAdd = (section?: string) => {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, section_group: section || "" });
     setDialogOpen(true);
   };
 
@@ -93,7 +109,7 @@ const CadastroLaudos = () => {
       code: exam.code, name: exam.name, material: exam.material || "",
       method: exam.method || "", unit: exam.unit || "", reference_range: exam.reference_range || "",
       equipment: exam.equipment || "", turnaround_hours: exam.turnaround_hours ?? 24,
-      price: exam.price ?? 0,
+      price: exam.price ?? 0, section_group: exam.section_group || "",
     });
     setDialogOpen(true);
   };
@@ -106,6 +122,28 @@ const CadastroLaudos = () => {
   };
 
   const set = (field: keyof ExamForm, v: string | number) => setForm((p) => ({ ...p, [field]: v }));
+
+  const ExamRow = ({ exam, idx }: { exam: any; idx: number }) => (
+    <div className={`flex items-center gap-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
+      <span className="flex-1 flex items-baseline overflow-hidden">
+        <span className="font-medium text-foreground whitespace-nowrap">{exam.name}</span>
+        <span className="flex-1 border-b border-dotted border-muted-foreground mx-1 mb-0.5" />
+      </span>
+      <div className="w-28">
+        <Input className="h-7 text-xs text-center font-bold border-dashed" placeholder="___" />
+      </div>
+      <span className="w-16 text-center text-muted-foreground text-xs">{exam.unit || "—"}</span>
+      <span className="w-44 text-center text-muted-foreground text-xs">{exam.reference_range || "—"}</span>
+      <div className="w-16 flex justify-center gap-0.5 print:hidden opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(exam)}>
+          <Pencil className="w-3 h-3" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => deleteMutation.mutate(exam.id)}>
+          <Trash2 className="w-3 h-3" />
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -138,59 +176,59 @@ const CadastroLaudos = () => {
               <Badge variant="outline">{sectorExams.length} exames</Badge>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" onClick={openAdd}><Plus className="w-4 h-4 mr-1" /> Adicionar Exame</Button>
+              <Button size="sm" onClick={() => openAdd()}><Plus className="w-4 h-4 mr-1" /> Adicionar Exame</Button>
               <Button variant="outline" size="sm" onClick={() => window.print()}><Printer className="w-4 h-4 mr-1" /> Imprimir</Button>
             </div>
           </div>
 
           <Card className="border-border print:border print:shadow-none">
-            <CardContent className="p-6 space-y-1">
+            <CardContent className="p-6 space-y-0">
+              {/* Sector title */}
               <div className="border-b-2 border-foreground pb-3 mb-4">
                 <h2 className="text-lg font-bold tracking-wide text-foreground uppercase">{selectedSector}</h2>
+                <div className="flex gap-6 mt-1 text-xs text-muted-foreground">
+                  <span>Material: {sectorExams[0]?.material || "—"}</span>
+                  <span>Método: {sectorExams[0]?.method || "—"}</span>
+                </div>
               </div>
 
-              <div className="font-mono text-sm space-y-0">
+              {/* Column headers */}
+              <div className="font-mono text-sm">
                 <div className="flex items-center gap-2 pb-2 border-b border-border mb-2">
                   <span className="flex-1 font-bold text-foreground">Exame</span>
-                  <span className="w-20 font-bold text-foreground text-center">Material</span>
-                  <span className="w-20 font-bold text-foreground text-center">Método</span>
                   <span className="w-28 font-bold text-foreground text-center">Resultado</span>
                   <span className="w-16 font-bold text-foreground text-center">Unidade</span>
                   <span className="w-44 font-bold text-foreground text-center">Referências</span>
-                  <span className="w-20 font-bold text-foreground text-center print:hidden">Ações</span>
+                  <span className="w-16 print:hidden" />
                 </div>
 
                 {sectorExams.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">Nenhum exame cadastrado neste setor</p>
                 ) : (
-                  sectorExams.map((exam, idx) => (
-                    <div key={exam.id} className={`flex items-center gap-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
-                      <span className="flex-1 flex items-baseline overflow-hidden">
-                        <span className="font-medium text-foreground whitespace-nowrap">{exam.name}</span>
-                        <span className="flex-1 border-b border-dotted border-muted-foreground mx-1 mb-0.5" />
-                      </span>
-                      <span className="w-20 text-center text-muted-foreground text-xs">{exam.material || "—"}</span>
-                      <span className="w-20 text-center text-muted-foreground text-xs">{exam.method || "—"}</span>
-                      <div className="w-28">
-                        <Input className="h-7 text-xs text-center font-bold border-dashed" placeholder="___" />
-                      </div>
-                      <span className="w-16 text-center text-muted-foreground text-xs">{exam.unit || "—"}</span>
-                      <span className="w-44 text-center text-muted-foreground text-xs">{exam.reference_range || "—"}</span>
-                      <div className="w-20 flex justify-center gap-1 print:hidden opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(exam)}>
-                          <Pencil className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteMutation.mutate(exam.id)}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
+                  sortedSections.map(([section, items]) => (
+                    <div key={section || "__none"} className="mb-4">
+                      {section && (
+                        <div className="flex items-center gap-2 mt-3 mb-1">
+                          <h3 className="text-xs font-bold text-foreground uppercase tracking-widest">{section}:</h3>
+                          <div className="flex-1 border-b border-border" />
+                          <Button
+                            variant="ghost" size="icon" className="h-5 w-5 print:hidden"
+                            onClick={() => openAdd(section)} title="Adicionar nesta seção"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )}
+                      {items.map((exam, idx) => (
+                        <ExamRow key={exam.id} exam={exam} idx={idx} />
+                      ))}
                     </div>
                   ))
                 )}
               </div>
 
-              <div className="pt-6 mt-6 border-t border-border text-center">
-                <p className="text-xs text-muted-foreground">Modelo de laudo — {selectedSector} — {sectorExams.length} exame(s) cadastrado(s)</p>
+              <div className="pt-4 mt-4 border-t border-border text-center">
+                <p className="text-xs text-muted-foreground">Modelo de laudo — {selectedSector} — {sectorExams.length} exame(s)</p>
               </div>
             </CardContent>
           </Card>
@@ -211,6 +249,10 @@ const CadastroLaudos = () => {
             <div className="space-y-1">
               <Label className="text-xs">Nome *</Label>
               <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Hemácias" />
+            </div>
+            <div className="space-y-1 col-span-2">
+              <Label className="text-xs">Seção / Grupo</Label>
+              <Input value={form.section_group} onChange={(e) => set("section_group", e.target.value)} placeholder="Ex: ERITROGRAMA, LEUCOGRAMA, PLAQUETAS" />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Material</Label>

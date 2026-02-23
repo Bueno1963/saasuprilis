@@ -77,6 +77,7 @@ export type Database = {
           notes: string | null
           price: number | null
           reference_range: string | null
+          section_group: string
           sector: string | null
           status: string
           turnaround_hours: number | null
@@ -94,6 +95,7 @@ export type Database = {
           notes?: string | null
           price?: number | null
           reference_range?: string | null
+          section_group?: string
           sector?: string | null
           status?: string
           turnaround_hours?: number | null
@@ -111,6 +113,7 @@ export type Database = {
           notes?: string | null
           price?: number | null
           reference_range?: string | null
+          section_group?: string
           sector?: string | null
           status?: string
           turnaround_hours?: number | null
