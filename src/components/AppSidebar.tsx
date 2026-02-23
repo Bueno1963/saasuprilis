@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { navItems } from "@/lib/navigation";
-import { Activity, ChevronLeft, ChevronRight, LogOut, User } from "lucide-react";
+import { navItems, NavItem } from "@/lib/navigation";
+import { Activity, ChevronDown, ChevronLeft, ChevronRight, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,7 +8,16 @@ import { useAuth } from "@/hooks/useAuth";
 const AppSidebar = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const { profile, signOut } = useAuth();
+
+  const toggleMenu = (href: string) => {
+    setOpenMenus(prev => {
+      const next = new Set(prev);
+      next.has(href) ? next.delete(href) : next.add(href);
+      return next;
+    });
+  };
 
   const phases = [
     { label: "Pré-Analítica", items: navItems.filter(n => n.phase === "pre") },
@@ -18,6 +27,9 @@ const AppSidebar = () => {
 
   const otherItems = navItems.filter(n => !n.phase && n.href !== "/");
   const dashboardItem = navItems.find(n => n.href === "/")!;
+
+  const isActive = (item: NavItem) =>
+    location.pathname === item.href || item.children?.some(c => location.pathname === c.href);
 
   return (
     <aside
@@ -53,14 +65,25 @@ const AppSidebar = () => {
               </p>
             )}
             {collapsed && <div className="h-px bg-sidebar-border mx-2 my-2" />}
-            {phase.items.map(item => (
-              <SidebarLink
-                key={item.href}
-                item={item}
-                active={location.pathname === item.href}
-                collapsed={collapsed}
-              />
-            ))}
+            {phase.items.map(item =>
+              item.children && item.children.length > 0 ? (
+                <SidebarGroup
+                  key={item.href}
+                  item={item}
+                  collapsed={collapsed}
+                  open={openMenus.has(item.href) || !!item.children.some(c => location.pathname === c.href)}
+                  onToggle={() => toggleMenu(item.href)}
+                  pathname={location.pathname}
+                />
+              ) : (
+                <SidebarLink
+                  key={item.href}
+                  item={item}
+                  active={location.pathname === item.href}
+                  collapsed={collapsed}
+                />
+              )
+            )}
           </div>
         ))}
 
@@ -114,12 +137,65 @@ const AppSidebar = () => {
   );
 };
 
+const SidebarGroup = ({
+  item,
+  collapsed,
+  open,
+  onToggle,
+  pathname,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  open: boolean;
+  onToggle: () => void;
+  pathname: string;
+}) => {
+  const Icon = item.icon;
+  const isParentActive = pathname === item.href;
+
+  return (
+    <div>
+      <div className="flex items-center">
+        <Link
+          to={item.href}
+          className={cn(
+            "flex-1 flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+            isParentActive
+              ? "bg-sidebar-accent text-sidebar-primary font-medium"
+              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            collapsed && "justify-center px-2"
+          )}
+          title={collapsed ? item.title : undefined}
+        >
+          <Icon className="w-4 h-4 shrink-0" />
+          {!collapsed && <span className="flex-1">{item.title}</span>}
+        </Link>
+        {!collapsed && (
+          <button
+            onClick={onToggle}
+            className="p-1.5 rounded-md text-sidebar-muted hover:text-sidebar-accent-foreground transition-colors"
+          >
+            <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open && "rotate-180")} />
+          </button>
+        )}
+      </div>
+      {!collapsed && open && item.children && (
+        <div className="ml-4 pl-3 border-l border-sidebar-border space-y-0.5 mt-0.5">
+          {item.children.map(child => (
+            <SidebarLink key={child.href} item={child} active={pathname === child.href} collapsed={false} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const SidebarLink = ({
   item,
   active,
   collapsed,
 }: {
-  item: (typeof navItems)[0];
+  item: NavItem;
   active: boolean;
   collapsed: boolean;
 }) => {

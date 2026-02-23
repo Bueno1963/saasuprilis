@@ -8,7 +8,10 @@ import {
   FileDown,
   Settings,
   FlaskConical,
-  LayoutDashboard
+  LayoutDashboard,
+  Unlock,
+  AlertTriangle,
+  Printer,
 } from "lucide-react";
 
 export interface NavItem {
@@ -17,6 +20,7 @@ export interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
   phase?: "pre" | "analytical" | "post";
+  children?: NavItem[];
 }
 
 export const navItems: NavItem[] = [
@@ -27,6 +31,16 @@ export const navItems: NavItem[] = [
   { title: "Mapa de Trabalho", href: "/worklist", icon: FlaskConical, phase: "analytical" },
   { title: "Controle de Qualidade", href: "/qc", icon: BarChart3, phase: "analytical" },
   { title: "Resultados", href: "/resultados", icon: FileCheck, phase: "post" },
-  { title: "Laudos", href: "/laudos", icon: FileDown, phase: "post" },
+  {
+    title: "Laudos",
+    href: "/laudos",
+    icon: FileDown,
+    phase: "post",
+    children: [
+      { title: "Liberar Exames", href: "/laudos/liberar", icon: Unlock },
+      { title: "Pedidos Incompletos", href: "/laudos/incompletos", icon: AlertTriangle },
+      { title: "Imprimir Exames", href: "/laudos/imprimir", icon: Printer },
+    ],
+  },
   { title: "Configurações", href: "/configuracoes", icon: Settings },
 ];
