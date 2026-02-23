@@ -13,6 +13,9 @@ import Worklist from "./pages/Worklist";
 import QualityControl from "./pages/QualityControl";
 import Results from "./pages/Results";
 import Laudos from "./pages/Laudos";
+import LiberarExames from "./pages/laudos/LiberarExames";
+import PedidosIncompletos from "./pages/laudos/PedidosIncompletos";
+import ImprimirExames from "./pages/laudos/ImprimirExames";
 import SettingsPage from "./pages/SettingsPage";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -46,6 +49,9 @@ const ProtectedRoutes = () => {
         <Route path="/qc" element={<QualityControl />} />
         <Route path="/resultados" element={<Results />} />
         <Route path="/laudos" element={<Laudos />} />
+        <Route path="/laudos/liberar" element={<LiberarExames />} />
+        <Route path="/laudos/incompletos" element={<PedidosIncompletos />} />
+        <Route path="/laudos/imprimir" element={<ImprimirExames />} />
         <Route path="/configuracoes" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />
