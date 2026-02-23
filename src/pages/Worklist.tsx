@@ -5,15 +5,28 @@ import StatusBadge from "@/components/StatusBadge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 const Worklist = () => {
   const [newSector, setNewSector] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [renamingSector, setRenamingSector] = useState("");
+  const [renameValue, setRenameValue] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: samples = [], isLoading } = useQuery({
@@ -31,7 +44,7 @@ const Worklist = () => {
   const { data: examCatalog = [] } = useQuery({
     queryKey: ["exam_catalog_sectors_worklist"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("exam_catalog").select("sector").eq("status", "active");
+      const { data, error } = await supabase.from("exam_catalog").select("id, name, sector").eq("status", "active");
       if (error) throw error;
       return data;
     },
@@ -39,9 +52,14 @@ const Worklist = () => {
 
   const sectors = [...new Set(examCatalog.map(e => e.sector).filter(Boolean))] as string[];
 
+  const invalidateSectors = () => {
+    queryClient.invalidateQueries({ queryKey: ["exam_catalog_sectors_worklist"] });
+    queryClient.invalidateQueries({ queryKey: ["exam_catalog_sectors"] });
+    queryClient.invalidateQueries({ queryKey: ["exam_catalog_sectors_worklist"] });
+  };
+
   const addSectorMutation = useMutation({
     mutationFn: async (sectorName: string) => {
-      // Create a placeholder exam entry to register the new sector
       const code = `SECTOR-${sectorName.toUpperCase().replace(/\s+/g, "-").slice(0, 10)}-${Date.now().toString(36)}`;
       const { error } = await supabase.from("exam_catalog").insert({
         name: `(Setor) ${sectorName}`,
@@ -52,13 +70,47 @@ const Worklist = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["exam_catalog_sectors_worklist"] });
-      queryClient.invalidateQueries({ queryKey: ["exam_catalog_sectors"] });
+      invalidateSectors();
       toast.success("Setor criado com sucesso");
       setNewSector("");
       setDialogOpen(false);
     },
     onError: () => toast.error("Erro ao criar setor"),
+  });
+
+  const renameSectorMutation = useMutation({
+    mutationFn: async ({ oldName, newName }: { oldName: string; newName: string }) => {
+      const { error } = await supabase
+        .from("exam_catalog")
+        .update({ sector: newName })
+        .eq("sector", oldName);
+      if (error) throw error;
+      // Also update samples referencing this sector
+      await supabase.from("samples").update({ sector: newName }).eq("sector", oldName);
+    },
+    onSuccess: () => {
+      invalidateSectors();
+      queryClient.invalidateQueries({ queryKey: ["samples"] });
+      toast.success("Setor renomeado com sucesso");
+      setRenameDialogOpen(false);
+    },
+    onError: () => toast.error("Erro ao renomear setor"),
+  });
+
+  const deleteSectorMutation = useMutation({
+    mutationFn: async (sectorName: string) => {
+      const { error } = await supabase
+        .from("exam_catalog")
+        .delete()
+        .eq("sector", sectorName);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      invalidateSectors();
+      toast.success("Setor excluído com sucesso");
+      setDeleteTarget(null);
+    },
+    onError: () => toast.error("Erro ao excluir setor"),
   });
 
   const handleAddSector = () => {
@@ -69,6 +121,22 @@ const Worklist = () => {
       return;
     }
     addSectorMutation.mutate(trimmed);
+  };
+
+  const handleRename = () => {
+    const trimmed = renameValue.trim();
+    if (!trimmed || trimmed === renamingSector) return;
+    if (sectors.includes(trimmed)) {
+      toast.error("Já existe um setor com este nome");
+      return;
+    }
+    renameSectorMutation.mutate({ oldName: renamingSector, newName: trimmed });
+  };
+
+  const openRenameDialog = (sector: string) => {
+    setRenamingSector(sector);
+    setRenameValue(sector);
+    setRenameDialogOpen(true);
   };
 
   return (
@@ -109,6 +177,52 @@ const Worklist = () => {
         </Dialog>
       </div>
 
+      {/* Rename Dialog */}
+      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Renomear Setor</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <Input
+              placeholder="Novo nome do setor"
+              value={renameValue}
+              onChange={e => setRenameValue(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleRename()}
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost">Cancelar</Button>
+            </DialogClose>
+            <Button onClick={handleRename} disabled={renameSectorMutation.isPending || !renameValue.trim()}>
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={open => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir setor "{deleteTarget}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Todos os exames cadastrados neste setor serão removidos do catálogo. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteSectorMutation.mutate(deleteTarget)}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {sectors.length === 0 ? (
         <p className="text-center py-12 text-muted-foreground">Nenhum setor cadastrado. Crie um setor para começar.</p>
       ) : (
@@ -125,7 +239,27 @@ const Worklist = () => {
               <TabsContent key={sector} value={sector}>
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base">{sector} — {sectorSamples.length} amostras</CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base">{sector} — {sectorSamples.length} amostras</CardTitle>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openRenameDialog(sector)}>
+                            <Pencil className="w-4 h-4 mr-2" /> Renomear
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setDeleteTarget(sector)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     {isLoading ? (
