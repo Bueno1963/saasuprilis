@@ -10,15 +10,19 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
-const SECTORS = [
-  { name: "Bioquímica", color: "from-blue-800 to-blue-600", glow: "shadow-blue-500/30" },
-  { name: "Hematologia", color: "from-red-700 to-red-500", glow: "shadow-red-500/30" },
-  { name: "Imunologia", color: "from-cyan-600 to-cyan-400", glow: "shadow-cyan-500/30" },
-  { name: "Microbiologia", color: "from-orange-600 to-orange-400", glow: "shadow-orange-500/30" },
-  { name: "Uroanálise", color: "from-amber-500 to-yellow-400", glow: "shadow-amber-500/30" },
-  { name: "Parasitologia", color: "from-emerald-700 to-emerald-500", glow: "shadow-emerald-500/30" },
-  { name: "Coagulação", color: "from-purple-700 to-purple-500", glow: "shadow-purple-500/30" },
-  { name: "Hormônios", color: "from-indigo-600 to-blue-400", glow: "shadow-indigo-500/30" },
+const SECTOR_COLORS = [
+  { color: "from-blue-800 to-blue-600", glow: "shadow-blue-500/30" },
+  { color: "from-red-700 to-red-500", glow: "shadow-red-500/30" },
+  { color: "from-cyan-600 to-cyan-400", glow: "shadow-cyan-500/30" },
+  { color: "from-orange-600 to-orange-400", glow: "shadow-orange-500/30" },
+  { color: "from-amber-500 to-yellow-400", glow: "shadow-amber-500/30" },
+  { color: "from-emerald-700 to-emerald-500", glow: "shadow-emerald-500/30" },
+  { color: "from-purple-700 to-purple-500", glow: "shadow-purple-500/30" },
+  { color: "from-indigo-600 to-blue-400", glow: "shadow-indigo-500/30" },
+  { color: "from-rose-600 to-pink-400", glow: "shadow-rose-500/30" },
+  { color: "from-teal-700 to-teal-500", glow: "shadow-teal-500/30" },
+  { color: "from-slate-700 to-slate-500", glow: "shadow-slate-500/30" },
+  { color: "from-lime-600 to-lime-400", glow: "shadow-lime-500/30" },
 ];
 
 const LiberarExames = () => {
@@ -51,12 +55,21 @@ const LiberarExames = () => {
 
   const examSectorMap = new Map(examCatalog.map(e => [e.name, e.sector]));
 
+  // Get unique sectors from catalog
+  const uniqueSectors = [...new Set(examCatalog.map(e => e.sector).filter(Boolean))] as string[];
+
   // Count per sector
   const sectorCounts = new Map<string, number>();
   for (const r of results as any[]) {
     const sector = examSectorMap.get(r.exam) || "Outros";
     sectorCounts.set(sector, (sectorCounts.get(sector) || 0) + 1);
   }
+
+  // Build dynamic sectors with colors
+  const sectors = uniqueSectors.map((name, i) => ({
+    name,
+    ...SECTOR_COLORS[i % SECTOR_COLORS.length],
+  }));
 
   const filteredResults = selectedSector
     ? (results as any[]).filter(r => (examSectorMap.get(r.exam) || "Outros") === selectedSector)
@@ -108,7 +121,7 @@ const LiberarExames = () => {
           <p className="text-center py-12 text-muted-foreground">Carregando...</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 pt-4">
-            {SECTORS.map(sector => {
+            {sectors.map(sector => {
               const count = sectorCounts.get(sector.name) || 0;
               return (
                 <button
@@ -155,7 +168,7 @@ const LiberarExames = () => {
     );
   }
 
-  const currentSector = SECTORS.find(s => s.name === selectedSector);
+  const currentSector = sectors.find(s => s.name === selectedSector);
 
   return (
     <div className="p-6 space-y-6">
