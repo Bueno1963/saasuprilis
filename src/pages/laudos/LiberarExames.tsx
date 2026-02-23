@@ -168,7 +168,22 @@ const LiberarExames = () => {
     );
   }
 
-  const currentSector = sectors.find(s => s.name === selectedSector);
+  // Group results by patient
+  const patientGroups = filteredResults.reduce((acc: Record<string, { patientName: string; orderNumber: string; orderId: string; results: any[] }>, r: any) => {
+    const key = r.order_id;
+    if (!acc[key]) {
+      acc[key] = {
+        patientName: r.orders?.patients?.name || "—",
+        orderNumber: r.orders?.order_number || "—",
+        orderId: r.order_id,
+        results: [],
+      };
+    }
+    acc[key].results.push(r);
+    return acc;
+  }, {});
+
+  const patients = Object.values(patientGroups) as { patientName: string; orderNumber: string; orderId: string; results: any[] }[];
 
   return (
     <div className="p-6 space-y-6">
@@ -179,7 +194,9 @@ const LiberarExames = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-foreground">{selectedSector}</h1>
-            <p className="text-sm text-muted-foreground">Exames validados aguardando liberação</p>
+            <p className="text-sm text-muted-foreground">
+              {patients.length} paciente{patients.length !== 1 ? "s" : ""} · {filteredResults.length} exame{filteredResults.length !== 1 ? "s" : ""} aguardando liberação
+            </p>
           </div>
         </div>
         {filteredResults.length > 0 && (
@@ -189,48 +206,72 @@ const LiberarExames = () => {
         )}
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">{filteredResults.length} exame{filteredResults.length !== 1 ? "s" : ""}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredResults.length === 0 ? (
-            <div className="text-center py-12 space-y-2">
+      {patients.length === 0 ? (
+        <Card>
+          <CardContent className="py-12">
+            <div className="text-center space-y-2">
               <Unlock className="w-10 h-10 mx-auto text-muted-foreground/40" />
               <p className="text-muted-foreground">Nenhum exame validado neste setor</p>
             </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Pedido</TableHead>
-                  <TableHead>Paciente</TableHead>
-                  <TableHead>Exame</TableHead>
-                  <TableHead>Resultado</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredResults.map((r: any) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-mono text-sm">{r.orders?.order_number}</TableCell>
-                    <TableCell className="font-medium">{r.orders?.patients?.name}</TableCell>
-                    <TableCell>{r.exam}</TableCell>
-                    <TableCell className="font-mono font-semibold">{r.value} {r.unit}</TableCell>
-                    <TableCell><StatusBadge status={r.status} /></TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={releaseMutation.isPending}>
-                        <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {patients.map((patient) => (
+            <Card key={patient.orderId}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">{patient.patientName}</CardTitle>
+                    <p className="text-xs text-muted-foreground font-mono mt-0.5">Pedido: {patient.orderNumber}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const ids = patient.results.map((r: any) => r.id);
+                      Promise.all(ids.map((id: string) => releaseMutation.mutateAsync(id)));
+                    }}
+                    disabled={releaseMutation.isPending}
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 mr-1" /> Liberar Paciente ({patient.results.length})
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Exame</TableHead>
+                      <TableHead>Resultado</TableHead>
+                      <TableHead>Ref.</TableHead>
+                      <TableHead>Flag</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ação</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {patient.results.map((r: any) => (
+                      <TableRow key={r.id}>
+                        <TableCell className="font-medium">{r.exam}</TableCell>
+                        <TableCell className="font-mono font-semibold">{r.value} {r.unit}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
+                        <TableCell><StatusBadge status={r.flag} /></TableCell>
+                        <TableCell><StatusBadge status={r.status} /></TableCell>
+                        <TableCell className="text-right">
+                          <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={releaseMutation.isPending}>
+                            <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
