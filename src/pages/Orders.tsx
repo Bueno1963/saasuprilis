@@ -51,6 +51,15 @@ const Orders = () => {
     },
   });
 
+  const { data: insurancePlans = [] } = useQuery({
+    queryKey: ["insurance_plans_active"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("insurance_plans").select("id, name").eq("status", "active").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async (form: OrderFormData) => {
       const { error } = await supabase.from("orders").insert([{
@@ -90,7 +99,7 @@ const Orders = () => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader><DialogTitle>Criar Pedido</DialogTitle></DialogHeader>
-            <OrderForm patients={patients} examCatalog={examCatalog} onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} />
+            <OrderForm patients={patients} examCatalog={examCatalog} insurancePlans={insurancePlans} onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} />
           </DialogContent>
         </Dialog>
       </div>
@@ -143,7 +152,7 @@ const Orders = () => {
   );
 };
 
-const OrderForm = ({ patients, examCatalog, onSubmit, loading }: { patients: { id: string; name: string; insurance: string | null }[]; examCatalog: { name: string; code: string }[]; onSubmit: (data: OrderFormData) => void; loading: boolean }) => {
+const OrderForm = ({ patients, examCatalog, insurancePlans, onSubmit, loading }: { patients: { id: string; name: string; insurance: string | null }[]; examCatalog: { name: string; code: string }[]; insurancePlans: { id: string; name: string }[]; onSubmit: (data: OrderFormData) => void; loading: boolean }) => {
   const [form, setForm] = useState({
     patient_id: "", doctor_name: "", insurance: "Particular", exams: [] as string[], priority: "normal" as "normal" | "urgent",
   });
@@ -252,11 +261,17 @@ const OrderForm = ({ patients, examCatalog, onSubmit, loading }: { patients: { i
         </div>
         <div className="space-y-1">
           <Label htmlFor="insurance">Convênio</Label>
-          <Input
-            id="insurance"
-            value={form.insurance}
-            onChange={e => setForm(f => ({ ...f, insurance: e.target.value }))}
-          />
+          <Select value={form.insurance} onValueChange={v => setForm(f => ({ ...f, insurance: v }))}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecionar convênio" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Particular">Particular</SelectItem>
+              {insurancePlans.map(p => (
+                <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
