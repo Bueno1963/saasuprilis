@@ -161,12 +161,32 @@ const ValidarExames = () => {
     );
   }
 
+  // Group by patient/order
+  const patientGroups = filteredResults.reduce((acc: Record<string, { patientName: string; orderNumber: string; orderId: string; date: string; exams: string[]; resultIds: string[] }>, r: any) => {
+    const key = r.order_id;
+    if (!acc[key]) {
+      acc[key] = {
+        patientName: r.orders?.patients?.name || "—",
+        orderNumber: r.orders?.order_number || "—",
+        orderId: r.order_id,
+        date: r.created_at,
+        exams: [],
+        resultIds: [],
+      };
+    }
+    acc[key].exams.push(r.exam);
+    acc[key].resultIds.push(r.id);
+    return acc;
+  }, {} as Record<string, { patientName: string; orderNumber: string; orderId: string; date: string; exams: string[]; resultIds: string[] }>);
+
+  const patients = Object.values(patientGroups) as { patientName: string; orderNumber: string; orderId: string; date: string; exams: string[]; resultIds: string[] }[];
+
   const searchLower = searchQuery.toLowerCase();
-  const searchedResults = filteredResults.filter((r: any) => {
-    const patientName = r.orders?.patients?.name || "";
-    const orderNumber = r.orders?.order_number || "";
-    return patientName.toLowerCase().includes(searchLower) || orderNumber.toLowerCase().includes(searchLower) || r.exam.toLowerCase().includes(searchLower);
-  });
+  const filteredPatients = patients.filter(p =>
+    p.patientName.toLowerCase().includes(searchLower) ||
+    p.orderNumber.toLowerCase().includes(searchLower) ||
+    p.exams.some(e => e.toLowerCase().includes(searchLower))
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -178,7 +198,7 @@ const ValidarExames = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">{selectedSector}</h1>
             <p className="text-sm text-muted-foreground">
-              {filteredResults.length} exame{filteredResults.length !== 1 ? "s" : ""} aguardando validação
+              {patients.length} paciente{patients.length !== 1 ? "s" : ""} · {filteredResults.length} exame{filteredResults.length !== 1 ? "s" : ""} aguardando validação
             </p>
           </div>
         </div>
@@ -189,7 +209,7 @@ const ValidarExames = () => {
         )}
       </div>
 
-      {filteredResults.length > 0 && (
+      {patients.length > 0 && (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -201,7 +221,7 @@ const ValidarExames = () => {
         </div>
       )}
 
-      {filteredResults.length === 0 ? (
+      {patients.length === 0 ? (
         <Card>
           <CardContent className="py-12">
             <div className="text-center space-y-2">
@@ -210,7 +230,7 @@ const ValidarExames = () => {
             </div>
           </CardContent>
         </Card>
-      ) : searchedResults.length === 0 ? (
+      ) : filteredPatients.length === 0 ? (
         <p className="text-center py-8 text-muted-foreground">Nenhum resultado encontrado para "{searchQuery}"</p>
       ) : (
         <Card>
@@ -218,26 +238,29 @@ const ValidarExames = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Cadastro</TableHead>
+                  <TableHead>Nº Atendimento</TableHead>
                   <TableHead>Paciente</TableHead>
-                  <TableHead>Exame</TableHead>
-                  <TableHead>Resultado</TableHead>
-                  <TableHead>Ref.</TableHead>
-                  <TableHead>Flag</TableHead>
+                  <TableHead>Exames</TableHead>
+                  <TableHead>Data</TableHead>
                   <TableHead className="text-right">Ação</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {searchedResults.map((r: any) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-mono text-xs">{r.orders?.order_number || "—"}</TableCell>
-                    <TableCell className="font-medium">{r.orders?.patients?.name || "—"}</TableCell>
-                    <TableCell>{r.exam}</TableCell>
-                    <TableCell className="font-mono font-semibold">{r.value} {r.unit}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
-                    <TableCell><StatusBadge status={r.flag} /></TableCell>
+                {filteredPatients.map((p) => (
+                  <TableRow key={p.orderId}>
+                    <TableCell className="font-mono text-xs">{p.orderNumber}</TableCell>
+                    <TableCell className="font-medium">{p.patientName}</TableCell>
+                    <TableCell className="text-sm">{p.exams.join(", ")}</TableCell>
+                    <TableCell className="text-sm">{new Date(p.date).toLocaleDateString("pt-BR")}</TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="outline" onClick={() => validateMutation.mutate(r.id)} disabled={validateMutation.isPending}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          Promise.all(p.resultIds.map(id => validateMutation.mutateAsync(id)));
+                        }}
+                        disabled={validateMutation.isPending}
+                      >
                         <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Validar
                       </Button>
                     </TableCell>
