@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
-import { Unlock, CheckCircle, ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Unlock, CheckCircle, ArrowLeft, Search } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ const SECTOR_COLORS = [
 
 const LiberarExames = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -185,6 +187,12 @@ const LiberarExames = () => {
 
   const patients = Object.values(patientGroups) as { patientName: string; orderNumber: string; orderId: string; results: any[] }[];
 
+  const searchLower = searchQuery.toLowerCase();
+  const filteredPatients = patients.filter(p =>
+    p.patientName.toLowerCase().includes(searchLower) ||
+    p.orderNumber.toLowerCase().includes(searchLower)
+  );
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -206,6 +214,18 @@ const LiberarExames = () => {
         )}
       </div>
 
+      {patients.length > 0 && (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar paciente ou pedido..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      )}
+
       {patients.length === 0 ? (
         <Card>
           <CardContent className="py-12">
@@ -215,9 +235,11 @@ const LiberarExames = () => {
             </div>
           </CardContent>
         </Card>
+      ) : filteredPatients.length === 0 ? (
+        <p className="text-center py-8 text-muted-foreground">Nenhum paciente encontrado para "{searchQuery}"</p>
       ) : (
         <div className="space-y-4">
-          {patients.map((patient) => (
+          {filteredPatients.map((patient) => (
             <Card key={patient.orderId}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
