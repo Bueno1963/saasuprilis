@@ -12,6 +12,7 @@ import Samples from "./pages/Samples";
 import Worklist from "./pages/Worklist";
 import QualityControl from "./pages/QualityControl";
 import Results from "./pages/Results";
+import Laudos from "./pages/Laudos";
 import SettingsPage from "./pages/SettingsPage";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -44,6 +45,7 @@ const ProtectedRoutes = () => {
         <Route path="/worklist" element={<Worklist />} />
         <Route path="/qc" element={<QualityControl />} />
         <Route path="/resultados" element={<Results />} />
+        <Route path="/laudos" element={<Laudos />} />
         <Route path="/configuracoes" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />
