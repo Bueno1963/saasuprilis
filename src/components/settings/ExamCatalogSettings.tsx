@@ -152,10 +152,10 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
               <div className="space-y-1">
                 <Label>Equipamento</Label>
                 <Controller name="equipment" control={control} render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select value={field.value || "__none__"} onValueChange={v => field.onChange(v === "__none__" ? "" : v)}>
                     <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
+                      <SelectItem value="__none__">Nenhum</SelectItem>
                       {equipmentList.map(eq => (
                         <SelectItem key={eq.id} value={eq.name}>{eq.name}</SelectItem>
                       ))}
