@@ -1,11 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
-import { ShieldCheck, CheckCircle, ArrowLeft, Search } from "lucide-react";
-import { useState } from "react";
+import { ShieldCheck, CheckCircle, ArrowLeft, Search, Save } from "lucide-react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,7 +28,10 @@ const SECTOR_COLORS = [
 
 const ValidarExames = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [editedValues, setEditedValues] = useState<Record<string, string>>({});
+  const [editedFlags, setEditedFlags] = useState<Record<string, string>>({});
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -72,26 +75,78 @@ const ValidarExames = () => {
     ? (results as any[]).filter(r => (examSectorMap.get(r.exam) || "Outros") === selectedSector)
     : [];
 
-  const validateMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("results").update({
-        status: "validated",
-        validated_at: new Date().toISOString(),
-        analyst_id: user?.id,
-      }).eq("id", id);
+  const saveValueMutation = useMutation({
+    mutationFn: async ({ id, value, flag }: { id: string; value: string; flag?: string }) => {
+      const update: any = { value };
+      if (flag) update.flag = flag;
+      const { error } = await supabase.from("results").update(update).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["results-pending"] });
-      toast.success("Exame validado com sucesso");
     },
-    onError: () => toast.error("Erro ao validar exame"),
+    onError: () => toast.error("Erro ao salvar resultado"),
+  });
+
+  const validateMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      // First save any pending edits for these ids
+      const savePromises = ids.map(id => {
+        const value = editedValues[id];
+        const flag = editedFlags[id];
+        if (value !== undefined || flag !== undefined) {
+          const update: any = {};
+          if (value !== undefined) update.value = value;
+          if (flag !== undefined) update.flag = flag;
+          return supabase.from("results").update(update).eq("id", id);
+        }
+        return Promise.resolve(null);
+      });
+      await Promise.all(savePromises);
+
+      const { error } = await supabase.from("results").update({
+        status: "validated",
+        validated_at: new Date().toISOString(),
+        analyst_id: user?.id,
+      }).in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: (_, ids) => {
+      queryClient.invalidateQueries({ queryKey: ["results-pending"] });
+      // Clean up edited values
+      setEditedValues(prev => {
+        const next = { ...prev };
+        ids.forEach(id => delete next[id]);
+        return next;
+      });
+      setEditedFlags(prev => {
+        const next = { ...prev };
+        ids.forEach(id => delete next[id]);
+        return next;
+      });
+      toast.success(ids.length > 1 ? "Exames validados com sucesso" : "Exame validado com sucesso");
+    },
+    onError: () => toast.error("Erro ao validar exame(s)"),
   });
 
   const validateAllSector = useMutation({
     mutationFn: async () => {
       const ids = filteredResults.map((r: any) => r.id);
       if (ids.length === 0) return;
+      // Save all pending edits first
+      const savePromises = ids.map(id => {
+        const value = editedValues[id];
+        const flag = editedFlags[id];
+        if (value !== undefined || flag !== undefined) {
+          const update: any = {};
+          if (value !== undefined) update.value = value;
+          if (flag !== undefined) update.flag = flag;
+          return supabase.from("results").update(update).eq("id", id);
+        }
+        return Promise.resolve(null);
+      });
+      await Promise.all(savePromises);
+
       const { error } = await supabase.from("results").update({
         status: "validated",
         validated_at: new Date().toISOString(),
@@ -101,10 +156,29 @@ const ValidarExames = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["results-pending"] });
+      setEditedValues({});
+      setEditedFlags({});
       toast.success("Todos os exames do setor foram validados");
     },
     onError: () => toast.error("Erro ao validar exames"),
   });
+
+  const handleValueChange = useCallback((id: string, value: string) => {
+    setEditedValues(prev => ({ ...prev, [id]: value }));
+  }, []);
+
+  const handleFlagChange = useCallback((id: string, flag: string) => {
+    setEditedFlags(prev => ({ ...prev, [id]: flag }));
+  }, []);
+
+  const handleSaveValue = useCallback((id: string) => {
+    const value = editedValues[id];
+    const flag = editedFlags[id];
+    if (value !== undefined || flag !== undefined) {
+      saveValueMutation.mutate({ id, value: value ?? "", flag });
+      toast.success("Resultado salvo");
+    }
+  }, [editedValues, editedFlags, saveValueMutation]);
 
   if (!selectedSector) {
     return (
@@ -162,7 +236,8 @@ const ValidarExames = () => {
   }
 
   // Group by patient/order
-  const patientGroups = filteredResults.reduce((acc: Record<string, { patientName: string; orderNumber: string; orderId: string; date: string; exams: string[]; resultIds: string[] }>, r: any) => {
+  type PatientGroup = { patientName: string; orderNumber: string; orderId: string; date: string; exams: string[]; resultIds: string[]; results: any[] };
+  const patientGroups = filteredResults.reduce((acc: Record<string, PatientGroup>, r: any) => {
     const key = r.order_id;
     if (!acc[key]) {
       acc[key] = {
@@ -172,14 +247,16 @@ const ValidarExames = () => {
         date: r.created_at,
         exams: [],
         resultIds: [],
+        results: [],
       };
     }
     acc[key].exams.push(r.exam);
     acc[key].resultIds.push(r.id);
+    acc[key].results.push(r);
     return acc;
-  }, {} as Record<string, { patientName: string; orderNumber: string; orderId: string; date: string; exams: string[]; resultIds: string[] }>);
+  }, {} as Record<string, PatientGroup>);
 
-  const patients = Object.values(patientGroups) as { patientName: string; orderNumber: string; orderId: string; date: string; exams: string[]; resultIds: string[] }[];
+  const patients: PatientGroup[] = Object.values(patientGroups);
 
   const searchLower = searchQuery.toLowerCase();
   const filteredPatients = patients.filter(p =>
@@ -188,6 +265,118 @@ const ValidarExames = () => {
     p.exams.some(e => e.toLowerCase().includes(searchLower))
   );
 
+  // Detail view: editing results for a specific order
+  if (selectedOrderId) {
+    const patient = patients.find(p => p.orderId === selectedOrderId);
+    if (!patient) {
+      setSelectedOrderId(null);
+      return null;
+    }
+
+    const allFilled = patient.results.every((r: any) => {
+      const val = editedValues[r.id] ?? r.value;
+      return val && val.trim() !== "";
+    });
+
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => setSelectedOrderId(null)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{patient.patientName}</h1>
+              <p className="text-sm text-muted-foreground">
+                Pedido: <span className="font-mono">{patient.orderNumber}</span> · {patient.results.length} exame{patient.results.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={() => validateMutation.mutate(patient.resultIds)}
+            disabled={validateMutation.isPending || !allFilled}
+            title={!allFilled ? "Preencha todos os resultados antes de validar" : ""}
+          >
+            <CheckCircle className="w-4 h-4 mr-2" /> Validar Todos ({patient.results.length})
+          </Button>
+        </div>
+
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Exame</TableHead>
+                  <TableHead>Resultado</TableHead>
+                  <TableHead>Unidade</TableHead>
+                  <TableHead>Ref.</TableHead>
+                  <TableHead>Flag</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {patient.results.map((r: any) => {
+                  const currentValue = editedValues[r.id] ?? r.value ?? "";
+                  const currentFlag = editedFlags[r.id] ?? r.flag ?? "normal";
+                  const hasUnsaved = editedValues[r.id] !== undefined || editedFlags[r.id] !== undefined;
+                  const isFilled = currentValue.trim() !== "";
+
+                  return (
+                    <TableRow key={r.id} className={cn(!isFilled && "bg-muted/30")}>
+                      <TableCell className="font-medium">{r.exam}</TableCell>
+                      <TableCell>
+                        <Input
+                          value={currentValue}
+                          onChange={e => handleValueChange(r.id, e.target.value)}
+                          onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
+                          placeholder="Digitar resultado..."
+                          className={cn("max-w-[160px] font-mono", !isFilled && "border-destructive/50")}
+                        />
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{r.unit}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
+                      <TableCell>
+                        <select
+                          value={currentFlag}
+                          onChange={e => handleFlagChange(r.id, e.target.value)}
+                          className="text-xs border rounded px-2 py-1 bg-background"
+                        >
+                          <option value="normal">Normal</option>
+                          <option value="high">Alto</option>
+                          <option value="low">Baixo</option>
+                          <option value="critical">Crítico</option>
+                        </select>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {hasUnsaved && (
+                            <Button size="sm" variant="ghost" onClick={() => handleSaveValue(r.id)} disabled={saveValueMutation.isPending}>
+                              <Save className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => validateMutation.mutate([r.id])}
+                            disabled={validateMutation.isPending || !isFilled}
+                            title={!isFilled ? "Preencha o resultado" : ""}
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Validar
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Sector patient list view
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -247,7 +436,11 @@ const ValidarExames = () => {
               </TableHeader>
               <TableBody>
                 {filteredPatients.map((p) => (
-                  <TableRow key={p.orderId}>
+                  <TableRow
+                    key={p.orderId}
+                    className="cursor-pointer hover:bg-accent/50"
+                    onClick={() => setSelectedOrderId(p.orderId)}
+                  >
                     <TableCell className="font-mono text-xs">{p.orderNumber}</TableCell>
                     <TableCell className="font-medium">{p.patientName}</TableCell>
                     <TableCell className="text-sm">{p.exams.join(", ")}</TableCell>
@@ -256,12 +449,12 @@ const ValidarExames = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => {
-                          Promise.all(p.resultIds.map(id => validateMutation.mutateAsync(id)));
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedOrderId(p.orderId);
                         }}
-                        disabled={validateMutation.isPending}
                       >
-                        <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Validar
+                        <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Digitar / Validar
                       </Button>
                     </TableCell>
                   </TableRow>
