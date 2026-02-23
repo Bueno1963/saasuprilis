@@ -1,12 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 import { navItems } from "@/lib/navigation";
-import { Activity, ChevronLeft, ChevronRight } from "lucide-react";
+import { Activity, ChevronLeft, ChevronRight, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const AppSidebar = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const { profile, signOut } = useAuth();
 
   const phases = [
     { label: "Pré-Analítica", items: navItems.filter(n => n.phase === "pre") },
@@ -78,13 +80,36 @@ const AppSidebar = () => {
         )}
       </nav>
 
-      {/* Collapse toggle */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="h-10 flex items-center justify-center border-t border-sidebar-border text-sidebar-muted hover:text-sidebar-accent-foreground transition-colors"
-      >
-        {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-      </button>
+      {/* User info + collapse */}
+      <div className="border-t border-sidebar-border">
+        {profile && !collapsed && (
+          <div className="px-4 py-3 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center shrink-0">
+              <User className="w-4 h-4 text-sidebar-accent-foreground" />
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-xs font-medium text-sidebar-accent-foreground truncate">{profile.full_name || "Usuário"}</p>
+              <p className="text-[10px] text-sidebar-muted">{profile.role_display}</p>
+            </div>
+            <button onClick={signOut} className="text-sidebar-muted hover:text-sidebar-accent-foreground transition-colors" title="Sair">
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+        {collapsed && (
+          <div className="flex justify-center py-3">
+            <button onClick={signOut} className="text-sidebar-muted hover:text-sidebar-accent-foreground transition-colors" title="Sair">
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="h-10 w-full flex items-center justify-center border-t border-sidebar-border text-sidebar-muted hover:text-sidebar-accent-foreground transition-colors"
+        >
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
+      </div>
     </aside>
   );
 };

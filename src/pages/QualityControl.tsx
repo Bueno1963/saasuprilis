@@ -1,15 +1,37 @@
-import { mockQCData } from "@/lib/mock-data";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import StatusBadge from "@/components/StatusBadge";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, Dot } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { mockQCData } from "@/lib/mock-data";
 
 const QualityControl = () => {
-  const mean = mockQCData[0].mean;
-  const sd = mockQCData[0].sd;
+  const { data: qcData = [] } = useQuery({
+    queryKey: ["qc_data"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("qc_data")
+        .select("*")
+        .order("recorded_at", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
 
-  const chartData = mockQCData.map(d => ({
-    date: d.date.slice(5),
-    value: Number(d.value.toFixed(2)),
+  // Use mock data if no real data yet
+  const displayData = qcData.length > 0 ? qcData : mockQCData.map(d => ({
+    ...d,
+    recorded_at: d.date,
+    recorded_by: null,
+    equipment: d.equipment,
+  }));
+
+  const mean = displayData.length > 0 ? displayData[0].mean : 95;
+  const sd = displayData.length > 0 ? displayData[0].sd : 3;
+
+  const chartData = displayData.map(d => ({
+    date: (d.recorded_at || "").slice(5, 10),
+    value: Number(Number(d.value).toFixed(2)),
     status: d.status,
   }));
 
@@ -44,7 +66,6 @@ const QualityControl = () => {
                   fontSize: 12,
                 }}
               />
-              {/* Reference lines for ±1SD, ±2SD, ±3SD */}
               <ReferenceLine y={mean} stroke="hsl(var(--success))" strokeDasharray="5 5" label={{ value: "Média", position: "right", fontSize: 10 }} />
               <ReferenceLine y={mean + sd} stroke="hsl(var(--warning))" strokeDasharray="3 3" label={{ value: "+1DP", position: "right", fontSize: 10 }} />
               <ReferenceLine y={mean - sd} stroke="hsl(var(--warning))" strokeDasharray="3 3" label={{ value: "-1DP", position: "right", fontSize: 10 }} />
@@ -59,7 +80,7 @@ const QualityControl = () => {
                 strokeWidth={2}
                 dot={({ cx, cy, payload }: any) => {
                   const color = payload.status === "fail" ? "hsl(var(--critical))" : payload.status === "warning" ? "hsl(var(--warning))" : "hsl(var(--success))";
-                  return <circle cx={cx} cy={cy} r={4} fill={color} stroke={color} strokeWidth={2} />;
+                  return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={4} fill={color} stroke={color} strokeWidth={2} />;
                 }}
               />
             </LineChart>
@@ -67,17 +88,16 @@ const QualityControl = () => {
         </CardContent>
       </Card>
 
-      {/* QC Data Table */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Histórico de Controle</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-10 gap-2">
-            {mockQCData.map(qc => (
-              <div key={qc.id} className="flex flex-col items-center gap-1 p-2 rounded-md bg-muted/50">
-                <span className="text-[10px] text-muted-foreground">{qc.date.slice(5)}</span>
-                <span className="text-sm font-mono font-medium">{qc.value.toFixed(1)}</span>
+            {displayData.slice(0, 20).map((qc, i) => (
+              <div key={qc.id || i} className="flex flex-col items-center gap-1 p-2 rounded-md bg-muted/50">
+                <span className="text-[10px] text-muted-foreground">{(qc.recorded_at || "").slice(5, 10)}</span>
+                <span className="text-sm font-mono font-medium">{Number(qc.value).toFixed(1)}</span>
                 <StatusBadge status={qc.status} />
               </div>
             ))}
