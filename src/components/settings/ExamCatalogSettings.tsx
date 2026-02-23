@@ -17,10 +17,10 @@ interface Props { onBack: () => void; }
 
 interface ExamForm {
   code: string; name: string; material: string; sector: string; method: string;
-  unit: string; reference_range: string; turnaround_hours: number; price: number; status: string;
+  unit: string; reference_range: string; turnaround_hours: number; price: number; status: string; equipment: string;
 }
 
-const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector: "Bioquímica", method: "", unit: "", reference_range: "", turnaround_hours: 24, price: 0, status: "active" };
+const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector: "Bioquímica", method: "", unit: "", reference_range: "", turnaround_hours: 24, price: 0, status: "active", equipment: "" };
 
 const ExamCatalogSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
@@ -33,6 +33,15 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     queryKey: ["exam_catalog"],
     queryFn: async () => {
       const { data, error } = await supabase.from("exam_catalog").select("*").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: equipmentList = [] } = useQuery({
+    queryKey: ["equipment-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("equipment").select("id, name").eq("status", "active").order("name");
       if (error) throw error;
       return data;
     },
@@ -85,19 +94,20 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             <TableHeader>
               <TableRow>
                 <TableHead>Código</TableHead><TableHead>Nome</TableHead><TableHead>Material</TableHead>
-                <TableHead>Setor</TableHead><TableHead>Unidade</TableHead><TableHead>Ref.</TableHead>
+                <TableHead>Setor</TableHead><TableHead>Equipamento</TableHead><TableHead>Unidade</TableHead><TableHead>Ref.</TableHead>
                 <TableHead>Preço</TableHead><TableHead>Status</TableHead><TableHead className="w-24">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
-              filtered.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Nenhum exame cadastrado</TableCell></TableRow> :
+              {isLoading ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
+              filtered.length === 0 ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground">Nenhum exame cadastrado</TableCell></TableRow> :
               filtered.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-mono">{item.code}</TableCell>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell>{item.material}</TableCell>
                   <TableCell>{item.sector}</TableCell>
+                  <TableCell>{item.equipment || "—"}</TableCell>
                   <TableCell>{item.unit}</TableCell>
                   <TableCell className="text-xs">{item.reference_range}</TableCell>
                   <TableCell>R$ {Number(item.price).toFixed(2)}</TableCell>
@@ -139,6 +149,20 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
                 )} />
               </div>
               <div className="space-y-1"><Label>Método</Label><Input {...register("method")} /></div>
+              <div className="space-y-1">
+                <Label>Equipamento</Label>
+                <Controller name="equipment" control={control} render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Nenhum</SelectItem>
+                      {equipmentList.map(eq => (
+                        <SelectItem key={eq.id} value={eq.name}>{eq.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )} />
+              </div>
               <div className="space-y-1"><Label>Unidade</Label><Input {...register("unit")} /></div>
               <div className="space-y-1"><Label>Valor de Referência</Label><Input {...register("reference_range")} /></div>
               <div className="space-y-1"><Label>TAT (horas)</Label><Input type="number" {...register("turnaround_hours")} /></div>
