@@ -12,6 +12,7 @@ import {
   Unlock,
   AlertTriangle,
   Printer,
+  ShieldCheck,
 } from "lucide-react";
 
 export interface NavItem {
@@ -37,6 +38,7 @@ export const navItems: NavItem[] = [
     icon: FileDown,
     phase: "post",
     children: [
+      { title: "Validar Exames", href: "/laudos/validar", icon: ShieldCheck },
       { title: "Liberar Exames", href: "/laudos/liberar", icon: Unlock },
       { title: "Pedidos Incompletos", href: "/laudos/incompletos", icon: AlertTriangle },
       { title: "Imprimir Exames", href: "/laudos/imprimir", icon: Printer },
