@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { patientSchema, PatientFormData, formatCPF, formatPhone } from "@/lib/validations";
 
 const Patients = () => {
   const [search, setSearch] = useState("");
@@ -28,8 +29,17 @@ const Patients = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (form: { name: string; cpf: string; birth_date: string; gender: string; phone: string; email: string; insurance: string }) => {
-      const { error } = await supabase.from("patients").insert({ ...form, created_by: user?.id });
+    mutationFn: async (form: PatientFormData) => {
+      const { error } = await supabase.from("patients").insert([{
+        name: form.name,
+        cpf: form.cpf,
+        birth_date: form.birth_date,
+        gender: form.gender,
+        phone: form.phone || "",
+        email: form.email || "",
+        insurance: form.insurance || "Particular",
+        created_by: user?.id,
+      }]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -37,7 +47,13 @@ const Patients = () => {
       setOpen(false);
       toast.success("Paciente cadastrado com sucesso!");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => {
+      if (e.message?.includes("duplicate")) {
+        toast.error("CPF já cadastrado no sistema.");
+      } else {
+        toast.error(e.message || "Erro ao cadastrar paciente");
+      }
+    },
   });
 
   const filtered = patients.filter(p =>
@@ -55,7 +71,7 @@ const Patients = () => {
           <DialogTrigger asChild>
             <Button><UserPlus className="w-4 h-4 mr-2" />Novo Paciente</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader><DialogTitle>Cadastrar Paciente</DialogTitle></DialogHeader>
             <PatientForm onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} />
           </DialogContent>
@@ -109,36 +125,104 @@ const Patients = () => {
   );
 };
 
-const PatientForm = ({ onSubmit, loading }: { onSubmit: (data: any) => void; loading: boolean }) => {
+const PatientForm = ({ onSubmit, loading }: { onSubmit: (data: PatientFormData) => void; loading: boolean }) => {
   const [form, setForm] = useState({
-    name: "", cpf: "", birth_date: "", gender: "F", phone: "", email: "", insurance: "Particular",
+    name: "", cpf: "", birth_date: "", gender: "F" as "M" | "F", phone: "", email: "", insurance: "Particular",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const validate = () => {
+    const result = patientSchema.safeParse(form);
+    if (result.success) {
+      setErrors({});
+      return result.data;
+    }
+    const fieldErrors: Record<string, string> = {};
+    result.error.issues.forEach(issue => {
+      const field = issue.path[0] as string;
+      if (!fieldErrors[field]) fieldErrors[field] = issue.message;
+    });
+    setErrors(fieldErrors);
+    return null;
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched(t => ({ ...t, [field]: true }));
+    // Validate single field
+    const result = patientSchema.safeParse(form);
+    if (!result.success) {
+      const issue = result.error.issues.find(i => i.path[0] === field);
+      if (issue) {
+        setErrors(e => ({ ...e, [field]: issue.message }));
+      } else {
+        setErrors(e => { const n = { ...e }; delete n[field]; return n; });
+      }
+    } else {
+      setErrors(e => { const n = { ...e }; delete n[field]; return n; });
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(form);
+    setTouched({ name: true, cpf: true, birth_date: true, gender: true, phone: true, email: true, insurance: true });
+    const data = validate();
+    if (data) onSubmit(data);
   };
+
+  const fieldError = (field: string) =>
+    touched[field] && errors[field] ? (
+      <p className="text-xs text-destructive mt-1">{errors[field]}</p>
+    ) : null;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label>Nome Completo</Label>
-        <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+      <div className="space-y-1">
+        <Label htmlFor="name">Nome Completo <span className="text-destructive">*</span></Label>
+        <Input
+          id="name"
+          value={form.name}
+          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+          onBlur={() => handleBlur("name")}
+          placeholder="Maria Silva Santos"
+          className={touched.name && errors.name ? "border-destructive" : ""}
+        />
+        {fieldError("name")}
       </div>
+
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>CPF</Label>
-          <Input value={form.cpf} onChange={e => setForm(f => ({ ...f, cpf: e.target.value }))} placeholder="000.000.000-00" required />
+        <div className="space-y-1">
+          <Label htmlFor="cpf">CPF <span className="text-destructive">*</span></Label>
+          <Input
+            id="cpf"
+            value={form.cpf}
+            onChange={e => setForm(f => ({ ...f, cpf: formatCPF(e.target.value) }))}
+            onBlur={() => handleBlur("cpf")}
+            placeholder="000.000.000-00"
+            maxLength={14}
+            className={touched.cpf && errors.cpf ? "border-destructive" : ""}
+          />
+          {fieldError("cpf")}
         </div>
-        <div className="space-y-2">
-          <Label>Data de Nascimento</Label>
-          <Input type="date" value={form.birth_date} onChange={e => setForm(f => ({ ...f, birth_date: e.target.value }))} required />
+        <div className="space-y-1">
+          <Label htmlFor="birth_date">Data de Nascimento <span className="text-destructive">*</span></Label>
+          <Input
+            id="birth_date"
+            type="date"
+            value={form.birth_date}
+            onChange={e => setForm(f => ({ ...f, birth_date: e.target.value }))}
+            onBlur={() => handleBlur("birth_date")}
+            max={new Date().toISOString().split("T")[0]}
+            className={touched.birth_date && errors.birth_date ? "border-destructive" : ""}
+          />
+          {fieldError("birth_date")}
         </div>
       </div>
+
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Sexo</Label>
-          <Select value={form.gender} onValueChange={v => setForm(f => ({ ...f, gender: v }))}>
+        <div className="space-y-1">
+          <Label>Sexo <span className="text-destructive">*</span></Label>
+          <Select value={form.gender} onValueChange={v => setForm(f => ({ ...f, gender: v as "M" | "F" }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="F">Feminino</SelectItem>
@@ -146,21 +230,45 @@ const PatientForm = ({ onSubmit, loading }: { onSubmit: (data: any) => void; loa
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
-          <Label>Convênio</Label>
-          <Input value={form.insurance} onChange={e => setForm(f => ({ ...f, insurance: e.target.value }))} />
+        <div className="space-y-1">
+          <Label htmlFor="insurance">Convênio</Label>
+          <Input
+            id="insurance"
+            value={form.insurance}
+            onChange={e => setForm(f => ({ ...f, insurance: e.target.value }))}
+          />
         </div>
       </div>
+
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Telefone</Label>
-          <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+        <div className="space-y-1">
+          <Label htmlFor="phone">Telefone</Label>
+          <Input
+            id="phone"
+            value={form.phone}
+            onChange={e => setForm(f => ({ ...f, phone: formatPhone(e.target.value) }))}
+            onBlur={() => handleBlur("phone")}
+            placeholder="(00) 00000-0000"
+            maxLength={15}
+            className={touched.phone && errors.phone ? "border-destructive" : ""}
+          />
+          {fieldError("phone")}
         </div>
-        <div className="space-y-2">
-          <Label>Email</Label>
-          <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+        <div className="space-y-1">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            value={form.email}
+            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            onBlur={() => handleBlur("email")}
+            placeholder="paciente@email.com"
+            className={touched.email && errors.email ? "border-destructive" : ""}
+          />
+          {fieldError("email")}
         </div>
       </div>
+
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Salvando..." : "Cadastrar Paciente"}
       </Button>
