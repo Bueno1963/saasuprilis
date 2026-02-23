@@ -46,7 +46,7 @@ const Orders = () => {
   const { data: examCatalog = [] } = useQuery({
     queryKey: ["exam_catalog_names"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("exam_catalog").select("name, code").eq("status", "active").order("name");
+      const { data, error } = await supabase.from("exam_catalog").select("name, code, unit, reference_range").eq("status", "active").order("name");
       if (error) throw error;
       return data;
     },
@@ -73,10 +73,32 @@ const Orders = () => {
         created_by: user?.id,
       }]).select("*, patients(name, cpf, birth_date, gender, phone, email, insurance)").single();
       if (error) throw error;
+
+      // Create result records for each exam so they appear in Validar/Liberar
+      const examCatalogMap = new Map(examCatalog.map(e => [e.name, e]));
+      const resultRows = form.exams.map(examName => {
+        const catalog = examCatalogMap.get(examName);
+        return {
+          order_id: orderData.id,
+          exam: examName,
+          value: "",
+          unit: catalog?.unit || "",
+          reference_range: catalog?.reference_range || "",
+          status: "pending",
+          flag: "normal",
+        };
+      });
+
+      if (resultRows.length > 0) {
+        const { error: resError } = await supabase.from("results").insert(resultRows);
+        if (resError) console.error("Erro ao criar resultados:", resError);
+      }
+
       return orderData;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["results-pending"] });
       setCreatedOrder(data);
       toast.success("Pedido criado com sucesso!");
     },
@@ -197,7 +219,7 @@ const Orders = () => {
   );
 };
 
-const OrderForm = ({ patients, examCatalog, insurancePlans, onSubmit, loading }: { patients: { id: string; name: string; insurance: string | null }[]; examCatalog: { name: string; code: string }[]; insurancePlans: { id: string; name: string }[]; onSubmit: (data: OrderFormData) => void; loading: boolean }) => {
+const OrderForm = ({ patients, examCatalog, insurancePlans, onSubmit, loading }: { patients: { id: string; name: string; insurance: string | null }[]; examCatalog: { name: string; code: string; unit: string | null; reference_range: string | null }[]; insurancePlans: { id: string; name: string }[]; onSubmit: (data: OrderFormData) => void; loading: boolean }) => {
   const [form, setForm] = useState({
     patient_id: "", doctor_name: "", insurance: "Particular", exams: [] as string[], priority: "normal" as "normal" | "urgent",
   });
