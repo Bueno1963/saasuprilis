@@ -14,12 +14,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { orderSchema, OrderFormData } from "@/lib/validations";
 
-const EXAM_SUGGESTIONS = [
-  "Hemograma", "Glicose", "Colesterol Total", "Triglicerídeos", "TSH", "T4 Livre",
-  "Ureia", "Creatinina", "TGO/AST", "TGP/ALT", "Ácido Úrico", "Hemoglobina Glicada (HbA1c)",
-  "PSA Total", "Beta-HCG", "Insulina", "Vitamina D", "Vitamina B12", "Ferro Sérico",
-  "Ferritina", "PCR", "VHS", "EAS (Urina)", "Progesterona", "Estradiol", "Testosterona",
-];
 
 const Orders = () => {
   const [search, setSearch] = useState("");
@@ -43,6 +37,15 @@ const Orders = () => {
     queryKey: ["patients"],
     queryFn: async () => {
       const { data, error } = await supabase.from("patients").select("id, name, insurance").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: examCatalog = [] } = useQuery({
+    queryKey: ["exam_catalog_names"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("exam_catalog").select("name, code").eq("status", "active").order("name");
       if (error) throw error;
       return data;
     },
@@ -87,7 +90,7 @@ const Orders = () => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader><DialogTitle>Criar Pedido</DialogTitle></DialogHeader>
-            <OrderForm patients={patients} onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} />
+            <OrderForm patients={patients} examCatalog={examCatalog} onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} />
           </DialogContent>
         </Dialog>
       </div>
@@ -140,7 +143,7 @@ const Orders = () => {
   );
 };
 
-const OrderForm = ({ patients, onSubmit, loading }: { patients: { id: string; name: string; insurance: string | null }[]; onSubmit: (data: OrderFormData) => void; loading: boolean }) => {
+const OrderForm = ({ patients, examCatalog, onSubmit, loading }: { patients: { id: string; name: string; insurance: string | null }[]; examCatalog: { name: string; code: string }[]; onSubmit: (data: OrderFormData) => void; loading: boolean }) => {
   const [form, setForm] = useState({
     patient_id: "", doctor_name: "", insurance: "Particular", exams: [] as string[], priority: "normal" as "normal" | "urgent",
   });
@@ -149,8 +152,8 @@ const OrderForm = ({ patients, onSubmit, loading }: { patients: { id: string; na
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const filteredSuggestions = EXAM_SUGGESTIONS.filter(
-    s => s.toLowerCase().includes(examInput.toLowerCase()) && !form.exams.includes(s)
+  const filteredSuggestions = examCatalog.filter(
+    e => (e.name.toLowerCase().includes(examInput.toLowerCase()) || e.code.toLowerCase().includes(examInput.toLowerCase())) && !form.exams.includes(e.name)
   );
 
   const addExam = (exam?: string) => {
@@ -295,12 +298,13 @@ const OrderForm = ({ patients, onSubmit, loading }: { patients: { id: string; na
             <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-md max-h-40 overflow-y-auto">
               {filteredSuggestions.slice(0, 8).map(suggestion => (
                 <button
-                  key={suggestion}
+                  key={suggestion.code}
                   type="button"
                   className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-                  onMouseDown={e => { e.preventDefault(); addExam(suggestion); }}
+                  onMouseDown={e => { e.preventDefault(); addExam(suggestion.name); }}
                 >
-                  {suggestion}
+                  <span className="font-mono text-xs text-muted-foreground mr-2">{suggestion.code}</span>
+                  {suggestion.name}
                 </button>
               ))}
             </div>
