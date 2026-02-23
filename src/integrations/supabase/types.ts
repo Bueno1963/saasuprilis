@@ -122,6 +122,47 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_parameters: {
+        Row: {
+          created_at: string
+          exam_id: string
+          id: string
+          name: string
+          reference_range: string | null
+          section: string
+          sort_order: number | null
+          unit: string | null
+        }
+        Insert: {
+          created_at?: string
+          exam_id: string
+          id?: string
+          name: string
+          reference_range?: string | null
+          section?: string
+          sort_order?: number | null
+          unit?: string | null
+        }
+        Update: {
+          created_at?: string
+          exam_id?: string
+          id?: string
+          name?: string
+          reference_range?: string | null
+          section?: string
+          sort_order?: number | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_parameters_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exam_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insurance_plans: {
         Row: {
           billing_type: string | null

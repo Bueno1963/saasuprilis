@@ -7,34 +7,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { FlaskConical, Printer, Plus, Pencil, Trash2, Save } from "lucide-react";
+import { FlaskConical, Printer, Plus, Pencil, Trash2, Save, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
+// --- Types ---
 interface ExamForm {
-  code: string;
-  name: string;
-  material: string;
-  method: string;
-  unit: string;
-  reference_range: string;
-  equipment: string;
-  turnaround_hours: number;
-  price: number;
-  section_group: string;
+  code: string; name: string; material: string; method: string;
+  unit: string; reference_range: string; equipment: string;
+  turnaround_hours: number; price: number;
+}
+interface ParamForm {
+  section: string; name: string; unit: string; reference_range: string; sort_order: number;
 }
 
-const emptyForm: ExamForm = {
+const emptyExamForm: ExamForm = {
   code: "", name: "", material: "Sangue", method: "", unit: "",
-  reference_range: "", equipment: "", turnaround_hours: 24, price: 0, section_group: "",
+  reference_range: "", equipment: "", turnaround_hours: 24, price: 0,
 };
+const emptyParamForm: ParamForm = { section: "", name: "", unit: "", reference_range: "", sort_order: 0 };
 
 const CadastroLaudos = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<ExamForm>(emptyForm);
+  const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
+  const [examDialogOpen, setExamDialogOpen] = useState(false);
+  const [paramDialogOpen, setParamDialogOpen] = useState(false);
+  const [editingExamId, setEditingExamId] = useState<string | null>(null);
+  const [editingParamId, setEditingParamId] = useState<string | null>(null);
+  const [examForm, setExamForm] = useState<ExamForm>(emptyExamForm);
+  const [paramForm, setParamForm] = useState<ParamForm>(emptyParamForm);
   const qc = useQueryClient();
 
+  // --- Queries ---
   const { data: exams = [] } = useQuery({
     queryKey: ["exam-catalog-all"],
     queryFn: async () => {
@@ -44,7 +47,20 @@ const CadastroLaudos = () => {
     },
   });
 
-  const saveMutation = useMutation({
+  const { data: allParams = [] } = useQuery({
+    queryKey: ["exam-parameters-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("exam_parameters" as any)
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // --- Mutations ---
+  const saveExamMutation = useMutation({
     mutationFn: async (payload: ExamForm & { sector: string; id?: string }) => {
       const { id, ...rest } = payload;
       if (id) {
@@ -57,24 +73,58 @@ const CadastroLaudos = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["exam-catalog-all"] });
-      toast.success(editingId ? "Exame atualizado" : "Exame adicionado");
-      closeDialog();
+      toast.success(editingExamId ? "Exame atualizado" : "Exame adicionado");
+      closeExamDialog();
     },
     onError: () => toast.error("Erro ao salvar exame"),
   });
 
-  const deleteMutation = useMutation({
+  const deleteExamMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("exam_catalog").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["exam-catalog-all"] });
+      qc.invalidateQueries({ queryKey: ["exam-parameters-all"] });
       toast.success("Exame removido");
+      if (selectedExamId) setSelectedExamId(null);
     },
     onError: () => toast.error("Erro ao remover exame"),
   });
 
+  const saveParamMutation = useMutation({
+    mutationFn: async (payload: ParamForm & { exam_id: string; id?: string }) => {
+      const { id, ...rest } = payload;
+      if (id) {
+        const { error } = await supabase.from("exam_parameters" as any).update(rest).eq("id", id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("exam_parameters" as any).insert(rest);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["exam-parameters-all"] });
+      toast.success(editingParamId ? "Parâmetro atualizado" : "Parâmetro adicionado");
+      closeParamDialog();
+    },
+    onError: () => toast.error("Erro ao salvar parâmetro"),
+  });
+
+  const deleteParamMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("exam_parameters" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["exam-parameters-all"] });
+      toast.success("Parâmetro removido");
+    },
+    onError: () => toast.error("Erro ao remover parâmetro"),
+  });
+
+  // --- Computed ---
   const sectors = [...new Set(exams.map((e) => e.sector || "Outros"))];
   const sectorCounts = sectors.reduce((acc, s) => {
     acc[s] = exams.filter((e) => (e.sector || "Outros") === s).length;
@@ -82,77 +132,58 @@ const CadastroLaudos = () => {
   }, {} as Record<string, number>);
   const sectorExams = selectedSector ? exams.filter((e) => (e.sector || "Outros") === selectedSector) : [];
 
-  // Group exams by section_group
-  const groupedSections = sectorExams.reduce((acc, exam) => {
-    const section = (exam as any).section_group || "";
-    if (!acc.has(section)) acc.set(section, []);
-    acc.get(section)!.push(exam);
-    return acc;
-  }, new Map<string, typeof sectorExams>());
+  const getExamParams = (examId: string) => allParams.filter((p: any) => p.exam_id === examId);
 
-  // Sort: named sections first (alphabetical), then ungrouped
-  const sortedSections = [...groupedSections.entries()].sort(([a], [b]) => {
-    if (!a && b) return 1;
-    if (a && !b) return -1;
-    return a.localeCompare(b);
-  });
-
-  const openAdd = (section?: string) => {
-    setEditingId(null);
-    setForm({ ...emptyForm, section_group: section || "" });
-    setDialogOpen(true);
-  };
-
-  const openEdit = (exam: any) => {
-    setEditingId(exam.id);
-    setForm({
-      code: exam.code, name: exam.name, material: exam.material || "",
-      method: exam.method || "", unit: exam.unit || "", reference_range: exam.reference_range || "",
-      equipment: exam.equipment || "", turnaround_hours: exam.turnaround_hours ?? 24,
-      price: exam.price ?? 0, section_group: exam.section_group || "",
+  // Group params by section
+  const groupParamsBySections = (params: any[]) => {
+    const map = new Map<string, any[]>();
+    params.forEach((p) => {
+      const s = p.section || "";
+      if (!map.has(s)) map.set(s, []);
+      map.get(s)!.push(p);
     });
-    setDialogOpen(true);
+    return [...map.entries()].sort(([a], [b]) => {
+      if (!a && b) return 1;
+      if (a && !b) return -1;
+      return a.localeCompare(b);
+    });
   };
 
-  const closeDialog = () => { setDialogOpen(false); setEditingId(null); setForm(emptyForm); };
+  // --- Dialog helpers ---
+  const closeExamDialog = () => { setExamDialogOpen(false); setEditingExamId(null); setExamForm(emptyExamForm); };
+  const closeParamDialog = () => { setParamDialogOpen(false); setEditingParamId(null); setParamForm(emptyParamForm); };
 
-  const handleSave = () => {
-    if (!form.code || !form.name) { toast.error("Código e nome são obrigatórios"); return; }
-    saveMutation.mutate({ ...form, sector: selectedSector!, ...(editingId ? { id: editingId } : {}) });
+  const openAddExam = () => { setEditingExamId(null); setExamForm(emptyExamForm); setExamDialogOpen(true); };
+  const openEditExam = (exam: any) => {
+    setEditingExamId(exam.id);
+    setExamForm({ code: exam.code, name: exam.name, material: exam.material || "", method: exam.method || "", unit: exam.unit || "", reference_range: exam.reference_range || "", equipment: exam.equipment || "", turnaround_hours: exam.turnaround_hours ?? 24, price: exam.price ?? 0 });
+    setExamDialogOpen(true);
+  };
+  const openAddParam = (examId: string, section?: string) => {
+    setSelectedExamId(examId);
+    setEditingParamId(null);
+    setParamForm({ ...emptyParamForm, section: section || "" });
+    setParamDialogOpen(true);
+  };
+  const openEditParam = (param: any) => {
+    setEditingParamId(param.id);
+    setParamForm({ section: param.section || "", name: param.name, unit: param.unit || "", reference_range: param.reference_range || "", sort_order: param.sort_order ?? 0 });
+    setParamDialogOpen(true);
   };
 
-  const set = (field: keyof ExamForm, v: string | number) => setForm((p) => ({ ...p, [field]: v }));
+  const setE = (f: keyof ExamForm, v: string | number) => setExamForm((p) => ({ ...p, [f]: v }));
+  const setP = (f: keyof ParamForm, v: string | number) => setParamForm((p) => ({ ...p, [f]: v }));
 
-  const ExamRow = ({ exam, idx }: { exam: any; idx: number }) => (
-    <div className={`flex items-center gap-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
-      <span className="flex-1 flex items-baseline overflow-hidden">
-        <span className="font-medium text-foreground whitespace-nowrap">{exam.name}</span>
-        <span className="flex-1 border-b border-dotted border-muted-foreground mx-1 mb-0.5" />
-      </span>
-      <div className="w-28">
-        <Input className="h-7 text-xs text-center font-bold border-dashed" placeholder="___" />
-      </div>
-      <span className="w-16 text-center text-muted-foreground text-xs">{exam.unit || "—"}</span>
-      <span className="w-44 text-center text-muted-foreground text-xs">{exam.reference_range || "—"}</span>
-      <div className="w-16 flex justify-center gap-0.5 print:hidden opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(exam)}>
-          <Pencil className="w-3 h-3" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => deleteMutation.mutate(exam.id)}>
-          <Trash2 className="w-3 h-3" />
-        </Button>
-      </div>
-    </div>
-  );
-
+  // --- Render ---
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Cadastro de Laudos</h1>
-        <p className="text-muted-foreground text-sm">Modelo de exames por setor para digitação de resultados</p>
+        <p className="text-muted-foreground text-sm">Modelo de exames por setor com parâmetros para digitação</p>
       </div>
 
       {!selectedSector ? (
+        /* Sector grid */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sectors.map((sector) => (
             <Card key={sector} className="cursor-pointer hover:shadow-md transition-shadow border-border" onClick={() => setSelectedSector(sector)}>
@@ -167,7 +198,8 @@ const CadastroLaudos = () => {
             </Card>
           ))}
         </div>
-      ) : (
+      ) : !selectedExamId ? (
+        /* Exam list for sector */
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -175,118 +207,217 @@ const CadastroLaudos = () => {
               <h2 className="text-lg font-semibold text-foreground">{selectedSector}</h2>
               <Badge variant="outline">{sectorExams.length} exames</Badge>
             </div>
-            <div className="flex gap-2">
-              <Button size="sm" onClick={() => openAdd()}><Plus className="w-4 h-4 mr-1" /> Adicionar Exame</Button>
-              <Button variant="outline" size="sm" onClick={() => window.print()}><Printer className="w-4 h-4 mr-1" /> Imprimir</Button>
-            </div>
+            <Button size="sm" onClick={openAddExam}><Plus className="w-4 h-4 mr-1" /> Novo Exame</Button>
           </div>
 
-          <Card className="border-border print:border print:shadow-none">
-            <CardContent className="p-6 space-y-0">
-              {/* Sector title */}
-              <div className="border-b-2 border-foreground pb-3 mb-4">
-                <h2 className="text-lg font-bold tracking-wide text-foreground uppercase">{selectedSector}</h2>
-                <div className="flex gap-6 mt-1 text-xs text-muted-foreground">
-                  <span>Material: {sectorExams[0]?.material || "—"}</span>
-                  <span>Método: {sectorExams[0]?.method || "—"}</span>
-                </div>
-              </div>
-
-              {/* Column headers */}
-              <div className="font-mono text-sm">
-                <div className="flex items-center gap-2 pb-2 border-b border-border mb-2">
-                  <span className="flex-1 font-bold text-foreground">Exame</span>
-                  <span className="w-28 font-bold text-foreground text-center">Resultado</span>
-                  <span className="w-16 font-bold text-foreground text-center">Unidade</span>
-                  <span className="w-44 font-bold text-foreground text-center">Referências</span>
-                  <span className="w-16 print:hidden" />
-                </div>
-
-                {sectorExams.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Nenhum exame cadastrado neste setor</p>
-                ) : (
-                  sortedSections.map(([section, items]) => (
-                    <div key={section || "__none"} className="mb-4">
-                      {section && (
-                        <div className="flex items-center gap-2 mt-3 mb-1">
-                          <h3 className="text-xs font-bold text-foreground uppercase tracking-widest">{section}:</h3>
-                          <div className="flex-1 border-b border-border" />
-                          <Button
-                            variant="ghost" size="icon" className="h-5 w-5 print:hidden"
-                            onClick={() => openAdd(section)} title="Adicionar nesta seção"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      )}
-                      {items.map((exam, idx) => (
-                        <ExamRow key={exam.id} exam={exam} idx={idx} />
-                      ))}
+          <div className="grid gap-3">
+            {sectorExams.length === 0 ? (
+              <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum exame cadastrado neste setor</CardContent></Card>
+            ) : sectorExams.map((exam) => {
+              const params = getExamParams(exam.id);
+              return (
+                <Card key={exam.id} className="border-border hover:shadow-sm transition-shadow cursor-pointer" onClick={() => setSelectedExamId(exam.id)}>
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <p className="font-medium text-foreground">{exam.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-mono">{exam.code}</span> · {exam.material || "—"} · {exam.method || "—"}
+                        </p>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">{params.length} parâmetros</Badge>
                     </div>
-                  ))
-                )}
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openEditExam(exam); }}>
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); deleteExamMutation.mutate(exam.id); }}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        /* Exam detail with parameters (laudo-style) */
+        (() => {
+          const exam = exams.find((e) => e.id === selectedExamId);
+          if (!exam) return null;
+          const params = getExamParams(exam.id);
+          const sections = groupParamsBySections(params);
+
+          return (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedExamId(null)}>← Exames</Button>
+                  <h2 className="text-lg font-semibold text-foreground">{exam.name}</h2>
+                  <Badge variant="outline">{params.length} parâmetros</Badge>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => openAddParam(exam.id)}><Plus className="w-4 h-4 mr-1" /> Adicionar Parâmetro</Button>
+                  <Button variant="outline" size="sm" onClick={() => window.print()}><Printer className="w-4 h-4 mr-1" /> Imprimir</Button>
+                </div>
               </div>
 
-              <div className="pt-4 mt-4 border-t border-border text-center">
-                <p className="text-xs text-muted-foreground">Modelo de laudo — {selectedSector} — {sectorExams.length} exame(s)</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Card className="border-border print:border print:shadow-none">
+                <CardContent className="p-6 space-y-0">
+                  {/* Exam header */}
+                  <div className="border-b-2 border-foreground pb-3 mb-4">
+                    <h2 className="text-lg font-bold tracking-wide text-foreground uppercase">{exam.name}</h2>
+                    <div className="flex gap-6 mt-1 text-xs text-muted-foreground">
+                      <span>Material: {exam.material || "—"}</span>
+                      <span>Método: {exam.method || "—"}</span>
+                    </div>
+                  </div>
+
+                  <div className="font-mono text-sm">
+                    {/* Column headers */}
+                    <div className="flex items-center gap-2 pb-2 border-b border-border mb-2">
+                      <span className="flex-1 font-bold text-foreground">Parâmetro</span>
+                      <span className="w-28 font-bold text-foreground text-center">Resultado</span>
+                      <span className="w-16 font-bold text-foreground text-center">Unidade</span>
+                      <span className="w-44 font-bold text-foreground text-center">Referências</span>
+                      <span className="w-16 print:hidden" />
+                    </div>
+
+                    {params.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">
+                        Nenhum parâmetro cadastrado. Adicione os campos deste exame.
+                      </p>
+                    ) : (
+                      sections.map(([section, items]) => (
+                        <div key={section || "__none"} className="mb-3">
+                          {section && (
+                            <div className="flex items-center gap-2 mt-3 mb-1">
+                              <h3 className="text-xs font-bold text-foreground uppercase tracking-widest">{section}:</h3>
+                              <div className="flex-1 border-b border-border" />
+                              <Button variant="ghost" size="icon" className="h-5 w-5 print:hidden" onClick={() => openAddParam(exam.id, section)} title="Adicionar nesta seção">
+                                <Plus className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          )}
+                          {items.map((param: any, idx: number) => (
+                            <div key={param.id} className={`flex items-center gap-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
+                              <span className="flex-1 flex items-baseline overflow-hidden">
+                                <span className="font-medium text-foreground whitespace-nowrap">{param.name}</span>
+                                <span className="flex-1 border-b border-dotted border-muted-foreground mx-1 mb-0.5" />
+                              </span>
+                              <div className="w-28">
+                                <Input className="h-7 text-xs text-center font-bold border-dashed" placeholder="___" />
+                              </div>
+                              <span className="w-16 text-center text-muted-foreground text-xs">{param.unit || "—"}</span>
+                              <span className="w-44 text-center text-muted-foreground text-xs">{param.reference_range || "—"}</span>
+                              <div className="w-16 flex justify-center gap-0.5 print:hidden opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditParam(param)}>
+                                  <Pencil className="w-3 h-3" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => deleteParamMutation.mutate(param.id)}>
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-border text-center">
+                    <p className="text-xs text-muted-foreground">Modelo de laudo — {exam.name} — {params.length} parâmetro(s)</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          );
+        })()
       )}
 
-      {/* Add / Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* Exam Dialog */}
+      <Dialog open={examDialogOpen} onOpenChange={setExamDialogOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingId ? "Editar Exame" : "Novo Exame"}</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>{editingExamId ? "Editar Exame" : "Novo Exame"}</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-xs">Código *</Label>
-              <Input value={form.code} onChange={(e) => set("code", e.target.value)} placeholder="HEM01" />
+              <Input value={examForm.code} onChange={(e) => setE("code", e.target.value)} placeholder="HEMO" />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Nome *</Label>
-              <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Hemácias" />
-            </div>
-            <div className="space-y-1 col-span-2">
-              <Label className="text-xs">Seção / Grupo</Label>
-              <Input value={form.section_group} onChange={(e) => set("section_group", e.target.value)} placeholder="Ex: ERITROGRAMA, LEUCOGRAMA, PLAQUETAS" />
+              <Input value={examForm.name} onChange={(e) => setE("name", e.target.value)} placeholder="Hemograma Completo" />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Material</Label>
-              <Input value={form.material} onChange={(e) => set("material", e.target.value)} placeholder="Sangue" />
+              <Input value={examForm.material} onChange={(e) => setE("material", e.target.value)} placeholder="Sangue" />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Método</Label>
-              <Input value={form.method} onChange={(e) => set("method", e.target.value)} placeholder="Automação" />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Unidade</Label>
-              <Input value={form.unit} onChange={(e) => set("unit", e.target.value)} placeholder="mg/dL" />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Valor de Referência</Label>
-              <Input value={form.reference_range} onChange={(e) => set("reference_range", e.target.value)} placeholder="4.00 a 5.20" />
+              <Input value={examForm.method} onChange={(e) => setE("method", e.target.value)} placeholder="Automação" />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Equipamento</Label>
-              <Input value={form.equipment} onChange={(e) => set("equipment", e.target.value)} />
+              <Input value={examForm.equipment} onChange={(e) => setE("equipment", e.target.value)} />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Prazo (horas)</Label>
-              <Input type="number" value={form.turnaround_hours} onChange={(e) => set("turnaround_hours", Number(e.target.value))} />
+              <Input type="number" value={examForm.turnaround_hours} onChange={(e) => setE("turnaround_hours", Number(e.target.value))} />
             </div>
             <div className="space-y-1 col-span-2">
               <Label className="text-xs">Preço (R$)</Label>
-              <Input type="number" step="0.01" value={form.price} onChange={(e) => set("price", Number(e.target.value))} />
+              <Input type="number" step="0.01" value={examForm.price} onChange={(e) => setE("price", Number(e.target.value))} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={saveMutation.isPending}>
-              <Save className="w-4 h-4 mr-1" /> {editingId ? "Salvar" : "Adicionar"}
+            <Button variant="outline" onClick={closeExamDialog}>Cancelar</Button>
+            <Button onClick={() => {
+              if (!examForm.code || !examForm.name) { toast.error("Código e nome são obrigatórios"); return; }
+              saveExamMutation.mutate({ ...examForm, sector: selectedSector!, ...(editingExamId ? { id: editingExamId } : {}) });
+            }} disabled={saveExamMutation.isPending}>
+              <Save className="w-4 h-4 mr-1" /> {editingExamId ? "Salvar" : "Adicionar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Parameter Dialog */}
+      <Dialog open={paramDialogOpen} onOpenChange={setParamDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>{editingParamId ? "Editar Parâmetro" : "Novo Parâmetro"}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Nome *</Label>
+              <Input value={paramForm.name} onChange={(e) => setP("name", e.target.value)} placeholder="Hemácias" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Seção</Label>
+              <Input value={paramForm.section} onChange={(e) => setP("section", e.target.value)} placeholder="Ex: ERITROGRAMA" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Unidade</Label>
+                <Input value={paramForm.unit} onChange={(e) => setP("unit", e.target.value)} placeholder="milhões/mm3" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Valor de Referência</Label>
+                <Input value={paramForm.reference_range} onChange={(e) => setP("reference_range", e.target.value)} placeholder="4.00 a 5.20" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Ordem</Label>
+              <Input type="number" value={paramForm.sort_order} onChange={(e) => setP("sort_order", Number(e.target.value))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeParamDialog}>Cancelar</Button>
+            <Button onClick={() => {
+              if (!paramForm.name) { toast.error("Nome é obrigatório"); return; }
+              saveParamMutation.mutate({ ...paramForm, exam_id: selectedExamId!, ...(editingParamId ? { id: editingParamId } : {}) });
+            }} disabled={saveParamMutation.isPending}>
+              <Save className="w-4 h-4 mr-1" /> {editingParamId ? "Salvar" : "Adicionar"}
             </Button>
           </DialogFooter>
         </DialogContent>
