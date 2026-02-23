@@ -156,6 +156,7 @@ const Orders = () => {
                   <TableHead>Status</TableHead>
                   <TableHead>Prioridade</TableHead>
                   <TableHead>Data</TableHead>
+                  <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -169,6 +170,22 @@ const Orders = () => {
                     <TableCell><StatusBadge status={order.status} /></TableCell>
                     <TableCell><StatusBadge status={order.priority} /></TableCell>
                     <TableCell className="text-sm">{new Date(order.created_at).toLocaleDateString("pt-BR")}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Imprimir Etiqueta Amostras"
+                        onClick={() => {
+                          const p = (order.patients as any);
+                          printEtiquetaColeta(
+                            { id: order.order_number || order.id, name: p?.name || "" },
+                            order.exams || []
+                          );
+                        }}
+                      >
+                        <Tag className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
