@@ -17,6 +17,7 @@ import LiberarExames from "./pages/laudos/LiberarExames";
 import PedidosIncompletos from "./pages/laudos/PedidosIncompletos";
 import ImprimirExames from "./pages/laudos/ImprimirExames";
 import ValidarExames from "./pages/laudos/ValidarExames";
+import CadastroLaudos from "./pages/laudos/CadastroLaudos";
 import SettingsPage from "./pages/SettingsPage";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -54,6 +55,7 @@ const ProtectedRoutes = () => {
         <Route path="/laudos/liberar" element={<LiberarExames />} />
         <Route path="/laudos/incompletos" element={<PedidosIncompletos />} />
         <Route path="/laudos/imprimir" element={<ImprimirExames />} />
+        <Route path="/laudos/cadastro" element={<CadastroLaudos />} />
         <Route path="/configuracoes" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />

@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Printer,
   ShieldCheck,
+  FilePlus2,
 } from "lucide-react";
 
 export interface NavItem {
@@ -42,6 +43,7 @@ export const navItems: NavItem[] = [
       { title: "Liberar Exames", href: "/laudos/liberar", icon: Unlock },
       { title: "Pedidos Incompletos", href: "/laudos/incompletos", icon: AlertTriangle },
       { title: "Imprimir Exames", href: "/laudos/imprimir", icon: Printer },
+      { title: "Cadastro de Laudos", href: "/laudos/cadastro", icon: FilePlus2 },
     ],
   },
   { title: "Configurações", href: "/configuracoes", icon: Settings },
