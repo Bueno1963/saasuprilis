@@ -110,7 +110,7 @@ const Orders = () => {
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex-1" onClick={() => {
                     const p = createdOrder.patients as any;
-                    if (p) printEtiquetaColeta({ id: createdOrder.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date });
+                    if (p) printEtiquetaColeta({ id: createdOrder.id, name: p.name }, createdOrder.exams || []);
                   }}>
                     <Tag className="w-4 h-4 mr-2" />Imprimir Etiqueta Coleta
                   </Button>
