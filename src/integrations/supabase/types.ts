@@ -14,16 +14,307 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          doctor_name: string
+          exams: string[]
+          id: string
+          insurance: string | null
+          order_number: string
+          patient_id: string
+          priority: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          doctor_name?: string
+          exams?: string[]
+          id?: string
+          insurance?: string | null
+          order_number: string
+          patient_id: string
+          priority?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          doctor_name?: string
+          exams?: string[]
+          id?: string
+          insurance?: string | null
+          order_number?: string
+          patient_id?: string
+          priority?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patients: {
+        Row: {
+          birth_date: string
+          cpf: string
+          created_at: string
+          created_by: string | null
+          email: string | null
+          gender: string
+          id: string
+          insurance: string | null
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          birth_date: string
+          cpf: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          gender: string
+          id?: string
+          insurance?: string | null
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          birth_date?: string
+          cpf?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          gender?: string
+          id?: string
+          insurance?: string | null
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          crm: string | null
+          full_name: string
+          id: string
+          role_display: string
+          sector: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crm?: string | null
+          full_name?: string
+          id?: string
+          role_display?: string
+          sector?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crm?: string | null
+          full_name?: string
+          id?: string
+          role_display?: string
+          sector?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      qc_data: {
+        Row: {
+          analyte: string
+          equipment: string
+          id: string
+          level: string
+          mean: number
+          recorded_at: string
+          recorded_by: string | null
+          sd: number
+          status: string
+          value: number
+        }
+        Insert: {
+          analyte: string
+          equipment?: string
+          id?: string
+          level: string
+          mean: number
+          recorded_at?: string
+          recorded_by?: string | null
+          sd: number
+          status?: string
+          value: number
+        }
+        Update: {
+          analyte?: string
+          equipment?: string
+          id?: string
+          level?: string
+          mean?: number
+          recorded_at?: string
+          recorded_by?: string | null
+          sd?: number
+          status?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      results: {
+        Row: {
+          analyst_id: string | null
+          created_at: string
+          exam: string
+          flag: string
+          id: string
+          order_id: string
+          reference_range: string
+          released_at: string | null
+          sample_id: string | null
+          status: string
+          unit: string
+          validated_at: string | null
+          value: string
+        }
+        Insert: {
+          analyst_id?: string | null
+          created_at?: string
+          exam: string
+          flag?: string
+          id?: string
+          order_id: string
+          reference_range?: string
+          released_at?: string | null
+          sample_id?: string | null
+          status?: string
+          unit?: string
+          validated_at?: string | null
+          value: string
+        }
+        Update: {
+          analyst_id?: string | null
+          created_at?: string
+          exam?: string
+          flag?: string
+          id?: string
+          order_id?: string
+          reference_range?: string
+          released_at?: string | null
+          sample_id?: string | null
+          status?: string
+          unit?: string
+          validated_at?: string | null
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "results_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "results_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: false
+            referencedRelation: "samples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      samples: {
+        Row: {
+          barcode: string
+          collected_at: string
+          created_at: string
+          id: string
+          order_id: string
+          sample_type: string
+          sector: string
+          status: string
+        }
+        Insert: {
+          barcode: string
+          collected_at?: string
+          created_at?: string
+          id?: string
+          order_id: string
+          sample_type: string
+          sector: string
+          status?: string
+        }
+        Update: {
+          barcode?: string
+          collected_at?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+          sample_type?: string
+          sector?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "samples_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "tecnico" | "recepcao"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +441,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "tecnico", "recepcao"],
+    },
   },
 } as const
