@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, Plus, X } from "lucide-react";
+import { Search, Plus, X, Printer, Tag } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -13,11 +13,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { orderSchema, OrderFormData } from "@/lib/validations";
-
+import { printEtiquetaColeta, printAtendimento } from "@/lib/print-utils";
 
 const Orders = () => {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState<any>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -62,7 +63,7 @@ const Orders = () => {
 
   const createMutation = useMutation({
     mutationFn: async (form: OrderFormData) => {
-      const { error } = await supabase.from("orders").insert([{
+      const { data: orderData, error } = await supabase.from("orders").insert([{
         patient_id: form.patient_id,
         doctor_name: form.doctor_name,
         insurance: form.insurance || "Particular",
@@ -70,12 +71,13 @@ const Orders = () => {
         priority: form.priority,
         order_number: "",
         created_by: user?.id,
-      }]);
+      }]).select("*, patients(name, cpf, birth_date, gender, phone, email, insurance)").single();
       if (error) throw error;
+      return orderData;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
-      setOpen(false);
+      setCreatedOrder(data);
       toast.success("Pedido criado com sucesso!");
     },
     onError: (e: any) => toast.error(e.message || "Erro ao criar pedido"),
@@ -93,13 +95,39 @@ const Orders = () => {
           <h1 className="text-2xl font-bold text-foreground">Pedidos</h1>
           <p className="text-sm text-muted-foreground">Gerenciamento de pedidos de exames</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setCreatedOrder(null); }}>
           <DialogTrigger asChild>
             <Button><Plus className="w-4 h-4 mr-2" />Novo Pedido</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
-            <DialogHeader><DialogTitle>Criar Pedido</DialogTitle></DialogHeader>
-            <OrderForm patients={patients} examCatalog={examCatalog} insurancePlans={insurancePlans} onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} />
+            <DialogHeader><DialogTitle>{createdOrder ? "Pedido Criado" : "Criar Pedido"}</DialogTitle></DialogHeader>
+            {createdOrder ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Pedido <span className="font-medium text-foreground font-mono">{createdOrder.order_number}</span> para{" "}
+                  <span className="font-medium text-foreground">{(createdOrder.patients as any)?.name}</span> criado com sucesso.
+                </p>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1" onClick={() => {
+                    const p = createdOrder.patients as any;
+                    if (p) printEtiquetaColeta({ id: createdOrder.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date });
+                  }}>
+                    <Tag className="w-4 h-4 mr-2" />Imprimir Etiqueta Coleta
+                  </Button>
+                  <Button variant="outline" className="flex-1" onClick={() => {
+                    const p = createdOrder.patients as any;
+                    if (p) printAtendimento({ id: createdOrder.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date, gender: p.gender, phone: p.phone, email: p.email, insurance: p.insurance });
+                  }}>
+                    <Printer className="w-4 h-4 mr-2" />Imprimir Atendimento
+                  </Button>
+                </div>
+                <Button className="w-full" onClick={() => { setCreatedOrder(null); setOpen(false); }}>
+                  Fechar
+                </Button>
+              </div>
+            ) : (
+              <OrderForm patients={patients} examCatalog={examCatalog} insurancePlans={insurancePlans} onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} />
+            )}
           </DialogContent>
         </Dialog>
       </div>
