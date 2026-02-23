@@ -1,0 +1,1 @@
+ALTER TABLE public.exam_catalog ADD COLUMN equipment text DEFAULT '';
