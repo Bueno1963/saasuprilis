@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, UserPlus } from "lucide-react";
+import { Search, UserPlus, Printer, Tag } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -12,10 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { patientSchema, PatientFormData, formatCPF, formatPhone } from "@/lib/validations";
+import { printEtiquetaColeta, printAtendimento } from "@/lib/print-utils";
 
 const Patients = () => {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [createdPatient, setCreatedPatient] = useState<any>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -30,7 +32,7 @@ const Patients = () => {
 
   const createMutation = useMutation({
     mutationFn: async (form: PatientFormData) => {
-      const { error } = await supabase.from("patients").insert([{
+      const { data, error } = await supabase.from("patients").insert([{
         name: form.name,
         cpf: form.cpf,
         birth_date: form.birth_date,
@@ -39,12 +41,13 @@ const Patients = () => {
         email: form.email || "",
         insurance: form.insurance || "Particular",
         created_by: user?.id,
-      }]);
+      }]).select().single();
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
-      setOpen(false);
+      setCreatedPatient(data);
       toast.success("Paciente cadastrado com sucesso!");
     },
     onError: (e: any) => {
@@ -67,13 +70,32 @@ const Patients = () => {
           <h1 className="text-2xl font-bold text-foreground">Pacientes</h1>
           <p className="text-sm text-muted-foreground">Cadastro e consulta de pacientes</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setCreatedPatient(null); }}>
           <DialogTrigger asChild>
             <Button><UserPlus className="w-4 h-4 mr-2" />Novo Paciente</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader><DialogTitle>Cadastrar Paciente</DialogTitle></DialogHeader>
-            <PatientForm onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} />
+           <DialogContent className="sm:max-w-lg">
+            <DialogHeader><DialogTitle>{createdPatient ? "Paciente Cadastrado" : "Cadastrar Paciente"}</DialogTitle></DialogHeader>
+            {createdPatient ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{createdPatient.name}</span> foi cadastrado com sucesso.
+                </p>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1" onClick={() => printEtiquetaColeta(createdPatient)}>
+                    <Tag className="w-4 h-4 mr-2" />Imprimir Etiqueta Coleta
+                  </Button>
+                  <Button variant="outline" className="flex-1" onClick={() => printAtendimento(createdPatient)}>
+                    <Printer className="w-4 h-4 mr-2" />Imprimir Atendimento
+                  </Button>
+                </div>
+                <Button className="w-full" onClick={() => { setCreatedPatient(null); setOpen(false); }}>
+                  Fechar
+                </Button>
+              </div>
+            ) : (
+              <PatientForm onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} />
+            )}
           </DialogContent>
         </Dialog>
       </div>
