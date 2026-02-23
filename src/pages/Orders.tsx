@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, Plus, X, Printer, Tag } from "lucide-react";
+import { Search, Plus, X, Printer, Tag, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +20,8 @@ const Orders = () => {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<any>(null);
+  const [editingOrder, setEditingOrder] = useState<any>(null);
+  const [editOpen, setEditOpen] = useState(false);
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -103,6 +106,44 @@ const Orders = () => {
       toast.success("Pedido criado com sucesso!");
     },
     onError: (e: any) => toast.error(e.message || "Erro ao criar pedido"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (form: OrderFormData & { id: string }) => {
+      const { id, ...rest } = form;
+      const { error } = await supabase.from("orders").update({
+        patient_id: rest.patient_id,
+        doctor_name: rest.doctor_name,
+        insurance: rest.insurance || "Particular",
+        exams: rest.exams,
+        priority: rest.priority,
+      }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      toast.success("Pedido atualizado!");
+      setEditOpen(false);
+      setEditingOrder(null);
+    },
+    onError: (e: any) => toast.error(e.message || "Erro ao atualizar pedido"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      // Delete related results first
+      await supabase.from("results").delete().eq("order_id", id);
+      // Delete related samples
+      await supabase.from("samples").delete().eq("order_id", id);
+      const { error } = await supabase.from("orders").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["results-pending"] });
+      toast.success("Pedido excluído!");
+    },
+    onError: (e: any) => toast.error(e.message || "Erro ao excluir pedido"),
   });
 
   const filtered = orders.filter(o => {
@@ -191,37 +232,75 @@ const Orders = () => {
                     <TableCell className="text-sm max-w-[200px] truncate">{order.exams?.join(", ")}</TableCell>
                     <TableCell><StatusBadge status={order.status} /></TableCell>
                     <TableCell><StatusBadge status={order.priority} /></TableCell>
-                    <TableCell className="text-sm">{new Date(order.created_at).toLocaleDateString("pt-BR")}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Imprimir Etiqueta Amostras"
-                        onClick={() => {
-                          const p = (order.patients as any);
-                          printEtiquetaColeta(
-                            { id: order.order_number || order.id, name: p?.name || "" },
-                            order.exams || []
-                          );
-                        }}
-                      >
-                        <Tag className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
+                     <TableCell className="text-sm">{new Date(order.created_at).toLocaleDateString("pt-BR")}</TableCell>
+                     <TableCell>
+                       <div className="flex items-center gap-0.5">
+                         <Button variant="ghost" size="icon" className="h-8 w-8" title="Imprimir Etiqueta" onClick={() => {
+                           const p = (order.patients as any);
+                           printEtiquetaColeta({ id: order.order_number || order.id, name: p?.name || "" }, order.exams || []);
+                         }}>
+                           <Tag className="w-4 h-4" />
+                         </Button>
+                         <Button variant="ghost" size="icon" className="h-8 w-8" title="Editar" onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
+                           <Pencil className="w-4 h-4" />
+                         </Button>
+                         <AlertDialog>
+                           <AlertDialogTrigger asChild>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Excluir">
+                               <Trash2 className="w-4 h-4" />
+                             </Button>
+                           </AlertDialogTrigger>
+                           <AlertDialogContent>
+                             <AlertDialogHeader>
+                               <AlertDialogTitle>Excluir pedido {order.order_number}?</AlertDialogTitle>
+                               <AlertDialogDescription>Esta ação não pode ser desfeita. Todos os resultados e amostras associados serão excluídos.</AlertDialogDescription>
+                             </AlertDialogHeader>
+                             <AlertDialogFooter>
+                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                               <AlertDialogAction onClick={() => deleteMutation.mutate(order.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                             </AlertDialogFooter>
+                           </AlertDialogContent>
+                         </AlertDialog>
+                       </div>
+                     </TableCell>
+                   </TableRow>
+                 ))}
+               </TableBody>
+             </Table>
+           )}
+         </CardContent>
+       </Card>
 
-const OrderForm = ({ patients, examCatalog, insurancePlans, onSubmit, loading }: { patients: { id: string; name: string; insurance: string | null }[]; examCatalog: { name: string; code: string; unit: string | null; reference_range: string | null }[]; insurancePlans: { id: string; name: string }[]; onSubmit: (data: OrderFormData) => void; loading: boolean }) => {
+       {/* Edit Dialog */}
+       <Dialog open={editOpen} onOpenChange={(v) => { setEditOpen(v); if (!v) setEditingOrder(null); }}>
+         <DialogContent className="sm:max-w-lg">
+           <DialogHeader><DialogTitle>Editar Pedido {editingOrder?.order_number}</DialogTitle></DialogHeader>
+           {editingOrder && (
+             <OrderForm
+               patients={patients}
+               examCatalog={examCatalog}
+               insurancePlans={insurancePlans}
+               onSubmit={(data) => updateMutation.mutate({ ...data, id: editingOrder.id })}
+               loading={updateMutation.isPending}
+               initialData={{
+                 patient_id: editingOrder.patient_id,
+                 doctor_name: editingOrder.doctor_name,
+                 insurance: editingOrder.insurance || "Particular",
+                 exams: editingOrder.exams || [],
+                 priority: editingOrder.priority as "normal" | "urgent",
+               }}
+               submitLabel="Salvar Alterações"
+             />
+           )}
+         </DialogContent>
+       </Dialog>
+     </div>
+   );
+ };
+
+const OrderForm = ({ patients, examCatalog, insurancePlans, onSubmit, loading, initialData, submitLabel }: { patients: { id: string; name: string; insurance: string | null }[]; examCatalog: { name: string; code: string; unit: string | null; reference_range: string | null }[]; insurancePlans: { id: string; name: string }[]; onSubmit: (data: OrderFormData) => void; loading: boolean; initialData?: OrderFormData; submitLabel?: string }) => {
   const [form, setForm] = useState({
-    patient_id: "", doctor_name: "", insurance: "Particular", exams: [] as string[], priority: "normal" as "normal" | "urgent",
+    patient_id: initialData?.patient_id || "", doctor_name: initialData?.doctor_name || "", insurance: initialData?.insurance || "Particular", exams: initialData?.exams || [] as string[], priority: (initialData?.priority || "normal") as "normal" | "urgent",
   });
   const [examInput, setExamInput] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -414,7 +493,7 @@ const OrderForm = ({ patients, examCatalog, insurancePlans, onSubmit, loading }:
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Salvando..." : "Criar Pedido"}
+        {loading ? "Salvando..." : (submitLabel || "Criar Pedido")}
       </Button>
     </form>
   );
