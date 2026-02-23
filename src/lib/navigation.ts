@@ -5,6 +5,7 @@ import {
   ClipboardList, 
   BarChart3, 
   FileCheck, 
+  FileDown,
   Settings,
   FlaskConical,
   LayoutDashboard
@@ -26,5 +27,6 @@ export const navItems: NavItem[] = [
   { title: "Mapa de Trabalho", href: "/worklist", icon: FlaskConical, phase: "analytical" },
   { title: "Controle de Qualidade", href: "/qc", icon: BarChart3, phase: "analytical" },
   { title: "Resultados", href: "/resultados", icon: FileCheck, phase: "post" },
+  { title: "Laudos", href: "/laudos", icon: FileDown, phase: "post" },
   { title: "Configurações", href: "/configuracoes", icon: Settings },
 ];
