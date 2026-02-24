@@ -241,18 +241,16 @@ const ValidarExames = () => {
                 <button
                   key={sector.name}
                   onClick={() => setSelectedSector(sector.name)}
-                  className={cn(
-                    "relative group flex flex-col items-center justify-center rounded-2xl p-6 min-h-[140px] transition-all duration-200",
-                    "bg-gradient-to-b",
-                    sector.color,
-                    "shadow-lg hover:shadow-xl",
-                    sector.glow,
-                    "hover:scale-[1.04] active:scale-[0.98]",
-                    "overflow-hidden"
-                  )}
+                  className="group relative flex flex-col items-center justify-center rounded-xl p-6 min-h-[120px] transition-all duration-200
+                    bg-gradient-to-b from-[hsl(210,95%,48%)] via-[hsl(215,90%,40%)] to-[hsl(220,85%,32%)]
+                    shadow-[0_4px_12px_hsl(220,85%,25%/0.35),inset_0_1px_1px_hsl(210,100%,75%/0.5)]
+                    hover:shadow-[0_6px_20px_hsl(220,85%,25%/0.5),inset_0_1px_1px_hsl(210,100%,75%/0.5)]
+                    hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_2px_6px_hsl(220,85%,25%/0.3)]
+                    border border-[hsl(210,70%,35%/0.4)]
+                    overflow-hidden"
                 >
-                  <div className="absolute inset-x-0 top-0 h-[45%] rounded-t-2xl bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
-                  <span className="relative text-white font-bold text-base tracking-wide text-center drop-shadow-md">
+                  <div className="absolute inset-x-0 top-0 h-[45%] rounded-t-xl bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+                  <span className="relative text-white font-bold text-base tracking-wide text-center drop-shadow-sm">
                     {sector.name}
                   </span>
                   {count > 0 && (
