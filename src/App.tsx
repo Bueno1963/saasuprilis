@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { navItems, type AppRole } from "@/lib/navigation";
 import AppLayout from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
@@ -24,6 +26,36 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const RoleGuard = ({ allowedRoles, children, fallback = "/" }: { allowedRoles?: AppRole[]; children: React.ReactNode; fallback?: string }) => {
+  const { role, isLoading } = useUserRole();
+  if (isLoading) return null;
+  if (allowedRoles && !allowedRoles.includes(role)) return <Navigate to={fallback} replace />;
+  return <>{children}</>;
+};
+
+const getAllowedRoles = (href: string): AppRole[] | undefined => {
+  for (const item of navItems) {
+    if (item.href === href) return item.allowedRoles;
+    if (item.children) {
+      for (const child of item.children) {
+        if (child.href === href) return item.allowedRoles;
+      }
+    }
+  }
+  return undefined;
+};
+
+const GuardedRoute = ({ href, children }: { href: string; children: React.ReactNode }) => {
+  const roles = getAllowedRoles(href);
+  return <RoleGuard allowedRoles={roles}>{children}</RoleGuard>;
+};
+
+const DefaultRedirect = () => {
+  const { role } = useUserRole();
+  if (role === "recepcao") return <Navigate to="/pacientes" replace />;
+  return <Dashboard />;
+};
+
 const ProtectedRoutes = () => {
   const { user, loading } = useAuth();
 
@@ -43,20 +75,20 @@ const ProtectedRoutes = () => {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/pacientes" element={<Patients />} />
-        <Route path="/pedidos" element={<Orders />} />
-        <Route path="/amostras" element={<Samples />} />
-        <Route path="/worklist" element={<Worklist />} />
-        <Route path="/qc" element={<QualityControl />} />
-        <Route path="/resultados" element={<Results />} />
-        <Route path="/laudos" element={<Laudos />} />
-        <Route path="/laudos/validar" element={<ValidarExames />} />
-        <Route path="/laudos/liberar" element={<LiberarExames />} />
-        <Route path="/laudos/incompletos" element={<PedidosIncompletos />} />
-        <Route path="/laudos/imprimir" element={<ImprimirExames />} />
-        <Route path="/laudos/cadastro" element={<CadastroLaudos />} />
-        <Route path="/configuracoes" element={<SettingsPage />} />
+        <Route path="/" element={<DefaultRedirect />} />
+        <Route path="/pacientes" element={<GuardedRoute href="/pacientes"><Patients /></GuardedRoute>} />
+        <Route path="/pedidos" element={<GuardedRoute href="/pedidos"><Orders /></GuardedRoute>} />
+        <Route path="/amostras" element={<GuardedRoute href="/amostras"><Samples /></GuardedRoute>} />
+        <Route path="/worklist" element={<GuardedRoute href="/worklist"><Worklist /></GuardedRoute>} />
+        <Route path="/qc" element={<GuardedRoute href="/qc"><QualityControl /></GuardedRoute>} />
+        <Route path="/resultados" element={<GuardedRoute href="/resultados"><Results /></GuardedRoute>} />
+        <Route path="/laudos" element={<GuardedRoute href="/laudos"><Laudos /></GuardedRoute>} />
+        <Route path="/laudos/validar" element={<GuardedRoute href="/laudos/validar"><ValidarExames /></GuardedRoute>} />
+        <Route path="/laudos/liberar" element={<GuardedRoute href="/laudos/liberar"><LiberarExames /></GuardedRoute>} />
+        <Route path="/laudos/incompletos" element={<GuardedRoute href="/laudos/incompletos"><PedidosIncompletos /></GuardedRoute>} />
+        <Route path="/laudos/imprimir" element={<GuardedRoute href="/laudos/imprimir"><ImprimirExames /></GuardedRoute>} />
+        <Route path="/laudos/cadastro" element={<GuardedRoute href="/laudos/cadastro"><CadastroLaudos /></GuardedRoute>} />
+        <Route path="/configuracoes" element={<GuardedRoute href="/configuracoes"><SettingsPage /></GuardedRoute>} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
