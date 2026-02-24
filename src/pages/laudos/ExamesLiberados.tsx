@@ -394,8 +394,8 @@ const ExamesLiberados = () => {
                                         <TableCell className="text-sm">{analyst?.full_name || "—"}</TableCell>
                                         <TableCell className="text-right">
                                           <div className="flex items-center justify-end gap-1">
-                                            <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrint(r); }}>
-                                              <Printer className="w-3.5 h-3.5 mr-1" /> PDF
+                                            <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrintOrder(group, order); }}>
+                                              <Printer className="w-3.5 h-3.5 mr-1" /> PDF Pedido
                                             </Button>
                                             {isAdmin && (
                                               <AlertDialog>
