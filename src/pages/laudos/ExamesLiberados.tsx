@@ -435,7 +435,7 @@ const ExamesLiberados = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Pedido</TableHead>
+                          <TableHead className="w-[180px]">Pedido</TableHead>
                           <TableHead>Exame</TableHead>
                           <TableHead>Resultado</TableHead>
                           <TableHead>Flag</TableHead>
