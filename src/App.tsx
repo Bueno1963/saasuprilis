@@ -19,6 +19,7 @@ import PedidosIncompletos from "./pages/laudos/PedidosIncompletos";
 import ImprimirExames from "./pages/laudos/ImprimirExames";
 import ValidarExames from "./pages/laudos/ValidarExames";
 import CadastroLaudos from "./pages/laudos/CadastroLaudos";
+import ExamesLiberados from "./pages/laudos/ExamesLiberados";
 import SettingsPage from "./pages/SettingsPage";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -72,6 +73,7 @@ const ProtectedRoutes = () => {
         <Route path="/laudos" element={<DynamicGuard route="/laudos"><Laudos /></DynamicGuard>} />
         <Route path="/laudos/validar" element={<DynamicGuard route="/laudos/validar"><ValidarExames /></DynamicGuard>} />
         <Route path="/laudos/liberar" element={<DynamicGuard route="/laudos/liberar"><LiberarExames /></DynamicGuard>} />
+        <Route path="/laudos/liberados" element={<DynamicGuard route="/laudos/liberados"><ExamesLiberados /></DynamicGuard>} />
         <Route path="/laudos/incompletos" element={<DynamicGuard route="/laudos/incompletos"><PedidosIncompletos /></DynamicGuard>} />
         <Route path="/laudos/imprimir" element={<DynamicGuard route="/laudos/imprimir"><ImprimirExames /></DynamicGuard>} />
         <Route path="/laudos/cadastro" element={<DynamicGuard route="/laudos/cadastro"><CadastroLaudos /></DynamicGuard>} />
