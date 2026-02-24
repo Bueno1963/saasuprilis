@@ -531,6 +531,33 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          allowed: boolean
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          route: string
+          updated_at: string
+        }
+        Insert: {
+          allowed?: boolean
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          route: string
+          updated_at?: string
+        }
+        Update: {
+          allowed?: boolean
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          route?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       samples: {
         Row: {
           barcode: string
