@@ -16,6 +16,8 @@ import {
   FilePlus2,
 } from "lucide-react";
 
+export type AppRole = "admin" | "tecnico" | "recepcao";
+
 export interface NavItem {
   title: string;
   href: string;
@@ -23,21 +25,23 @@ export interface NavItem {
   badge?: string;
   phase?: "pre" | "analytical" | "post";
   children?: NavItem[];
+  allowedRoles?: AppRole[];
 }
 
 export const navItems: NavItem[] = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboard },
-  { title: "Pacientes", href: "/pacientes", icon: Users, phase: "pre" },
-  { title: "Pedidos", href: "/pedidos", icon: ClipboardList, phase: "pre" },
-  { title: "Amostras", href: "/amostras", icon: TestTubes, phase: "pre" },
-  { title: "Mapa de Trabalho", href: "/worklist", icon: FlaskConical, phase: "analytical" },
-  { title: "Controle de Qualidade", href: "/qc", icon: BarChart3, phase: "analytical" },
-  { title: "Resultados", href: "/resultados", icon: FileCheck, phase: "post" },
+  { title: "Dashboard", href: "/", icon: LayoutDashboard, allowedRoles: ["admin", "tecnico"] },
+  { title: "Pacientes", href: "/pacientes", icon: Users, phase: "pre", allowedRoles: ["admin", "tecnico", "recepcao"] },
+  { title: "Pedidos", href: "/pedidos", icon: ClipboardList, phase: "pre", allowedRoles: ["admin", "tecnico", "recepcao"] },
+  { title: "Amostras", href: "/amostras", icon: TestTubes, phase: "pre", allowedRoles: ["admin", "tecnico", "recepcao"] },
+  { title: "Mapa de Trabalho", href: "/worklist", icon: FlaskConical, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
+  { title: "Controle de Qualidade", href: "/qc", icon: BarChart3, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
+  { title: "Resultados", href: "/resultados", icon: FileCheck, phase: "post", allowedRoles: ["admin", "tecnico"] },
   {
     title: "Laudos",
     href: "/laudos",
     icon: FileDown,
     phase: "post",
+    allowedRoles: ["admin", "tecnico"],
     children: [
       { title: "Validar Exames", href: "/laudos/validar", icon: ShieldCheck },
       { title: "Liberar Exames", href: "/laudos/liberar", icon: Unlock },
@@ -46,5 +50,5 @@ export const navItems: NavItem[] = [
       { title: "Cadastro de Laudos", href: "/laudos/cadastro", icon: FilePlus2 },
     ],
   },
-  { title: "Configurações", href: "/configuracoes", icon: Settings },
+  { title: "Configurações", href: "/configuracoes", icon: Settings, allowedRoles: ["admin"] },
 ];

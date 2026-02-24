@@ -2,14 +2,21 @@ import { Link, useLocation } from "react-router-dom";
 import { navItems, NavItem } from "@/lib/navigation";
 import { Activity, ChevronDown, ChevronLeft, ChevronRight, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const AppSidebar = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const { profile, signOut } = useAuth();
+  const { role } = useUserRole();
+
+  const filteredItems = useMemo(
+    () => navItems.filter(n => !n.allowedRoles || n.allowedRoles.includes(role)),
+    [role]
+  );
 
   const toggleMenu = (href: string) => {
     setOpenMenus(prev => {
@@ -20,13 +27,13 @@ const AppSidebar = () => {
   };
 
   const phases = [
-    { label: "Pré-Analítica", items: navItems.filter(n => n.phase === "pre") },
-    { label: "Analítica", items: navItems.filter(n => n.phase === "analytical") },
-    { label: "Pós-Analítica", items: navItems.filter(n => n.phase === "post") },
+    { label: "Pré-Analítica", items: filteredItems.filter(n => n.phase === "pre") },
+    { label: "Analítica", items: filteredItems.filter(n => n.phase === "analytical") },
+    { label: "Pós-Analítica", items: filteredItems.filter(n => n.phase === "post") },
   ];
 
-  const otherItems = navItems.filter(n => !n.phase && n.href !== "/");
-  const dashboardItem = navItems.find(n => n.href === "/")!;
+  const otherItems = filteredItems.filter(n => !n.phase && n.href !== "/");
+  const dashboardItem = filteredItems.find(n => n.href === "/");
 
   const isActive = (item: NavItem) =>
     location.pathname === item.href || item.children?.some(c => location.pathname === c.href);
@@ -53,7 +60,7 @@ const AppSidebar = () => {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-        <SidebarLink item={dashboardItem} active={location.pathname === "/"} collapsed={collapsed} />
+        {dashboardItem && <SidebarLink item={dashboardItem} active={location.pathname === "/"} collapsed={collapsed} />}
 
         <div className="pt-2" />
 
