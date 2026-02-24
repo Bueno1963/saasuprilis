@@ -118,6 +118,40 @@ const ExamesLiberados = () => {
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
   };
 
+  const handlePrintAll = (group: GroupedPatient) => {
+    const first = group.results[0];
+    const order = first?.orders as any;
+    const patient = order?.patients;
+    const analyst = first?.analyst_id ? profileMap.get(first.analyst_id) : null;
+    const latestRelease = group.results.reduce((latest: string | null, r: any) => {
+      if (!r.released_at) return latest;
+      if (!latest) return r.released_at;
+      return r.released_at > latest ? r.released_at : latest;
+    }, null);
+
+    const doc = generateLaudoPDF({
+      orderNumber: order?.order_number || "",
+      patientName: group.patientName,
+      patientCpf: group.patientCpf,
+      patientBirthDate: group.patientBirthDate ? new Date(group.patientBirthDate).toLocaleDateString("pt-BR") : "—",
+      patientGender: group.patientGender,
+      doctorName: order?.doctor_name || "",
+      insurance: order?.insurance || "Particular",
+      collectedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy") : "—",
+      releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
+      results: group.results.map((r: any) => ({
+        exam: r.exam,
+        value: r.value,
+        unit: r.unit,
+        referenceRange: r.reference_range,
+        flag: r.flag,
+      })),
+      analystName: analyst?.full_name || "Analista",
+      analystCrm: analyst?.crm || undefined,
+    });
+    doc.save(`Laudo_${group.patientName.replace(/\s+/g, "_")}_completo.pdf`);
+  };
+
   const totalExams = grouped.reduce((sum, g) => sum + g.results.length, 0);
 
   return (
@@ -179,11 +213,21 @@ const ExamesLiberados = () => {
                           </p>
                         </div>
                       </div>
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => { e.stopPropagation(); handlePrintAll(group); }}
+                          className="text-xs"
+                        >
+                          <Printer className="w-3.5 h-3.5 mr-1" /> Todos
+                        </Button>
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </div>
                     </div>
                   </CardHeader>
                 </button>
