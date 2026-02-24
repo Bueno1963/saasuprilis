@@ -37,19 +37,29 @@ const SettingsPage = () => {
         <h1 className="text-2xl font-bold text-foreground">Configurações</h1>
         <p className="text-sm text-muted-foreground">Configurações do sistema laboratorial</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {sections.map(({ key, title, desc, icon: Icon }) => (
-          <Card key={key} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSection(key)}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Icon className="h-5 w-5 text-primary" />
-                {title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">{desc}</p>
-            </CardContent>
-          </Card>
+          <button
+            key={key}
+            onClick={() => setSection(key)}
+            className="group relative rounded-xl px-6 py-5 text-left transition-all duration-200
+              bg-gradient-to-b from-[hsl(200,90%,58%)] via-[hsl(205,85%,50%)] to-[hsl(210,80%,42%)]
+              shadow-[0_4px_12px_hsl(210,80%,30%/0.35),inset_0_1px_1px_hsl(200,100%,85%/0.5)]
+              hover:shadow-[0_6px_20px_hsl(210,80%,30%/0.5),inset_0_1px_1px_hsl(200,100%,85%/0.5)]
+              hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_2px_6px_hsl(210,80%,30%/0.3)]
+              border border-[hsl(210,70%,35%/0.4)]
+              overflow-hidden"
+          >
+            {/* Glossy shine overlay */}
+            <div className="absolute inset-x-0 top-0 h-[45%] rounded-t-xl bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+            <div className="relative z-10 flex items-center gap-3">
+              <Icon className="h-6 w-6 text-white drop-shadow-sm shrink-0" />
+              <div>
+                <span className="block text-sm font-bold text-white drop-shadow-sm">{title}</span>
+                <span className="block text-xs text-white/75 mt-0.5 leading-snug">{desc}</span>
+              </div>
+            </div>
+          </button>
         ))}
       </div>
     </div>
