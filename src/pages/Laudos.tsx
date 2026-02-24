@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, FileDown, Eye } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Search, FileDown, Eye, Printer } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { toast } from "sonner";
 
 interface ExamParam {
   id: string;
@@ -55,6 +57,7 @@ interface OrderGroup {
 const Laudos = () => {
   const [search, setSearch] = useState("");
   const [preview, setPreview] = useState<OrderGroup | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: released = [], isLoading } = useQuery({
     queryKey: ["laudos-released"],
@@ -69,7 +72,6 @@ const Laudos = () => {
     },
   });
 
-  // Fetch exam catalog with ids
   const { data: examCatalogFull = [] } = useQuery({
     queryKey: ["exam_catalog_full"],
     queryFn: async () => {
@@ -79,7 +81,6 @@ const Laudos = () => {
     },
   });
 
-  // Fetch exam parameters
   const { data: allExamParams = [] } = useQuery<ExamParam[]>({
     queryKey: ["exam_parameters_all"],
     queryFn: async () => {
@@ -99,7 +100,6 @@ const Laudos = () => {
     return map;
   }, [allExamParams]);
 
-  // Helper: parse JSON value for composite exams
   const parseParamValues = (value: string): Record<string, string> => {
     try {
       const parsed = JSON.parse(value);
@@ -108,7 +108,6 @@ const Laudos = () => {
     return {};
   };
 
-  // Fetch analyst profiles for released results
   const analystIds = [...new Set(released.filter(r => r.analyst_id).map(r => r.analyst_id!))];
   const { data: profiles = [] } = useQuery({
     queryKey: ["analyst-profiles", analystIds],
@@ -152,7 +151,6 @@ const Laudos = () => {
       grouped.push(group);
     }
 
-    // Check if composite
     const examId = examNameToId.get(r.exam);
     const params = examId ? examParamsByExamId.get(examId) : undefined;
     const hasParams = params && params.length > 0;
@@ -187,9 +185,9 @@ const Laudos = () => {
     g.patientCpf.includes(search)
   );
 
-  const handleDownload = (group: OrderGroup) => {
+  const buildLaudoData = useCallback((group: OrderGroup) => {
     const firstAnalyst = group.results[0];
-    const doc = generateLaudoPDF({
+    return {
       orderNumber: group.orderNumber,
       patientName: group.patientName,
       patientCpf: formatCpf(group.patientCpf),
@@ -209,15 +207,62 @@ const Laudos = () => {
       })),
       analystName: firstAnalyst?.analystName || "Analista",
       analystCrm: firstAnalyst?.analystCrm,
-    });
+    };
+  }, []);
+
+  const handleDownload = (group: OrderGroup) => {
+    const doc = generateLaudoPDF(buildLaudoData(group));
     doc.save(`Laudo_${group.orderNumber}.pdf`);
   };
 
+  // Batch download selected laudos
+  const handleBatchDownload = useCallback(() => {
+    const selected = filtered.filter(g => selectedIds.has(g.orderId));
+    if (selected.length === 0) return;
+
+    for (const group of selected) {
+      const doc = generateLaudoPDF(buildLaudoData(group));
+      doc.save(`Laudo_${group.orderNumber}.pdf`);
+    }
+
+    toast.success(`${selected.length} laudo${selected.length !== 1 ? "s" : ""} gerado${selected.length !== 1 ? "s" : ""} com sucesso`);
+    setSelectedIds(new Set());
+  }, [filtered, selectedIds, buildLaudoData]);
+
+  // Selection helpers
+  const toggleSelect = (orderId: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(orderId)) next.delete(orderId);
+      else next.add(orderId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map(g => g.orderId)));
+    }
+  };
+
+  const allSelected = filtered.length > 0 && selectedIds.size === filtered.length;
+  const someSelected = selectedIds.size > 0;
+
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Laudos</h1>
-        <p className="text-sm text-muted-foreground">Portal de laudos liberados — visualização e download em PDF</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Laudos</h1>
+          <p className="text-sm text-muted-foreground">Portal de laudos liberados — visualização e download em PDF</p>
+        </div>
+        {someSelected && (
+          <Button onClick={handleBatchDownload} className="gap-2">
+            <Printer className="w-4 h-4" />
+            Imprimir Selecionados ({selectedIds.size})
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -248,6 +293,13 @@ const Laudos = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Selecionar todos"
+                    />
+                  </TableHead>
                   <TableHead>Pedido</TableHead>
                   <TableHead>Paciente</TableHead>
                   <TableHead>CPF</TableHead>
@@ -259,7 +311,14 @@ const Laudos = () => {
               </TableHeader>
               <TableBody>
                 {filtered.map(group => (
-                  <TableRow key={group.orderId}>
+                  <TableRow key={group.orderId} className={selectedIds.has(group.orderId) ? "bg-primary/5" : ""}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(group.orderId)}
+                        onCheckedChange={() => toggleSelect(group.orderId)}
+                        aria-label={`Selecionar laudo ${group.orderNumber}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-mono text-sm">{group.orderNumber}</TableCell>
                     <TableCell className="font-medium">{group.patientName}</TableCell>
                     <TableCell className="font-mono text-sm">{formatCpf(group.patientCpf)}</TableCell>
@@ -310,7 +369,6 @@ const Laudos = () => {
 
 const LaudoPreview = ({ group, onDownload }: { group: OrderGroup; onDownload: () => void }) => (
   <div className="space-y-6">
-    {/* Patient info */}
     <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
       <Field label="Paciente" value={group.patientName} />
       <Field label="CPF" value={formatCpf(group.patientCpf)} mono />
@@ -321,10 +379,8 @@ const LaudoPreview = ({ group, onDownload }: { group: OrderGroup; onDownload: ()
       <Field label="Liberação" value={group.releasedAt ? new Date(group.releasedAt).toLocaleString("pt-BR") : "—"} />
     </div>
 
-    {/* Results */}
     {group.results.map((r, idx) => {
       if (r.parameters && r.parameters.length > 0) {
-        // Composite exam — grouped parameters
         const sections = new Map<string, ExpandedParam[]>();
         for (const p of r.parameters) {
           const sec = p.section || "";
@@ -371,7 +427,6 @@ const LaudoPreview = ({ group, onDownload }: { group: OrderGroup; onDownload: ()
         );
       }
 
-      // Simple exam
       return (
         <div key={idx} className="rounded-lg border overflow-hidden">
           <Table>
@@ -400,7 +455,6 @@ const LaudoPreview = ({ group, onDownload }: { group: OrderGroup; onDownload: ()
       );
     })}
 
-    {/* Digital signature */}
     <div className="border-t pt-4 text-center space-y-1">
       <div className="w-48 mx-auto border-b border-foreground/30 mb-1" />
       <p className="text-sm font-semibold">{group.results[0]?.analystName}</p>
