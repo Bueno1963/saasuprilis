@@ -19,6 +19,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import SampleEditDialog from "@/components/worklist/SampleEditDialog";
 
 const Worklist = () => {
   const [newSector, setNewSector] = useState("");
@@ -27,6 +28,7 @@ const Worklist = () => {
   const [renamingSector, setRenamingSector] = useState("");
   const [renameValue, setRenameValue] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [editingSample, setEditingSample] = useState<any>(null);
   const queryClient = useQueryClient();
 
   const { data: samples = [], isLoading } = useQuery({
@@ -275,6 +277,7 @@ const Worklist = () => {
                             <TableHead>Material</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Coleta</TableHead>
+                            <TableHead className="w-[80px]">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -285,6 +288,11 @@ const Worklist = () => {
                               <TableCell>{sample.sample_type}</TableCell>
                               <TableCell><StatusBadge status={sample.status} /></TableCell>
                               <TableCell className="text-sm">{new Date(sample.collected_at).toLocaleTimeString("pt-BR")}</TableCell>
+                              <TableCell>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingSample(sample)}>
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -297,6 +305,13 @@ const Worklist = () => {
           })}
         </Tabs>
       )}
+
+      <SampleEditDialog
+        open={!!editingSample}
+        onOpenChange={open => !open && setEditingSample(null)}
+        sample={editingSample}
+        sectors={sectors}
+      />
     </div>
   );
 };
