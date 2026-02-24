@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
-import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer, PenTool } from "lucide-react";
+import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer, PenTool, Undo2 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -288,6 +288,22 @@ const LiberarExames = () => {
     onError: () => toast.error("Erro ao liberar exames"),
   });
 
+  const revertValidationMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("results").update({
+        status: "pending",
+        validated_at: null,
+      }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["results-validated"] });
+      queryClient.invalidateQueries({ queryKey: ["results-pending"] });
+      toast.success("Validação revertida — exame retornou para pendente");
+    },
+    onError: () => toast.error("Erro ao reverter validação"),
+  });
+
   // Confirm and execute release
   const handleConfirmRelease = useCallback(() => {
     if (!confirmRelease) return;
@@ -464,6 +480,9 @@ const LiberarExames = () => {
                           <TableCell><StatusBadge status={r.flag} /></TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
+                              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => revertValidationMutation.mutate(r.id)} disabled={isPending || revertValidationMutation.isPending}>
+                                <Undo2 className="w-3.5 h-3.5 mr-1" /> Reverter
+                              </Button>
                               <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending}>
                                 <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                               </Button>
@@ -499,6 +518,9 @@ const LiberarExames = () => {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => revertValidationMutation.mutate(r.id)} disabled={isPending || revertValidationMutation.isPending}>
+                        <Undo2 className="w-3.5 h-3.5 mr-1" /> Reverter
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending}>
                         <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                       </Button>
