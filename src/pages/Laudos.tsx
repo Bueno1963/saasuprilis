@@ -5,10 +5,39 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatusBadge from "@/components/StatusBadge";
 import { Search, FileDown, Eye } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+
+interface ExamParam {
+  id: string;
+  exam_id: string;
+  section: string;
+  name: string;
+  unit: string | null;
+  reference_range: string | null;
+  sort_order: number | null;
+}
+
+interface ExpandedParam {
+  section: string;
+  name: string;
+  value: string;
+  unit: string;
+  referenceRange: string;
+}
+
+interface ResultEntry {
+  exam: string;
+  value: string;
+  unit: string;
+  referenceRange: string;
+  flag: string;
+  analystName: string;
+  analystCrm?: string;
+  parameters?: ExpandedParam[];
+}
 
 interface OrderGroup {
   orderId: string;
@@ -20,15 +49,7 @@ interface OrderGroup {
   doctorName: string;
   insurance: string;
   releasedAt: string;
-  results: {
-    exam: string;
-    value: string;
-    unit: string;
-    referenceRange: string;
-    flag: string;
-    analystName: string;
-    analystCrm?: string;
-  }[];
+  results: ResultEntry[];
 }
 
 const Laudos = () => {
@@ -47,6 +68,45 @@ const Laudos = () => {
       return data;
     },
   });
+
+  // Fetch exam catalog with ids
+  const { data: examCatalogFull = [] } = useQuery({
+    queryKey: ["exam_catalog_full"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("exam_catalog").select("id, name").eq("status", "active");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch exam parameters
+  const { data: allExamParams = [] } = useQuery<ExamParam[]>({
+    queryKey: ["exam_parameters_all"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("exam_parameters").select("*").order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const examNameToId = new Map(examCatalogFull.map(e => [e.name, e.id]));
+  const examParamsByExamId = useMemo(() => {
+    const map = new Map<string, ExamParam[]>();
+    for (const p of allExamParams) {
+      if (!map.has(p.exam_id)) map.set(p.exam_id, []);
+      map.get(p.exam_id)!.push(p);
+    }
+    return map;
+  }, [allExamParams]);
+
+  // Helper: parse JSON value for composite exams
+  const parseParamValues = (value: string): Record<string, string> => {
+    try {
+      const parsed = JSON.parse(value);
+      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) return parsed;
+    } catch {}
+    return {};
+  };
 
   // Fetch analyst profiles for released results
   const analystIds = [...new Set(released.filter(r => r.analyst_id).map(r => r.analyst_id!))];
@@ -92,6 +152,23 @@ const Laudos = () => {
       grouped.push(group);
     }
 
+    // Check if composite
+    const examId = examNameToId.get(r.exam);
+    const params = examId ? examParamsByExamId.get(examId) : undefined;
+    const hasParams = params && params.length > 0;
+
+    let expandedParams: ExpandedParam[] | undefined;
+    if (hasParams) {
+      const paramValues = parseParamValues(r.value);
+      expandedParams = params!.map(p => ({
+        section: p.section || "",
+        name: p.name,
+        value: paramValues[p.name] || "—",
+        unit: p.unit || "",
+        referenceRange: p.reference_range || "",
+      }));
+    }
+
     orderMap.get(r.order_id)!.results.push({
       exam: r.exam,
       value: r.value,
@@ -100,6 +177,7 @@ const Laudos = () => {
       flag: r.flag,
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
+      parameters: expandedParams,
     });
   }
 
@@ -123,10 +201,11 @@ const Laudos = () => {
       releasedAt: group.releasedAt ? new Date(group.releasedAt).toLocaleString("pt-BR") : "—",
       results: group.results.map(r => ({
         exam: r.exam,
-        value: r.value,
-        unit: r.unit,
-        referenceRange: r.referenceRange,
+        value: r.parameters ? "" : r.value,
+        unit: r.parameters ? "" : r.unit,
+        referenceRange: r.parameters ? "" : r.referenceRange,
         flag: r.flag,
+        parameters: r.parameters,
       })),
       analystName: firstAnalyst?.analystName || "Analista",
       analystCrm: firstAnalyst?.analystCrm,
@@ -229,13 +308,6 @@ const Laudos = () => {
   );
 };
 
-const FLAG_LABELS: Record<string, string> = {
-  normal: "",
-  high: "↑ Alto",
-  low: "↓ Baixo",
-  critical: "⚠ Crítico",
-};
-
 const LaudoPreview = ({ group, onDownload }: { group: OrderGroup; onDownload: () => void }) => (
   <div className="space-y-6">
     {/* Patient info */}
@@ -249,33 +321,84 @@ const LaudoPreview = ({ group, onDownload }: { group: OrderGroup; onDownload: ()
       <Field label="Liberação" value={group.releasedAt ? new Date(group.releasedAt).toLocaleString("pt-BR") : "—"} />
     </div>
 
-    {/* Results table */}
-    <div className="rounded-lg border overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-primary/5">
-            <TableHead>Exame</TableHead>
-            <TableHead className="text-center">Resultado</TableHead>
-            <TableHead className="text-center">Unidade</TableHead>
-            <TableHead>Referência</TableHead>
-            <TableHead className="text-center">Flag</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {group.results.map((r, i) => (
-            <TableRow key={i}>
-              <TableCell className="font-medium">{r.exam}</TableCell>
-              <TableCell className="text-center font-mono font-semibold">{r.value}</TableCell>
-              <TableCell className="text-center text-muted-foreground">{r.unit}</TableCell>
-              <TableCell className="text-sm text-muted-foreground">{r.referenceRange}</TableCell>
-              <TableCell className="text-center">
-                {r.flag !== "normal" && <StatusBadge status={r.flag} />}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    {/* Results */}
+    {group.results.map((r, idx) => {
+      if (r.parameters && r.parameters.length > 0) {
+        // Composite exam — grouped parameters
+        const sections = new Map<string, ExpandedParam[]>();
+        for (const p of r.parameters) {
+          const sec = p.section || "";
+          if (!sections.has(sec)) sections.set(sec, []);
+          sections.get(sec)!.push(p);
+        }
+
+        return (
+          <div key={idx} className="space-y-1">
+            <h3 className="font-bold text-sm text-foreground">{r.exam}</h3>
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-primary/5">
+                    <TableHead>Parâmetro</TableHead>
+                    <TableHead className="text-center">Resultado</TableHead>
+                    <TableHead className="text-center">Unidade</TableHead>
+                    <TableHead>Referência</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[...sections.entries()].map(([sectionName, sectionParams]) => (
+                    <>{sectionName && (
+                        <TableRow key={`section-${sectionName}`} className="bg-muted/50">
+                          <TableCell colSpan={4} className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-1.5">
+                            {sectionName}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      {sectionParams.map((param, pi) => (
+                        <TableRow key={pi}>
+                          <TableCell className="font-medium text-sm">{param.name}</TableCell>
+                          <TableCell className="text-center font-mono font-semibold">{param.value}</TableCell>
+                          <TableCell className="text-center text-muted-foreground">{param.unit}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{param.referenceRange}</TableCell>
+                        </TableRow>
+                      ))}
+                    </>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        );
+      }
+
+      // Simple exam
+      return (
+        <div key={idx} className="rounded-lg border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-primary/5">
+                <TableHead>Exame</TableHead>
+                <TableHead className="text-center">Resultado</TableHead>
+                <TableHead className="text-center">Unidade</TableHead>
+                <TableHead>Referência</TableHead>
+                <TableHead className="text-center">Flag</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell className="font-medium">{r.exam}</TableCell>
+                <TableCell className="text-center font-mono font-semibold">{r.value}</TableCell>
+                <TableCell className="text-center text-muted-foreground">{r.unit}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{r.referenceRange}</TableCell>
+                <TableCell className="text-center">
+                  {r.flag !== "normal" && <StatusBadge status={r.flag} />}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+      );
+    })}
 
     {/* Digital signature */}
     <div className="border-t pt-4 text-center space-y-1">
