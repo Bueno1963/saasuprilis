@@ -111,6 +111,13 @@ const Orders = () => {
   const updateMutation = useMutation({
     mutationFn: async (form: OrderFormData & { id: string }) => {
       const { id, ...rest } = form;
+
+      // Get current order to find which exams are new
+      const currentOrder = orders.find(o => o.id === id);
+      const previousExams = currentOrder?.exams || [];
+      const newExams = rest.exams.filter(e => !previousExams.includes(e));
+      const removedExams = previousExams.filter(e => !rest.exams.includes(e));
+
       const { error } = await supabase.from("orders").update({
         patient_id: rest.patient_id,
         doctor_name: rest.doctor_name,
@@ -119,9 +126,36 @@ const Orders = () => {
         priority: rest.priority,
       }).eq("id", id);
       if (error) throw error;
+
+      // Create result records for newly added exams
+      if (newExams.length > 0) {
+        const examCatalogMap = new Map(examCatalog.map(e => [e.name, e]));
+        const resultRows = newExams.map(examName => {
+          const catalog = examCatalogMap.get(examName);
+          return {
+            order_id: id,
+            exam: examName,
+            value: "",
+            unit: catalog?.unit || "",
+            reference_range: catalog?.reference_range || "",
+            status: "pending",
+            flag: "normal",
+          };
+        });
+        const { error: resError } = await supabase.from("results").insert(resultRows);
+        if (resError) console.error("Erro ao criar resultados:", resError);
+      }
+
+      // Remove result records for removed exams (only if still pending)
+      if (removedExams.length > 0) {
+        for (const examName of removedExams) {
+          await supabase.from("results").delete().eq("order_id", id).eq("exam", examName).eq("status", "pending");
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["results-pending"] });
       toast.success("Pedido atualizado!");
       setEditOpen(false);
       setEditingOrder(null);
