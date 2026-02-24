@@ -4,11 +4,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Search, Printer, ChevronDown, ChevronUp, User } from "lucide-react";
+import { CheckCircle2, Search, Printer, ChevronDown, ChevronUp, User, Undo2 } from "lucide-react";
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { useUserRole } from "@/hooks/useUserRole";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 interface GroupedPatient {
   patientName: string;
@@ -21,6 +24,9 @@ interface GroupedPatient {
 const ExamesLiberados = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedPatients, setExpandedPatients] = useState<Set<string>>(new Set());
+  const { role } = useUserRole();
+  const isAdmin = role === "admin";
+  const queryClient = useQueryClient();
 
   const { data: results = [], isLoading } = useQuery({
     queryKey: ["results-released"],
@@ -48,6 +54,22 @@ const ExamesLiberados = () => {
   });
 
   const profileMap = new Map(profiles.map(p => [p.user_id, p]));
+
+  const revertMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("results").update({
+        status: "validated",
+        released_at: null,
+      }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["results-released"] });
+      queryClient.invalidateQueries({ queryKey: ["results-validated"] });
+      toast.success("Liberação revertida — exame retornou para validação");
+    },
+    onError: () => toast.error("Erro ao reverter liberação"),
+  });
 
   const searchLower = searchQuery.toLowerCase();
 
@@ -264,9 +286,46 @@ const ExamesLiberados = () => {
                               </TableCell>
                               <TableCell className="text-sm">{analyst?.full_name || "—"}</TableCell>
                               <TableCell className="text-right">
-                                <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrint(r); }}>
-                                  <Printer className="w-3.5 h-3.5 mr-1" /> PDF
-                                </Button>
+                                <div className="flex items-center justify-end gap-1">
+                                  <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrint(r); }}>
+                                    <Printer className="w-3.5 h-3.5 mr-1" /> PDF
+                                  </Button>
+                                  {isAdmin && (
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                          onClick={(e) => e.stopPropagation()}
+                                          disabled={revertMutation.isPending}
+                                        >
+                                          <Undo2 className="w-3.5 h-3.5 mr-1" />
+                                          Reverter
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Reverter liberação?</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            O exame <span className="font-semibold">{r.exam}</span> do pedido{" "}
+                                            <span className="font-mono font-semibold">{r.orders?.order_number}</span>{" "}
+                                            será revertido para o status "validado" e precisará ser liberado novamente.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() => revertMutation.mutate(r.id)}
+                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                          >
+                                            Reverter Liberação
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
                           );
