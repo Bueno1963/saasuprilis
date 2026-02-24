@@ -360,15 +360,26 @@ const LiberarExames = () => {
             const isLast = index === searchedResults.length - 1;
             const isPending = releaseAndNextMutation.isPending || releaseMutation.isPending;
 
-            const releaseAndNextButton = (
+            const printButton = (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => generatePdfForResult(r)}
+                disabled={isPending}
+              >
+                <Printer className="w-3.5 h-3.5 mr-1" />
+                Imprimir
+              </Button>
+            );
+
+            const nextButton = (
               <Button
                 size="sm"
                 onClick={() => releaseAndNextMutation.mutate(r)}
                 disabled={isPending}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
-                <Printer className="w-3.5 h-3.5 mr-1" />
-                Imprimir e Próximo
+                Próximo
                 <ArrowRight className="w-4 h-4 ml-1 text-green-300" />
               </Button>
             );
@@ -402,7 +413,8 @@ const LiberarExames = () => {
                               <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={isPending}>
                                 <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                               </Button>
-                              {releaseAndNextButton}
+                              {printButton}
+                              {nextButton}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -436,7 +448,8 @@ const LiberarExames = () => {
                       <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={isPending}>
                         <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                       </Button>
-                      {releaseAndNextButton}
+                      {printButton}
+                      {nextButton}
                     </div>
                   </div>
                 </CardHeader>
