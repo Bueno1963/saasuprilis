@@ -4,13 +4,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
-import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer } from "lucide-react";
+import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer, PenTool } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface ExamParam {
   id: string;
@@ -46,8 +47,21 @@ function formatCpf(cpf: string) {
 const LiberarExames = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [confirmRelease, setConfirmRelease] = useState<{ type: "single" | "all" | "next"; result?: any; ids?: string[] } | null>(null);
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, profile: authProfile } = useAuth();
+
+  // Fetch current user's full profile (name + CRM) for signature
+  const { data: currentUserProfile } = useQuery({
+    queryKey: ["current-user-profile", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase.from("profiles").select("full_name, crm").eq("user_id", user.id).single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   // Extended query to include patient details needed for PDF
   const { data: results = [], isLoading } = useQuery({
@@ -245,6 +259,19 @@ const LiberarExames = () => {
     onError: () => toast.error("Erro ao liberar exames"),
   });
 
+  // Confirm and execute release
+  const handleConfirmRelease = useCallback(() => {
+    if (!confirmRelease) return;
+    if (confirmRelease.type === "single" && confirmRelease.result) {
+      releaseMutation.mutate(confirmRelease.result);
+    } else if (confirmRelease.type === "next" && confirmRelease.result) {
+      releaseAndNextMutation.mutate(confirmRelease.result);
+    } else if (confirmRelease.type === "all") {
+      releaseAllSector.mutate();
+    }
+    setConfirmRelease(null);
+  }, [confirmRelease, releaseMutation, releaseAndNextMutation, releaseAllSector]);
+
   if (!selectedSector) {
     return (
       <div className="p-6 space-y-6">
@@ -322,7 +349,7 @@ const LiberarExames = () => {
           </div>
         </div>
         {filteredResults.length > 0 && (
-          <Button onClick={() => releaseAllSector.mutate()} disabled={releaseAllSector.isPending}>
+          <Button onClick={() => setConfirmRelease({ type: "all" })} disabled={releaseAllSector.isPending}>
             <CheckCircle className="w-4 h-4 mr-2" /> Liberar Todos ({filteredResults.length})
           </Button>
         )}
@@ -375,7 +402,7 @@ const LiberarExames = () => {
             const nextButton = (
               <Button
                 size="sm"
-                onClick={() => releaseAndNextMutation.mutate(r)}
+                onClick={() => setConfirmRelease({ type: "next", result: r })}
                 disabled={isPending}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
@@ -410,7 +437,7 @@ const LiberarExames = () => {
                           <TableCell><StatusBadge status={r.flag} /></TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={isPending}>
+                              <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending}>
                                 <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                               </Button>
                               {printButton}
@@ -445,7 +472,7 @@ const LiberarExames = () => {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={isPending}>
+                      <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending}>
                         <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                       </Button>
                       {printButton}
@@ -490,6 +517,48 @@ const LiberarExames = () => {
           })}
         </div>
       )}
+
+      {/* Confirmation Dialog with Signature */}
+      <Dialog open={!!confirmRelease} onOpenChange={open => !open && setConfirmRelease(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PenTool className="w-5 h-5 text-primary" />
+              Confirmar Liberação e Assinatura
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Ao liberar, você assina digitalmente {confirmRelease?.type === "all" ? "todos os exames deste setor" : "este exame"} como responsável técnico. O laudo será enviado para a tela de Resultados/Laudos.
+            </p>
+
+            {/* Signature preview */}
+            <div className="rounded-lg border bg-muted/30 p-4 text-center space-y-2">
+              <div className="w-48 mx-auto border-b-2 border-foreground/40 mb-2" />
+              <p className="text-sm font-bold text-foreground">{currentUserProfile?.full_name || authProfile?.full_name || "—"}</p>
+              {currentUserProfile?.crm && (
+                <p className="text-xs text-muted-foreground">CRM: {currentUserProfile.crm}</p>
+              )}
+              <p className="text-xs text-muted-foreground italic">Assinatura Digital — Responsável Técnico</p>
+            </div>
+
+            {!currentUserProfile?.crm && (
+              <p className="text-xs text-destructive">
+                ⚠ Seu perfil não possui CRM cadastrado. Atualize nas configurações para que a assinatura seja completa.
+              </p>
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setConfirmRelease(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleConfirmRelease} disabled={releaseMutation.isPending || releaseAndNextMutation.isPending || releaseAllSector.isPending}>
+              <Unlock className="w-4 h-4 mr-2" />
+              Assinar e Liberar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
