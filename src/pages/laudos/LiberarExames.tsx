@@ -5,11 +5,21 @@ import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
 import { Unlock, CheckCircle, ArrowLeft, Search } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+
+interface ExamParam {
+  id: string;
+  exam_id: string;
+  section: string;
+  name: string;
+  unit: string | null;
+  reference_range: string | null;
+  sort_order: number | null;
+}
 
 const SECTOR_COLORS = [
   { color: "from-blue-800 to-blue-600", glow: "shadow-blue-500/30" },
@@ -45,7 +55,6 @@ const LiberarExames = () => {
     },
   });
 
-  // Fetch exam catalog to know which sector each exam belongs to
   const { data: examCatalog = [] } = useQuery({
     queryKey: ["exam_catalog_sectors"],
     queryFn: async () => {
@@ -55,19 +64,48 @@ const LiberarExames = () => {
     },
   });
 
-  const examSectorMap = new Map(examCatalog.map(e => [e.name, e.sector]));
+  // Fetch exam catalog with ids for parameter mapping
+  const { data: examCatalogFull = [] } = useQuery({
+    queryKey: ["exam_catalog_full"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("exam_catalog").select("id, name, sector").eq("status", "active");
+      if (error) throw error;
+      return data;
+    },
+  });
 
-  // Get unique sectors from catalog
+  // Fetch exam parameters for composite exams
+  const { data: allExamParams = [] } = useQuery<ExamParam[]>({
+    queryKey: ["exam_parameters_all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("exam_parameters")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const examNameToId = new Map(examCatalogFull.map(e => [e.name, e.id]));
+  const examParamsByExamId = useMemo(() => {
+    const map = new Map<string, ExamParam[]>();
+    for (const p of allExamParams) {
+      if (!map.has(p.exam_id)) map.set(p.exam_id, []);
+      map.get(p.exam_id)!.push(p);
+    }
+    return map;
+  }, [allExamParams]);
+
+  const examSectorMap = new Map(examCatalog.map(e => [e.name, e.sector]));
   const uniqueSectors = [...new Set(examCatalog.map(e => e.sector).filter(Boolean))] as string[];
 
-  // Count per sector
   const sectorCounts = new Map<string, number>();
   for (const r of results as any[]) {
     const sector = examSectorMap.get(r.exam) || "Outros";
     sectorCounts.set(sector, (sectorCounts.get(sector) || 0) + 1);
   }
 
-  // Build dynamic sectors with colors
   const sectors = uniqueSectors.map((name, i) => ({
     name,
     ...SECTOR_COLORS[i % SECTOR_COLORS.length],
@@ -111,6 +149,16 @@ const LiberarExames = () => {
     onError: () => toast.error("Erro ao liberar exames"),
   });
 
+  // Helper to parse JSON values for composite exams
+  const getParamValues = (r: any): Record<string, string> => {
+    const raw = r.value ?? "";
+    try {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) return parsed;
+    } catch {}
+    return {};
+  };
+
   if (!selectedSector) {
     return (
       <div className="p-6 space-y-6">
@@ -139,19 +187,15 @@ const LiberarExames = () => {
                     "overflow-hidden"
                   )}
                 >
-                  {/* Glossy shine effect */}
                   <div className="absolute inset-x-0 top-0 h-[45%] rounded-t-2xl bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
-
                   <span className="relative text-white font-bold text-base tracking-wide text-center drop-shadow-md">
                     {sector.name}
                   </span>
-
                   {count > 0 && (
                     <span className="relative mt-2 inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-bold border border-white/20">
                       {count}
                     </span>
                   )}
-
                   {count === 0 && (
                     <span className="relative mt-2 text-white/60 text-xs">Nenhum pendente</span>
                   )}
@@ -222,40 +266,110 @@ const LiberarExames = () => {
       ) : searchedResults.length === 0 ? (
         <p className="text-center py-8 text-muted-foreground">Nenhum resultado encontrado para "{searchQuery}"</p>
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Cadastro</TableHead>
-                  <TableHead>Paciente</TableHead>
-                  <TableHead>Exame</TableHead>
-                  <TableHead>Resultado</TableHead>
-                  <TableHead>Ref.</TableHead>
-                  <TableHead>Flag</TableHead>
-                  <TableHead className="text-right">Ação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {searchedResults.map((r: any) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-mono text-xs">{r.orders?.order_number || "—"}</TableCell>
-                    <TableCell className="font-medium">{r.orders?.patients?.name || "—"}</TableCell>
-                    <TableCell>{r.exam}</TableCell>
-                    <TableCell className="font-mono font-semibold">{r.value} {r.unit}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
-                    <TableCell><StatusBadge status={r.flag} /></TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={releaseMutation.isPending}>
-                        <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          {searchedResults.map((r: any) => {
+            const examId = examNameToId.get(r.exam);
+            const params = examId ? examParamsByExamId.get(examId) : undefined;
+            const hasParams = params && params.length > 0;
+
+            if (!hasParams) {
+              // Simple exam — single row card
+              return (
+                <Card key={r.id}>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Cadastro</TableHead>
+                          <TableHead>Paciente</TableHead>
+                          <TableHead>Exame</TableHead>
+                          <TableHead>Resultado</TableHead>
+                          <TableHead>Ref.</TableHead>
+                          <TableHead>Flag</TableHead>
+                          <TableHead className="text-right">Ação</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-mono text-xs">{r.orders?.order_number || "—"}</TableCell>
+                          <TableCell className="font-medium">{r.orders?.patients?.name || "—"}</TableCell>
+                          <TableCell>{r.exam}</TableCell>
+                          <TableCell className="font-mono font-semibold">{r.value} {r.unit}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
+                          <TableCell><StatusBadge status={r.flag} /></TableCell>
+                          <TableCell className="text-right">
+                            <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={releaseMutation.isPending}>
+                              <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              );
+            }
+
+            // Composite exam — show grouped parameters
+            const paramValues = getParamValues(r);
+            const sections = new Map<string, ExamParam[]>();
+            for (const p of params!) {
+              const sec = p.section || "";
+              if (!sections.has(sec)) sections.set(sec, []);
+              sections.get(sec)!.push(p);
+            }
+
+            return (
+              <Card key={r.id}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base font-bold">{r.exam}</CardTitle>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        <span className="font-mono">{r.orders?.order_number || "—"}</span> · {r.orders?.patients?.name || "—"}
+                      </p>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={releaseMutation.isPending}>
+                      <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Parâmetro</TableHead>
+                        <TableHead>Resultado</TableHead>
+                        <TableHead>Unidade</TableHead>
+                        <TableHead>Referência</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {[...sections.entries()].map(([sectionName, sectionParams]) => (
+                        <>{sectionName && (
+                            <TableRow key={`section-${sectionName}`} className="bg-muted/50">
+                              <TableCell colSpan={4} className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-1.5">
+                                {sectionName}
+                              </TableCell>
+                            </TableRow>
+                          )}
+                          {sectionParams.map(param => (
+                            <TableRow key={param.id}>
+                              <TableCell className="font-medium text-sm">{param.name}</TableCell>
+                              <TableCell className="font-mono font-semibold text-sm">{paramValues[param.name] || "—"}</TableCell>
+                              <TableCell className="text-sm text-muted-foreground">{param.unit || ""}</TableCell>
+                              <TableCell className="text-xs text-muted-foreground">{param.reference_range || ""}</TableCell>
+                            </TableRow>
+                          ))}
+                        </>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       )}
     </div>
   );
