@@ -274,7 +274,7 @@ const ExamesLiberados = () => {
   const totalOrders = grouped.reduce((sum, g) => sum + g.orders.length, 0);
 
   return (
-    <div className="p-6 space-y-6 max-w-[70%]">
+    <div className="p-6 space-y-6 max-w-[70%] bg-foreground/10 min-h-screen">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Pacientes Liberados</h1>
         <p className="text-sm text-muted-foreground">Histórico de pacientes com exames já liberados e laudo finalizado</p>
