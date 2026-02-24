@@ -1,6 +1,22 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+interface LaudoResult {
+  exam: string;
+  value: string;
+  unit: string;
+  referenceRange: string;
+  flag: string;
+  /** For composite exams, expanded parameter rows grouped by section */
+  parameters?: {
+    section: string;
+    name: string;
+    value: string;
+    unit: string;
+    referenceRange: string;
+  }[];
+}
+
 interface LaudoData {
   orderNumber: string;
   patientName: string;
@@ -11,13 +27,7 @@ interface LaudoData {
   insurance: string;
   collectedAt: string;
   releasedAt: string;
-  results: {
-    exam: string;
-    value: string;
-    unit: string;
-    referenceRange: string;
-    flag: string;
-  }[];
+  results: LaudoResult[];
   analystName: string;
   analystCrm?: string;
 }
@@ -93,16 +103,30 @@ export function generateLaudoPDF(data: LaudoData) {
   doc.text("RESULTADOS", leftCol, y);
   y += 4;
 
+  // Build table body: expand composite exams into section headers + parameter rows
+  const tableBody: any[][] = [];
+  for (const r of data.results) {
+    if (r.parameters && r.parameters.length > 0) {
+      // Exam name as a section header row
+      tableBody.push([{ content: r.exam, colSpan: 5, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
+      
+      let lastSection = "";
+      for (const p of r.parameters) {
+        if (p.section && p.section !== lastSection) {
+          lastSection = p.section;
+          tableBody.push([{ content: p.section, colSpan: 5, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
+        }
+        tableBody.push(["   " + p.name, p.value, p.unit, p.referenceRange, ""]);
+      }
+    } else {
+      tableBody.push([r.exam, r.value, r.unit, r.referenceRange, FLAG_LABELS[r.flag] || ""]);
+    }
+  }
+
   autoTable(doc, {
     startY: y,
-    head: [["Exame", "Resultado", "Unidade", "Valor de Referência", "Flag"]],
-    body: data.results.map(r => [
-      r.exam,
-      r.value,
-      r.unit,
-      r.referenceRange,
-      FLAG_LABELS[r.flag] || "",
-    ]),
+    head: [["Exame / Parâmetro", "Resultado", "Unidade", "Valor de Referência", "Flag"]],
+    body: tableBody,
     theme: "grid",
     headStyles: {
       fillColor: [20, 55, 90],
