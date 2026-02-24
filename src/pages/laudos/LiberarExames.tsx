@@ -4,12 +4,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
-import { Unlock, CheckCircle, ArrowLeft, Search } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
 
 interface ExamParam {
   id: string;
@@ -36,18 +37,25 @@ const SECTOR_COLORS = [
   { color: "from-lime-600 to-lime-400", glow: "shadow-lime-500/30" },
 ];
 
+function formatCpf(cpf: string) {
+  const digits = cpf.replace(/\D/g, "");
+  if (digits.length !== 11) return cpf;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+}
+
 const LiberarExames = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
+  // Extended query to include patient details needed for PDF
   const { data: results = [], isLoading } = useQuery({
     queryKey: ["results-validated"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("results")
-        .select("*, orders(order_number, patients(name))")
+        .select("*, orders(order_number, doctor_name, insurance, patients(name, cpf, birth_date, gender))")
         .eq("status", "validated")
         .order("validated_at", { ascending: false });
       if (error) throw error;
@@ -64,7 +72,6 @@ const LiberarExames = () => {
     },
   });
 
-  // Fetch exam catalog with ids for parameter mapping
   const { data: examCatalogFull = [] } = useQuery({
     queryKey: ["exam_catalog_full"],
     queryFn: async () => {
@@ -74,7 +81,6 @@ const LiberarExames = () => {
     },
   });
 
-  // Fetch exam parameters for composite exams
   const { data: allExamParams = [] } = useQuery<ExamParam[]>({
     queryKey: ["exam_parameters_all"],
     queryFn: async () => {
@@ -86,6 +92,21 @@ const LiberarExames = () => {
       return data;
     },
   });
+
+  // Fetch analyst profiles
+  const analystIds = [...new Set(results.filter(r => r.analyst_id).map(r => r.analyst_id!))];
+  const { data: profiles = [] } = useQuery({
+    queryKey: ["analyst-profiles-liberar", analystIds],
+    queryFn: async () => {
+      if (analystIds.length === 0) return [];
+      const { data, error } = await supabase.from("profiles").select("user_id, full_name, crm").in("user_id", analystIds);
+      if (error) throw error;
+      return data;
+    },
+    enabled: analystIds.length > 0,
+  });
+
+  const profileMap = new Map(profiles.map(p => [p.user_id, p]));
 
   const examNameToId = new Map(examCatalogFull.map(e => [e.name, e.id]));
   const examParamsByExamId = useMemo(() => {
@@ -115,6 +136,62 @@ const LiberarExames = () => {
     ? (results as any[]).filter(r => (examSectorMap.get(r.exam) || "Outros") === selectedSector)
     : [];
 
+  const getParamValues = (r: any): Record<string, string> => {
+    const raw = r.value ?? "";
+    try {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) return parsed;
+    } catch {}
+    return {};
+  };
+
+  // Generate PDF for a single result
+  const generatePdfForResult = useCallback((r: any) => {
+    const order = r.orders as any;
+    const patient = order?.patients;
+    const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
+
+    const examId = examNameToId.get(r.exam);
+    const params = examId ? examParamsByExamId.get(examId) : undefined;
+    const hasParams = params && params.length > 0;
+
+    let expandedParams: any[] | undefined;
+    if (hasParams) {
+      const paramValues = getParamValues(r);
+      expandedParams = params!.map(p => ({
+        section: p.section || "",
+        name: p.name,
+        value: paramValues[p.name] || "—",
+        unit: p.unit || "",
+        referenceRange: p.reference_range || "",
+      }));
+    }
+
+    const now = new Date().toISOString();
+    const doc = generateLaudoPDF({
+      orderNumber: order?.order_number || "",
+      patientName: patient?.name || "",
+      patientCpf: formatCpf(patient?.cpf || ""),
+      patientBirthDate: patient?.birth_date ? new Date(patient.birth_date).toLocaleDateString("pt-BR") : "—",
+      patientGender: patient?.gender || "",
+      doctorName: order?.doctor_name || "",
+      insurance: order?.insurance || "Particular",
+      collectedAt: new Date(now).toLocaleDateString("pt-BR"),
+      releasedAt: new Date(now).toLocaleString("pt-BR"),
+      results: [{
+        exam: r.exam,
+        value: hasParams ? "" : r.value,
+        unit: hasParams ? "" : r.unit,
+        referenceRange: hasParams ? "" : r.reference_range,
+        flag: r.flag,
+        parameters: expandedParams,
+      }],
+      analystName: analyst?.full_name || "Analista",
+      analystCrm: analyst?.crm || undefined,
+    });
+    doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
+  }, [profileMap, examNameToId, examParamsByExamId]);
+
   const releaseMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("results").update({
@@ -127,6 +204,25 @@ const LiberarExames = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["results-validated"] });
       toast.success("Exame liberado com sucesso");
+    },
+    onError: () => toast.error("Erro ao liberar exame"),
+  });
+
+  const releaseAndNextMutation = useMutation({
+    mutationFn: async (r: any) => {
+      // Generate PDF first
+      generatePdfForResult(r);
+      // Then release
+      const { error } = await supabase.from("results").update({
+        status: "released",
+        released_at: new Date().toISOString(),
+        analyst_id: user?.id,
+      }).eq("id", r.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["results-validated"] });
+      toast.success("Exame liberado e impresso — próximo paciente carregado");
     },
     onError: () => toast.error("Erro ao liberar exame"),
   });
@@ -148,16 +244,6 @@ const LiberarExames = () => {
     },
     onError: () => toast.error("Erro ao liberar exames"),
   });
-
-  // Helper to parse JSON values for composite exams
-  const getParamValues = (r: any): Record<string, string> => {
-    const raw = r.value ?? "";
-    try {
-      const parsed = JSON.parse(raw);
-      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) return parsed;
-    } catch {}
-    return {};
-  };
 
   if (!selectedSector) {
     return (
@@ -267,13 +353,27 @@ const LiberarExames = () => {
         <p className="text-center py-8 text-muted-foreground">Nenhum resultado encontrado para "{searchQuery}"</p>
       ) : (
         <div className="space-y-4">
-          {searchedResults.map((r: any) => {
+          {searchedResults.map((r: any, index: number) => {
             const examId = examNameToId.get(r.exam);
             const params = examId ? examParamsByExamId.get(examId) : undefined;
             const hasParams = params && params.length > 0;
+            const isLast = index === searchedResults.length - 1;
+            const isPending = releaseAndNextMutation.isPending || releaseMutation.isPending;
+
+            const releaseAndNextButton = (
+              <Button
+                size="sm"
+                onClick={() => releaseAndNextMutation.mutate(r)}
+                disabled={isPending}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Printer className="w-3.5 h-3.5 mr-1" />
+                Imprimir e Próximo
+                <ArrowRight className="w-4 h-4 ml-1 text-green-300" />
+              </Button>
+            );
 
             if (!hasParams) {
-              // Simple exam — single row card
               return (
                 <Card key={r.id}>
                   <CardContent className="p-0">
@@ -286,7 +386,7 @@ const LiberarExames = () => {
                           <TableHead>Resultado</TableHead>
                           <TableHead>Ref.</TableHead>
                           <TableHead>Flag</TableHead>
-                          <TableHead className="text-right">Ação</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -298,9 +398,12 @@ const LiberarExames = () => {
                           <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
                           <TableCell><StatusBadge status={r.flag} /></TableCell>
                           <TableCell className="text-right">
-                            <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={releaseMutation.isPending}>
-                              <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
-                            </Button>
+                            <div className="flex items-center justify-end gap-2">
+                              <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={isPending}>
+                                <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
+                              </Button>
+                              {releaseAndNextButton}
+                            </div>
                           </TableCell>
                         </TableRow>
                       </TableBody>
@@ -310,7 +413,7 @@ const LiberarExames = () => {
               );
             }
 
-            // Composite exam — show grouped parameters
+            // Composite exam
             const paramValues = getParamValues(r);
             const sections = new Map<string, ExamParam[]>();
             for (const p of params!) {
@@ -329,9 +432,12 @@ const LiberarExames = () => {
                         <span className="font-mono">{r.orders?.order_number || "—"}</span> · {r.orders?.patients?.name || "—"}
                       </p>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={releaseMutation.isPending}>
-                      <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" onClick={() => releaseMutation.mutate(r.id)} disabled={isPending}>
+                        <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
+                      </Button>
+                      {releaseAndNextButton}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
