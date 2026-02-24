@@ -43,10 +43,10 @@ const SettingsPage = () => {
             key={key}
             onClick={() => setSection(key)}
             className="group relative rounded-xl px-6 py-5 text-left transition-all duration-200
-              bg-gradient-to-b from-[hsl(200,90%,58%)] via-[hsl(205,85%,50%)] to-[hsl(210,80%,42%)]
-              shadow-[0_4px_12px_hsl(210,80%,30%/0.35),inset_0_1px_1px_hsl(200,100%,85%/0.5)]
-              hover:shadow-[0_6px_20px_hsl(210,80%,30%/0.5),inset_0_1px_1px_hsl(200,100%,85%/0.5)]
-              hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_2px_6px_hsl(210,80%,30%/0.3)]
+              bg-gradient-to-b from-[hsl(210,95%,48%)] via-[hsl(215,90%,40%)] to-[hsl(220,85%,32%)]
+              shadow-[0_4px_12px_hsl(220,85%,25%/0.35),inset_0_1px_1px_hsl(210,100%,75%/0.5)]
+              hover:shadow-[0_6px_20px_hsl(220,85%,25%/0.5),inset_0_1px_1px_hsl(210,100%,75%/0.5)]
+              hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_2px_6px_hsl(220,85%,25%/0.3)]
               border border-[hsl(210,70%,35%/0.4)]
               overflow-hidden"
           >
