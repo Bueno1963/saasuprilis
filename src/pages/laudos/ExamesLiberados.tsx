@@ -5,13 +5,23 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Search, Printer, ChevronDown, ChevronUp, User, Undo2 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
 import { useUserRole } from "@/hooks/useUserRole";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
+interface ExamParam {
+  id: string;
+  exam_id: string;
+  section: string;
+  name: string;
+  unit: string | null;
+  reference_range: string | null;
+  sort_order: number | null;
+}
 
 interface GroupedPatient {
   patientName: string;
@@ -53,7 +63,81 @@ const ExamesLiberados = () => {
     enabled: results.length > 0,
   });
 
+  const { data: examCatalogFull = [] } = useQuery({
+    queryKey: ["exam_catalog_full"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("exam_catalog").select("id, name, sector").eq("status", "active");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: allExamParams = [] } = useQuery<ExamParam[]>({
+    queryKey: ["exam_parameters_all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("exam_parameters")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const profileMap = new Map(profiles.map(p => [p.user_id, p]));
+  const examNameToId = new Map(examCatalogFull.map(e => [e.name, e.id]));
+
+  const examParamsByExamId = useMemo(() => {
+    const map = new Map<string, ExamParam[]>();
+    for (const p of allExamParams) {
+      if (!map.has(p.exam_id)) map.set(p.exam_id, []);
+      map.get(p.exam_id)!.push(p);
+    }
+    return map;
+  }, [allExamParams]);
+
+  const getParamValues = (r: any): Record<string, string> => {
+    const raw = r.value ?? "";
+    try {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) return parsed;
+    } catch {}
+    return {};
+  };
+
+  const getExamParams = useCallback((r: any) => {
+    const examId = examNameToId.get(r.exam);
+    const params = examId ? examParamsByExamId.get(examId) : undefined;
+    return params && params.length > 0 ? params : null;
+  }, [examNameToId, examParamsByExamId]);
+
+  const buildResultWithParams = useCallback((r: any) => {
+    const params = getExamParams(r);
+    if (!params) {
+      return {
+        exam: r.exam,
+        value: r.value,
+        unit: r.unit,
+        referenceRange: r.reference_range,
+        flag: r.flag,
+      };
+    }
+    const paramValues = getParamValues(r);
+    return {
+      exam: r.exam,
+      value: "",
+      unit: "",
+      referenceRange: "",
+      flag: r.flag,
+      parameters: params.map(p => ({
+        section: p.section || "",
+        name: p.name,
+        value: paramValues[p.name] || "—",
+        unit: p.unit || "",
+        referenceRange: p.reference_range || "",
+      })),
+    };
+  }, [getExamParams]);
 
   const revertMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -112,7 +196,7 @@ const ExamesLiberados = () => {
     });
   };
 
-  const handlePrint = (r: any) => {
+  const handlePrint = useCallback((r: any) => {
     const order = r.orders as any;
     const patient = order?.patients;
     const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
@@ -127,23 +211,16 @@ const ExamesLiberados = () => {
       insurance: order?.insurance || "Particular",
       collectedAt: r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy") : "—",
       releasedAt: r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—",
-      results: [{
-        exam: r.exam,
-        value: r.value,
-        unit: r.unit,
-        referenceRange: r.reference_range,
-        flag: r.flag,
-      }],
+      results: [buildResultWithParams(r)],
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
-  };
+  }, [profileMap, buildResultWithParams]);
 
-  const handlePrintAll = (group: GroupedPatient) => {
+  const handlePrintAll = useCallback((group: GroupedPatient) => {
     const first = group.results[0];
     const order = first?.orders as any;
-    const patient = order?.patients;
     const analyst = first?.analyst_id ? profileMap.get(first.analyst_id) : null;
     const latestRelease = group.results.reduce((latest: string | null, r: any) => {
       if (!r.released_at) return latest;
@@ -161,20 +238,119 @@ const ExamesLiberados = () => {
       insurance: order?.insurance || "Particular",
       collectedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy") : "—",
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
-      results: group.results.map((r: any) => ({
-        exam: r.exam,
-        value: r.value,
-        unit: r.unit,
-        referenceRange: r.reference_range,
-        flag: r.flag,
-      })),
+      results: group.results.map((r: any) => buildResultWithParams(r)),
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
     });
     doc.save(`Laudo_${group.patientName.replace(/\s+/g, "_")}_completo.pdf`);
-  };
+  }, [profileMap, buildResultWithParams]);
 
   const totalExams = grouped.reduce((sum, g) => sum + g.results.length, 0);
+
+  const renderResultRow = (r: any) => {
+    const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
+    const params = getExamParams(r);
+    const isComposite = !!params;
+    const paramValues = isComposite ? getParamValues(r) : {};
+
+    return (
+      <React.Fragment key={r.id}>
+        <TableRow className={isComposite ? "border-b-0" : ""}>
+          <TableCell className="font-mono text-xs">{r.orders?.order_number || "—"}</TableCell>
+          <TableCell className="font-semibold">{r.exam}</TableCell>
+          <TableCell className="font-mono font-semibold">
+            {isComposite ? (
+              <span className="text-xs text-muted-foreground italic">{params!.length} parâmetros</span>
+            ) : (
+              <>{r.value} {r.unit}</>
+            )}
+          </TableCell>
+          <TableCell>
+            <Badge variant={r.flag === "normal" ? "secondary" : "destructive"} className="text-xs">
+              {r.flag}
+            </Badge>
+          </TableCell>
+          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+            {r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—"}
+          </TableCell>
+          <TableCell className="text-sm">{analyst?.full_name || "—"}</TableCell>
+          <TableCell className="text-right">
+            <div className="flex items-center justify-end gap-1">
+              <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrint(r); }}>
+                <Printer className="w-3.5 h-3.5 mr-1" /> PDF
+              </Button>
+              {isAdmin && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={(e) => e.stopPropagation()}
+                      disabled={revertMutation.isPending}
+                    >
+                      <Undo2 className="w-3.5 h-3.5 mr-1" />
+                      Reverter
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Reverter liberação?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        O exame <span className="font-semibold">{r.exam}</span> do pedido{" "}
+                        <span className="font-mono font-semibold">{r.orders?.order_number}</span>{" "}
+                        será revertido para o status "validado" e precisará ser liberado novamente.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => revertMutation.mutate(r.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Reverter Liberação
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+          </TableCell>
+        </TableRow>
+        {isComposite && (
+          <TableRow>
+            <TableCell colSpan={7} className="p-0 pl-8 pr-4 pb-3 pt-0">
+              <div className="bg-muted/40 rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="text-xs">
+                      <TableHead className="h-8">Parâmetro</TableHead>
+                      <TableHead className="h-8">Resultado</TableHead>
+                      <TableHead className="h-8">Unidade</TableHead>
+                      <TableHead className="h-8">Referência</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {params!.map((p, idx) => {
+                      const val = paramValues[p.name] || "—";
+                      return (
+                        <TableRow key={p.id || idx} className="text-xs">
+                          <TableCell className="py-1.5">{p.name}</TableCell>
+                          <TableCell className="py-1.5 font-mono font-semibold">{val}</TableCell>
+                          <TableCell className="py-1.5 text-muted-foreground">{p.unit || ""}</TableCell>
+                          <TableCell className="py-1.5 text-muted-foreground">{p.reference_range || ""}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
+      </React.Fragment>
+    );
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -269,67 +445,7 @@ const ExamesLiberados = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {group.results.map((r: any) => {
-                          const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
-                          return (
-                            <TableRow key={r.id}>
-                              <TableCell className="font-mono text-xs">{r.orders?.order_number || "—"}</TableCell>
-                              <TableCell>{r.exam}</TableCell>
-                              <TableCell className="font-mono font-semibold">{r.value} {r.unit}</TableCell>
-                              <TableCell>
-                                <Badge variant={r.flag === "normal" ? "secondary" : "destructive"} className="text-xs">
-                                  {r.flag}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                                {r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—"}
-                              </TableCell>
-                              <TableCell className="text-sm">{analyst?.full_name || "—"}</TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-1">
-                                  <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrint(r); }}>
-                                    <Printer className="w-3.5 h-3.5 mr-1" /> PDF
-                                  </Button>
-                                  {isAdmin && (
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                          onClick={(e) => e.stopPropagation()}
-                                          disabled={revertMutation.isPending}
-                                        >
-                                          <Undo2 className="w-3.5 h-3.5 mr-1" />
-                                          Reverter
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Reverter liberação?</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                            O exame <span className="font-semibold">{r.exam}</span> do pedido{" "}
-                                            <span className="font-mono font-semibold">{r.orders?.order_number}</span>{" "}
-                                            será revertido para o status "validado" e precisará ser liberado novamente.
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                          <AlertDialogAction
-                                            onClick={() => revertMutation.mutate(r.id)}
-                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                          >
-                                            Reverter Liberação
-                                          </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
+                        {group.results.map((r: any) => renderResultRow(r))}
                       </TableBody>
                     </Table>
                   </CardContent>
@@ -342,5 +458,7 @@ const ExamesLiberados = () => {
     </div>
   );
 };
+
+import React from "react";
 
 export default ExamesLiberados;
