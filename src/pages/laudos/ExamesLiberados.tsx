@@ -353,7 +353,7 @@ const ExamesLiberados = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-[70%]">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Pacientes Liberados</h1>
         <p className="text-sm text-muted-foreground">
