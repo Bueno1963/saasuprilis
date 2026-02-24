@@ -1,8 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import StatusBadge from "@/components/StatusBadge";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 const PedidosIncompletos = () => {
@@ -52,27 +53,56 @@ const PedidosIncompletos = () => {
                   <TableHead>Pedido</TableHead>
                   <TableHead>Paciente</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Exames Solicitados</TableHead>
-                  <TableHead>Pendentes</TableHead>
-                  <TableHead>Liberados</TableHead>
+                  <TableHead>Exames Liberados</TableHead>
+                  <TableHead>Exames Pendentes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {incomplete.map((o: any) => {
                   const results = o.results || [];
-                  const released = results.filter((r: any) => r.status === "released").length;
-                  const pending = results.length - released;
+                  const releasedExams = results.filter((r: any) => r.status === "released");
+                  const pendingExams = results.filter((r: any) => r.status !== "released");
+                  // Exams requested but without any result entry yet
+                  const examsWithResults = new Set(results.map((r: any) => r.exam));
+                  const missingExams = (o.exams || []).filter((e: string) => !examsWithResults.has(e));
+
                   return (
                     <TableRow key={o.id}>
                       <TableCell className="font-mono text-sm">{o.order_number}</TableCell>
                       <TableCell className="font-medium">{(o.patients as any)?.name}</TableCell>
                       <TableCell><StatusBadge status={o.status} /></TableCell>
-                      <TableCell>{o.exams?.length || 0}</TableCell>
                       <TableCell>
-                        <span className="text-destructive font-semibold">{pending > 0 ? pending : results.length === 0 ? (o.exams?.length || "—") : 0}</span>
+                        {releasedExams.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {releasedExams.map((r: any) => (
+                              <Badge key={r.id} variant="outline" className="text-xs gap-1 border-green-300 text-green-700 bg-green-50">
+                                <CheckCircle2 className="h-3 w-3" />
+                                {r.exam}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">Nenhum</span>
+                        )}
                       </TableCell>
                       <TableCell>
-                        <span className="text-accent font-semibold">{released}</span>
+                        <div className="flex flex-wrap gap-1">
+                          {pendingExams.map((r: any) => (
+                            <Badge key={r.id} variant="outline" className="text-xs gap-1 border-amber-300 text-amber-700 bg-amber-50">
+                              <Clock className="h-3 w-3" />
+                              {r.exam}
+                            </Badge>
+                          ))}
+                          {missingExams.map((exam: string) => (
+                            <Badge key={exam} variant="outline" className="text-xs gap-1 border-destructive/30 text-destructive bg-destructive/5">
+                              <AlertTriangle className="h-3 w-3" />
+                              {exam}
+                            </Badge>
+                          ))}
+                          {pendingExams.length === 0 && missingExams.length === 0 && (
+                            <span className="text-muted-foreground text-xs">Nenhum</span>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
