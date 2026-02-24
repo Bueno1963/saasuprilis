@@ -38,6 +38,32 @@ const SECTOR_COLORS = [
   { color: "from-lime-600 to-lime-400", glow: "shadow-lime-500/30" },
 ];
 
+function isOutOfRange(value: string, referenceRange: string | null | undefined): boolean {
+  if (!value || value === "—" || !referenceRange) return false;
+  const num = parseFloat(value.replace(",", "."));
+  if (isNaN(num)) return false;
+  // Pattern: "X - Y" or "X a Y" or "X-Y"
+  const rangeMatch = referenceRange.match(/([\d.,]+)\s*[-–aà]\s*([\d.,]+)/);
+  if (rangeMatch) {
+    const low = parseFloat(rangeMatch[1].replace(",", "."));
+    const high = parseFloat(rangeMatch[2].replace(",", "."));
+    if (!isNaN(low) && !isNaN(high)) return num < low || num > high;
+  }
+  // Pattern: "< X" or "<= X" or "até X"
+  const ltMatch = referenceRange.match(/[<≤]?\s*=?\s*([\d.,]+)/);
+  if (ltMatch && referenceRange.match(/^[<≤]/)) {
+    const max = parseFloat(ltMatch[1].replace(",", "."));
+    if (!isNaN(max)) return num > max;
+  }
+  // Pattern: "> X" or ">= X"
+  const gtMatch = referenceRange.match(/[>≥]\s*=?\s*([\d.,]+)/);
+  if (gtMatch) {
+    const min = parseFloat(gtMatch[1].replace(",", "."));
+    if (!isNaN(min)) return num < min;
+  }
+  return false;
+}
+
 function formatCpf(cpf: string) {
   const digits = cpf.replace(/\D/g, "");
   if (digits.length !== 11) return cpf;
@@ -433,7 +459,7 @@ const LiberarExames = () => {
                           <TableCell className="font-mono text-xs">{r.orders?.order_number || "—"}</TableCell>
                           <TableCell className="font-medium">{r.orders?.patients?.name || "—"}</TableCell>
                           <TableCell>{r.exam}</TableCell>
-                          <TableCell className="font-mono font-semibold">{r.value} {r.unit}</TableCell>
+                          <TableCell className={cn("font-mono font-semibold", r.flag !== "normal" && "text-destructive")}>{r.value} {r.unit}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
                           <TableCell><StatusBadge status={r.flag} /></TableCell>
                           <TableCell className="text-right">
@@ -503,7 +529,7 @@ const LiberarExames = () => {
                           {sectionParams.map(param => (
                             <TableRow key={param.id}>
                               <TableCell className="font-medium text-sm">{param.name}</TableCell>
-                              <TableCell className="font-mono font-semibold text-sm">{paramValues[param.name] || "—"}</TableCell>
+                              <TableCell className={cn("font-mono font-semibold text-sm", isOutOfRange(paramValues[param.name] || "", param.reference_range) && "text-destructive")}>{paramValues[param.name] || "—"}</TableCell>
                               <TableCell className="text-sm text-muted-foreground">{param.unit || ""}</TableCell>
                               <TableCell className="text-xs text-muted-foreground">{param.reference_range || ""}</TableCell>
                             </TableRow>
