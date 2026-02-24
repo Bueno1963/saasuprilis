@@ -225,7 +225,7 @@ const ValidarExames = () => {
 
   if (!selectedSector) {
     return (
-      <div className="p-6 space-y-6 max-w-[80%]">
+      <div className="p-6 space-y-6 max-w-[80%] bg-foreground/10 min-h-screen">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Validar Exames</h1>
           <p className="text-sm text-muted-foreground">Selecione o setor do laboratório para validar exames pendentes</p>
@@ -342,7 +342,7 @@ const ValidarExames = () => {
     });
 
     return (
-      <div className="p-6 space-y-6 max-w-[80%]">
+      <div className="p-6 space-y-6 max-w-[80%] bg-foreground/10 min-h-screen">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => setSelectedOrderId(null)}>
@@ -525,7 +525,7 @@ const ValidarExames = () => {
 
   // Sector patient list view
   return (
-    <div className="p-6 space-y-6 max-w-[80%]">
+    <div className="p-6 space-y-6 max-w-[80%] bg-foreground/10 min-h-screen">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => setSelectedSector(null)}>
