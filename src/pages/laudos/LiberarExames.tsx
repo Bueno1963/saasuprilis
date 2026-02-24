@@ -217,6 +217,7 @@ const LiberarExames = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["results-validated"] });
+      queryClient.invalidateQueries({ queryKey: ["results-released"] });
       toast.success("Exame liberado com sucesso");
     },
     onError: () => toast.error("Erro ao liberar exame"),
@@ -236,6 +237,7 @@ const LiberarExames = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["results-validated"] });
+      queryClient.invalidateQueries({ queryKey: ["results-released"] });
       toast.success("Exame liberado e impresso — próximo paciente carregado");
     },
     onError: () => toast.error("Erro ao liberar exame"),
@@ -254,6 +256,7 @@ const LiberarExames = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["results-validated"] });
+      queryClient.invalidateQueries({ queryKey: ["results-released"] });
       toast.success("Todos os exames do setor foram liberados");
     },
     onError: () => toast.error("Erro ao liberar exames"),
