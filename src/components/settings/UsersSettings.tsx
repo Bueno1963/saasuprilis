@@ -1,14 +1,38 @@
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Shield } from "lucide-react";
+import { navItems, type AppRole } from "@/lib/navigation";
+import { useAllRolePermissions } from "@/hooks/useRolePermissions";
 
 interface Props { onBack: () => void; }
+
+const ROLES: { value: AppRole; label: string }[] = [
+  { value: "admin", label: "Administrador" },
+  { value: "tecnico", label: "Técnico" },
+  { value: "recepcao", label: "Recepção" },
+];
+
+const MENU_LABELS: Record<string, string> = {
+  "/": "Dashboard",
+  "/pacientes": "Pacientes",
+  "/pedidos": "Pedidos",
+  "/amostras": "Amostras",
+  "/worklist": "Mapa de Trabalho",
+  "/qc": "Controle de Qualidade",
+  "/resultados": "Resultados",
+  "/laudos": "Laudos",
+  "/configuracoes": "Configurações",
+};
+
+const ROUTES = Object.keys(MENU_LABELS);
 
 const UsersSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
@@ -31,6 +55,8 @@ const UsersSettings = ({ onBack }: Props) => {
     },
   });
 
+  const { data: permissions = [], isLoading: permLoading } = useAllRolePermissions();
+
   const updateRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
       const existing = roles.find((r) => r.user_id === userId);
@@ -46,12 +72,27 @@ const UsersSettings = ({ onBack }: Props) => {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const updateProfile = useMutation({
-    mutationFn: async ({ id, field, value }: { id: string; field: string; value: string }) => {
-      const { error } = await supabase.from("profiles").update({ [field]: value }).eq("id", id);
-      if (error) throw error;
+  const togglePermission = useMutation({
+    mutationFn: async ({ role, route, allowed }: { role: AppRole; route: string; allowed: boolean }) => {
+      const existing = permissions?.find(p => p.role === role && p.route === route);
+      if (existing) {
+        const { error } = await supabase
+          .from("role_permissions")
+          .update({ allowed })
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("role_permissions")
+          .insert({ role: role as any, route, allowed });
+        if (error) throw error;
+      }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["all_profiles"] }); toast.success("Perfil atualizado!"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["all_role_permissions"] });
+      qc.invalidateQueries({ queryKey: ["role_permissions"] });
+      toast.success("Permissão atualizada!");
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -60,8 +101,9 @@ const UsersSettings = ({ onBack }: Props) => {
     return r?.role || "tecnico";
   };
 
-  const roleLabel = (r: string) => {
-    switch (r) { case "admin": return "Administrador"; case "tecnico": return "Técnico"; case "recepcao": return "Recepção"; default: return r; }
+  const isAllowed = (role: AppRole, route: string) => {
+    const perm = permissions?.find(p => p.role === role && p.route === route);
+    return perm?.allowed ?? false;
   };
 
   return (
@@ -74,40 +116,101 @@ const UsersSettings = ({ onBack }: Props) => {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead><TableHead>Cargo</TableHead><TableHead>Setor</TableHead>
-                <TableHead>CRM</TableHead><TableHead>Papel</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
-              profiles.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Nenhum usuário</TableCell></TableRow> :
-              profiles.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell className="font-medium">{p.full_name || "—"}</TableCell>
-                  <TableCell>{p.role_display}</TableCell>
-                  <TableCell>{p.sector || "—"}</TableCell>
-                  <TableCell>{p.crm || "—"}</TableCell>
-                  <TableCell>
-                    <Select value={getRoleForUser(p.user_id)} onValueChange={(v) => updateRole.mutate({ userId: p.user_id, role: v })}>
-                      <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Administrador</SelectItem>
-                        <SelectItem value="tecnico">Técnico</SelectItem>
-                        <SelectItem value="recepcao">Recepção</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="users">
+        <TabsList>
+          <TabsTrigger value="users">Usuários</TabsTrigger>
+          <TabsTrigger value="permissions" className="gap-1.5">
+            <Shield className="h-3.5 w-3.5" />
+            Permissões do Menu
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users" className="mt-4">
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead><TableHead>Cargo</TableHead><TableHead>Setor</TableHead>
+                    <TableHead>CRM</TableHead><TableHead>Papel</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
+                  profiles.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Nenhum usuário</TableCell></TableRow> :
+                  profiles.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">{p.full_name || "—"}</TableCell>
+                      <TableCell>{p.role_display}</TableCell>
+                      <TableCell>{p.sector || "—"}</TableCell>
+                      <TableCell>{p.crm || "—"}</TableCell>
+                      <TableCell>
+                        <Select value={getRoleForUser(p.user_id)} onValueChange={(v) => updateRole.mutate({ userId: p.user_id, role: v })}>
+                          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">Administrador</SelectItem>
+                            <SelectItem value="tecnico">Técnico</SelectItem>
+                            <SelectItem value="recepcao">Recepção</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="permissions" className="mt-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Acesso ao Menu por Perfil</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Ative ou desative o acesso a cada módulo do sistema para cada perfil de usuário.
+              </p>
+            </CardHeader>
+            <CardContent className="p-0">
+              {permLoading ? (
+                <div className="p-6 text-center text-muted-foreground">Carregando...</div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[200px]">Módulo</TableHead>
+                      {ROLES.map(r => (
+                        <TableHead key={r.value} className="text-center">{r.label}</TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {ROUTES.map(route => (
+                      <TableRow key={route}>
+                        <TableCell className="font-medium">{MENU_LABELS[route]}</TableCell>
+                        {ROLES.map(r => (
+                          <TableCell key={r.value} className="text-center">
+                            {r.value === "admin" ? (
+                              <Switch checked={true} disabled className="mx-auto" />
+                            ) : (
+                              <Switch
+                                checked={isAllowed(r.value, route)}
+                                onCheckedChange={(checked) =>
+                                  togglePermission.mutate({ role: r.value, route, allowed: checked })
+                                }
+                                className="mx-auto"
+                              />
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

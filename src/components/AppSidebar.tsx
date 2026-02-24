@@ -4,18 +4,18 @@ import { Activity, ChevronDown, ChevronLeft, ChevronRight, LogOut, User } from "
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 
 const AppSidebar = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const { profile, signOut } = useAuth();
-  const { role } = useUserRole();
+  const { isRouteAllowed } = useRolePermissions();
 
   const filteredItems = useMemo(
-    () => navItems.filter(n => !n.allowedRoles || n.allowedRoles.includes(role)),
-    [role]
+    () => navItems.filter(n => isRouteAllowed(n.href)),
+    [isRouteAllowed]
   );
 
   const toggleMenu = (href: string) => {

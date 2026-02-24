@@ -4,8 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
-import { navItems, type AppRole } from "@/lib/navigation";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 import AppLayout from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
@@ -26,34 +25,22 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const RoleGuard = ({ allowedRoles, children, fallback = "/" }: { allowedRoles?: AppRole[]; children: React.ReactNode; fallback?: string }) => {
-  const { role, isLoading } = useUserRole();
+const DynamicGuard = ({ route, children }: { route: string; children: React.ReactNode }) => {
+  const { isRouteAllowed, isLoading } = useRolePermissions();
   if (isLoading) return null;
-  if (allowedRoles && !allowedRoles.includes(role)) return <Navigate to={fallback} replace />;
+  // For child routes like /laudos/validar, check parent route /laudos
+  const parentRoute = route.split("/").slice(0, 2).join("/") || route;
+  if (!isRouteAllowed(route) && !isRouteAllowed(parentRoute)) {
+    return <Navigate to="/pacientes" replace />;
+  }
   return <>{children}</>;
 };
 
-const getAllowedRoles = (href: string): AppRole[] | undefined => {
-  for (const item of navItems) {
-    if (item.href === href) return item.allowedRoles;
-    if (item.children) {
-      for (const child of item.children) {
-        if (child.href === href) return item.allowedRoles;
-      }
-    }
-  }
-  return undefined;
-};
-
-const GuardedRoute = ({ href, children }: { href: string; children: React.ReactNode }) => {
-  const roles = getAllowedRoles(href);
-  return <RoleGuard allowedRoles={roles}>{children}</RoleGuard>;
-};
-
 const DefaultRedirect = () => {
-  const { role } = useUserRole();
-  if (role === "recepcao") return <Navigate to="/pacientes" replace />;
-  return <Dashboard />;
+  const { isRouteAllowed, isLoading } = useRolePermissions();
+  if (isLoading) return null;
+  if (isRouteAllowed("/")) return <Dashboard />;
+  return <Navigate to="/pacientes" replace />;
 };
 
 const ProtectedRoutes = () => {
@@ -76,19 +63,19 @@ const ProtectedRoutes = () => {
     <Routes>
       <Route element={<AppLayout />}>
         <Route path="/" element={<DefaultRedirect />} />
-        <Route path="/pacientes" element={<GuardedRoute href="/pacientes"><Patients /></GuardedRoute>} />
-        <Route path="/pedidos" element={<GuardedRoute href="/pedidos"><Orders /></GuardedRoute>} />
-        <Route path="/amostras" element={<GuardedRoute href="/amostras"><Samples /></GuardedRoute>} />
-        <Route path="/worklist" element={<GuardedRoute href="/worklist"><Worklist /></GuardedRoute>} />
-        <Route path="/qc" element={<GuardedRoute href="/qc"><QualityControl /></GuardedRoute>} />
-        <Route path="/resultados" element={<GuardedRoute href="/resultados"><Results /></GuardedRoute>} />
-        <Route path="/laudos" element={<GuardedRoute href="/laudos"><Laudos /></GuardedRoute>} />
-        <Route path="/laudos/validar" element={<GuardedRoute href="/laudos/validar"><ValidarExames /></GuardedRoute>} />
-        <Route path="/laudos/liberar" element={<GuardedRoute href="/laudos/liberar"><LiberarExames /></GuardedRoute>} />
-        <Route path="/laudos/incompletos" element={<GuardedRoute href="/laudos/incompletos"><PedidosIncompletos /></GuardedRoute>} />
-        <Route path="/laudos/imprimir" element={<GuardedRoute href="/laudos/imprimir"><ImprimirExames /></GuardedRoute>} />
-        <Route path="/laudos/cadastro" element={<GuardedRoute href="/laudos/cadastro"><CadastroLaudos /></GuardedRoute>} />
-        <Route path="/configuracoes" element={<GuardedRoute href="/configuracoes"><SettingsPage /></GuardedRoute>} />
+        <Route path="/pacientes" element={<DynamicGuard route="/pacientes"><Patients /></DynamicGuard>} />
+        <Route path="/pedidos" element={<DynamicGuard route="/pedidos"><Orders /></DynamicGuard>} />
+        <Route path="/amostras" element={<DynamicGuard route="/amostras"><Samples /></DynamicGuard>} />
+        <Route path="/worklist" element={<DynamicGuard route="/worklist"><Worklist /></DynamicGuard>} />
+        <Route path="/qc" element={<DynamicGuard route="/qc"><QualityControl /></DynamicGuard>} />
+        <Route path="/resultados" element={<DynamicGuard route="/resultados"><Results /></DynamicGuard>} />
+        <Route path="/laudos" element={<DynamicGuard route="/laudos"><Laudos /></DynamicGuard>} />
+        <Route path="/laudos/validar" element={<DynamicGuard route="/laudos/validar"><ValidarExames /></DynamicGuard>} />
+        <Route path="/laudos/liberar" element={<DynamicGuard route="/laudos/liberar"><LiberarExames /></DynamicGuard>} />
+        <Route path="/laudos/incompletos" element={<DynamicGuard route="/laudos/incompletos"><PedidosIncompletos /></DynamicGuard>} />
+        <Route path="/laudos/imprimir" element={<DynamicGuard route="/laudos/imprimir"><ImprimirExames /></DynamicGuard>} />
+        <Route path="/laudos/cadastro" element={<DynamicGuard route="/laudos/cadastro"><CadastroLaudos /></DynamicGuard>} />
+        <Route path="/configuracoes" element={<DynamicGuard route="/configuracoes"><SettingsPage /></DynamicGuard>} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
