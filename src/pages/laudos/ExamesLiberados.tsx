@@ -1,11 +1,11 @@
+import React, { useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Search, Printer, ChevronDown, ChevronUp, User, Undo2 } from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
+import { CheckCircle2, Search, Printer, ChevronDown, ChevronUp, User, Undo2, ClipboardList } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
@@ -23,17 +23,26 @@ interface ExamParam {
   sort_order: number | null;
 }
 
+interface GroupedOrder {
+  orderNumber: string;
+  doctorName: string;
+  insurance: string;
+  results: any[];
+}
+
 interface GroupedPatient {
   patientName: string;
   patientCpf: string;
   patientBirthDate: string;
   patientGender: string;
-  results: any[];
+  orders: GroupedOrder[];
+  totalExams: number;
 }
 
 const ExamesLiberados = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedPatients, setExpandedPatients] = useState<Set<string>>(new Set());
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
   const { role } = useUserRole();
   const isAdmin = role === "admin";
   const queryClient = useQueryClient();
@@ -114,37 +123,21 @@ const ExamesLiberados = () => {
   const buildResultWithParams = useCallback((r: any) => {
     const params = getExamParams(r);
     if (!params) {
-      return {
-        exam: r.exam,
-        value: r.value,
-        unit: r.unit,
-        referenceRange: r.reference_range,
-        flag: r.flag,
-      };
+      return { exam: r.exam, value: r.value, unit: r.unit, referenceRange: r.reference_range, flag: r.flag };
     }
     const paramValues = getParamValues(r);
     return {
-      exam: r.exam,
-      value: "",
-      unit: "",
-      referenceRange: "",
-      flag: r.flag,
+      exam: r.exam, value: "", unit: "", referenceRange: "", flag: r.flag,
       parameters: params.map(p => ({
-        section: p.section || "",
-        name: p.name,
-        value: paramValues[p.name] || "—",
-        unit: p.unit || "",
-        referenceRange: p.reference_range || "",
+        section: p.section || "", name: p.name, value: paramValues[p.name] || "—",
+        unit: p.unit || "", referenceRange: p.reference_range || "",
       })),
     };
   }, [getExamParams]);
 
   const revertMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("results").update({
-        status: "validated",
-        released_at: null,
-      }).eq("id", id);
+      const { error } = await supabase.from("results").update({ status: "validated", released_at: null }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -158,13 +151,13 @@ const ExamesLiberados = () => {
   const searchLower = searchQuery.toLowerCase();
 
   const grouped = useMemo(() => {
-    const map = new Map<string, GroupedPatient>();
+    const patientMap = new Map<string, GroupedPatient>();
 
     for (const r of results as any[]) {
       const patient = r.orders?.patients;
-      const key = patient?.cpf || r.orders?.order_number || r.id;
+      const patientKey = patient?.cpf || r.id;
       const patientName = patient?.name || "—";
-      const orderNumber = r.orders?.order_number || "";
+      const orderNumber = r.orders?.order_number || "—";
 
       if (searchLower && !patientName.toLowerCase().includes(searchLower) &&
           !orderNumber.toLowerCase().includes(searchLower) &&
@@ -172,26 +165,47 @@ const ExamesLiberados = () => {
         continue;
       }
 
-      if (!map.has(key)) {
-        map.set(key, {
+      if (!patientMap.has(patientKey)) {
+        patientMap.set(patientKey, {
           patientName,
           patientCpf: patient?.cpf || "",
           patientBirthDate: patient?.birth_date || "",
           patientGender: patient?.gender || "",
-          results: [],
+          orders: [],
+          totalExams: 0,
         });
       }
-      map.get(key)!.results.push(r);
+
+      const pg = patientMap.get(patientKey)!;
+      let order = pg.orders.find(o => o.orderNumber === orderNumber);
+      if (!order) {
+        order = {
+          orderNumber,
+          doctorName: r.orders?.doctor_name || "",
+          insurance: r.orders?.insurance || "Particular",
+          results: [],
+        };
+        pg.orders.push(order);
+      }
+      order.results.push(r);
+      pg.totalExams++;
     }
 
-    return [...map.values()].sort((a, b) => a.patientName.localeCompare(b.patientName));
+    return [...patientMap.values()].sort((a, b) => a.patientName.localeCompare(b.patientName));
   }, [results, searchLower]);
 
-  const togglePatient = (cpf: string) => {
+  const togglePatient = (key: string) => {
     setExpandedPatients(prev => {
       const next = new Set(prev);
-      if (next.has(cpf)) next.delete(cpf);
-      else next.add(cpf);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
+  const toggleOrder = (key: string) => {
+    setExpandedOrders(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
   };
@@ -200,179 +214,79 @@ const ExamesLiberados = () => {
     const order = r.orders as any;
     const patient = order?.patients;
     const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
-
     const doc = generateLaudoPDF({
-      orderNumber: order?.order_number || "",
-      patientName: patient?.name || "",
+      orderNumber: order?.order_number || "", patientName: patient?.name || "",
       patientCpf: patient?.cpf || "",
       patientBirthDate: patient?.birth_date ? new Date(patient.birth_date).toLocaleDateString("pt-BR") : "—",
-      patientGender: patient?.gender || "",
-      doctorName: order?.doctor_name || "",
+      patientGender: patient?.gender || "", doctorName: order?.doctor_name || "",
       insurance: order?.insurance || "Particular",
       collectedAt: r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy") : "—",
       releasedAt: r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—",
       results: [buildResultWithParams(r)],
-      analystName: analyst?.full_name || "Analista",
-      analystCrm: analyst?.crm || undefined,
+      analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
   }, [profileMap, buildResultWithParams]);
 
+  const handlePrintOrder = useCallback((group: GroupedPatient, order: GroupedOrder) => {
+    const first = order.results[0];
+    const analyst = first?.analyst_id ? profileMap.get(first.analyst_id) : null;
+    const latestRelease = order.results.reduce((l: string | null, r: any) => {
+      if (!r.released_at) return l; if (!l) return r.released_at;
+      return r.released_at > l ? r.released_at : l;
+    }, null);
+    const doc = generateLaudoPDF({
+      orderNumber: order.orderNumber, patientName: group.patientName, patientCpf: group.patientCpf,
+      patientBirthDate: group.patientBirthDate ? new Date(group.patientBirthDate).toLocaleDateString("pt-BR") : "—",
+      patientGender: group.patientGender, doctorName: order.doctorName, insurance: order.insurance,
+      collectedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy") : "—",
+      releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
+      results: order.results.map((r: any) => buildResultWithParams(r)),
+      analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+    });
+    doc.save(`Laudo_${order.orderNumber}.pdf`);
+  }, [profileMap, buildResultWithParams]);
+
   const handlePrintAll = useCallback((group: GroupedPatient) => {
-    const first = group.results[0];
+    const allResults = group.orders.flatMap(o => o.results);
+    const first = allResults[0];
     const order = first?.orders as any;
     const analyst = first?.analyst_id ? profileMap.get(first.analyst_id) : null;
-    const latestRelease = group.results.reduce((latest: string | null, r: any) => {
-      if (!r.released_at) return latest;
-      if (!latest) return r.released_at;
-      return r.released_at > latest ? r.released_at : latest;
+    const latestRelease = allResults.reduce((l: string | null, r: any) => {
+      if (!r.released_at) return l; if (!l) return r.released_at;
+      return r.released_at > l ? r.released_at : l;
     }, null);
-
     const doc = generateLaudoPDF({
-      orderNumber: order?.order_number || "",
-      patientName: group.patientName,
-      patientCpf: group.patientCpf,
+      orderNumber: group.orders.map(o => o.orderNumber).join(", "),
+      patientName: group.patientName, patientCpf: group.patientCpf,
       patientBirthDate: group.patientBirthDate ? new Date(group.patientBirthDate).toLocaleDateString("pt-BR") : "—",
-      patientGender: group.patientGender,
-      doctorName: order?.doctor_name || "",
+      patientGender: group.patientGender, doctorName: order?.doctor_name || "",
       insurance: order?.insurance || "Particular",
       collectedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy") : "—",
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
-      results: group.results.map((r: any) => buildResultWithParams(r)),
-      analystName: analyst?.full_name || "Analista",
-      analystCrm: analyst?.crm || undefined,
+      results: allResults.map((r: any) => buildResultWithParams(r)),
+      analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
     });
     doc.save(`Laudo_${group.patientName.replace(/\s+/g, "_")}_completo.pdf`);
   }, [profileMap, buildResultWithParams]);
 
-  const totalExams = grouped.reduce((sum, g) => sum + g.results.length, 0);
-
-  const renderResultRow = (r: any) => {
-    const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
-    const params = getExamParams(r);
-    const isComposite = !!params;
-    const paramValues = isComposite ? getParamValues(r) : {};
-
-    return (
-      <React.Fragment key={r.id}>
-        <TableRow className={isComposite ? "border-b-0" : ""}>
-          <TableCell className="font-mono text-xs">{r.orders?.order_number || "—"}</TableCell>
-          <TableCell className="font-semibold">{r.exam}</TableCell>
-          <TableCell className="font-mono font-semibold">
-            {isComposite ? (
-              <span className="text-xs text-muted-foreground italic">{params!.length} parâmetros</span>
-            ) : (
-              <>{r.value} {r.unit}</>
-            )}
-          </TableCell>
-          <TableCell>
-            <Badge variant={r.flag === "normal" ? "secondary" : "destructive"} className="text-xs">
-              {r.flag}
-            </Badge>
-          </TableCell>
-          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-            {r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—"}
-          </TableCell>
-          <TableCell className="text-sm">{analyst?.full_name || "—"}</TableCell>
-          <TableCell className="text-right">
-            <div className="flex items-center justify-end gap-1">
-              <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrint(r); }}>
-                <Printer className="w-3.5 h-3.5 mr-1" /> PDF
-              </Button>
-              {isAdmin && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={(e) => e.stopPropagation()}
-                      disabled={revertMutation.isPending}
-                    >
-                      <Undo2 className="w-3.5 h-3.5 mr-1" />
-                      Reverter
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Reverter liberação?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        O exame <span className="font-semibold">{r.exam}</span> do pedido{" "}
-                        <span className="font-mono font-semibold">{r.orders?.order_number}</span>{" "}
-                        será revertido para o status "validado" e precisará ser liberado novamente.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => revertMutation.mutate(r.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Reverter Liberação
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            </div>
-          </TableCell>
-        </TableRow>
-        {isComposite && (
-          <TableRow>
-            <TableCell colSpan={7} className="p-0 pl-8 pr-4 pb-3 pt-0">
-              <div className="bg-muted/40 rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="text-xs">
-                      <TableHead className="h-8">Parâmetro</TableHead>
-                      <TableHead className="h-8">Resultado</TableHead>
-                      <TableHead className="h-8">Unidade</TableHead>
-                      <TableHead className="h-8">Referência</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {params!.map((p, idx) => {
-                      const val = paramValues[p.name] || "—";
-                      return (
-                        <TableRow key={p.id || idx} className="text-xs">
-                          <TableCell className="py-1.5">{p.name}</TableCell>
-                          <TableCell className="py-1.5 font-mono font-semibold">{val}</TableCell>
-                          <TableCell className="py-1.5 text-muted-foreground">{p.unit || ""}</TableCell>
-                          <TableCell className="py-1.5 text-muted-foreground">{p.reference_range || ""}</TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            </TableCell>
-          </TableRow>
-        )}
-      </React.Fragment>
-    );
-  };
+  const totalExams = grouped.reduce((sum, g) => sum + g.totalExams, 0);
+  const totalOrders = grouped.reduce((sum, g) => sum + g.orders.length, 0);
 
   return (
     <div className="p-6 space-y-6 max-w-[70%]">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Pacientes Liberados</h1>
-        <p className="text-sm text-muted-foreground">
-          Histórico de pacientes com exames já liberados e laudo finalizado
-        </p>
+        <p className="text-sm text-muted-foreground">Histórico de pacientes com exames já liberados e laudo finalizado</p>
       </div>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar paciente, pedido ou exame..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="pl-9"
-        />
+        <Input placeholder="Buscar paciente, pedido ou exame..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9" />
       </div>
 
       <p className="text-sm text-muted-foreground">
-        {grouped.length} paciente{grouped.length !== 1 ? "s" : ""} · {totalExams} exame{totalExams !== 1 ? "s" : ""} liberado{totalExams !== 1 ? "s" : ""}
+        {grouped.length} paciente{grouped.length !== 1 ? "s" : ""} · {totalOrders} pedido{totalOrders !== 1 ? "s" : ""} · {totalExams} exame{totalExams !== 1 ? "s" : ""}
       </p>
 
       {isLoading ? (
@@ -385,16 +299,12 @@ const ExamesLiberados = () => {
       ) : (
         <div className="space-y-3">
           {grouped.map(group => {
-            const key = group.patientCpf || group.patientName;
-            const isExpanded = expandedPatients.has(key);
-            const latestRelease = group.results[0]?.released_at;
+            const patientKey = group.patientCpf || group.patientName;
+            const isPatientExpanded = expandedPatients.has(patientKey);
 
             return (
-              <Card key={key}>
-                <button
-                  className="w-full text-left"
-                  onClick={() => togglePatient(key)}
-                >
+              <Card key={patientKey}>
+                <button className="w-full text-left" onClick={() => togglePatient(patientKey)}>
                   <CardHeader className="pb-2 pt-4 px-5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -404,50 +314,150 @@ const ExamesLiberados = () => {
                         <div>
                           <CardTitle className="text-base">{group.patientName}</CardTitle>
                           <p className="text-xs text-muted-foreground">
-                            {group.patientCpf && <span className="font-mono">{group.patientCpf}</span>}
-                            {group.patientCpf && " · "}
-                            {group.results.length} exame{group.results.length !== 1 ? "s" : ""}
-                            {latestRelease && ` · Último: ${format(new Date(latestRelease), "dd/MM/yyyy")}`}
+                            {group.patientCpf && <><span className="font-mono">{group.patientCpf}</span> · </>}
+                            {group.orders.length} pedido{group.orders.length !== 1 ? "s" : ""} · {group.totalExams} exame{group.totalExams !== 1 ? "s" : ""}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={(e) => { e.stopPropagation(); handlePrintAll(group); }}
-                          className="text-xs"
-                        >
+                        <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrintAll(group); }} className="text-xs">
                           <Printer className="w-3.5 h-3.5 mr-1" /> Todos
                         </Button>
-                        {isExpanded ? (
-                          <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                        )}
+                        {isPatientExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                       </div>
                     </div>
                   </CardHeader>
                 </button>
 
-                {isExpanded && (
-                  <CardContent className="p-0 pt-1">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[180px]">Pedido</TableHead>
-                          <TableHead>Exame</TableHead>
-                          <TableHead>Resultado</TableHead>
-                          <TableHead>Flag</TableHead>
-                          <TableHead>Liberado em</TableHead>
-                          <TableHead>Liberado por</TableHead>
-                          <TableHead className="text-right">Ações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {group.results.map((r: any) => renderResultRow(r))}
-                      </TableBody>
-                    </Table>
+                {isPatientExpanded && (
+                  <CardContent className="px-5 pb-4 pt-1 space-y-2">
+                    {group.orders.map(order => {
+                      const orderKey = `${patientKey}::${order.orderNumber}`;
+                      const isOrderExpanded = expandedOrders.has(orderKey);
+                      const latestRelease = order.results[0]?.released_at;
+
+                      return (
+                        <div key={orderKey} className="border rounded-lg overflow-hidden">
+                          <button className="w-full text-left flex items-center justify-between px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors" onClick={() => toggleOrder(orderKey)}>
+                            <div className="flex items-center gap-2">
+                              <ClipboardList className="w-4 h-4 text-muted-foreground" />
+                              <span className="font-mono text-sm font-semibold">{order.orderNumber}</span>
+                              <span className="text-xs text-muted-foreground">
+                                · {order.results.length} exame{order.results.length !== 1 ? "s" : ""}
+                                {latestRelease && ` · ${format(new Date(latestRelease), "dd/MM/yyyy")}`}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button size="sm" variant="outline" className="text-xs" onClick={(e) => { e.stopPropagation(); handlePrintOrder(group, order); }}>
+                                <Printer className="w-3.5 h-3.5 mr-1" /> PDF Pedido
+                              </Button>
+                              {isOrderExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
+                            </div>
+                          </button>
+
+                          {isOrderExpanded && (
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Exame</TableHead>
+                                  <TableHead>Resultado</TableHead>
+                                  <TableHead>Flag</TableHead>
+                                  <TableHead>Liberado em</TableHead>
+                                  <TableHead>Liberado por</TableHead>
+                                  <TableHead className="text-right">Ações</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {order.results.map((r: any) => {
+                                  const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
+                                  const params = getExamParams(r);
+                                  const isComposite = !!params;
+                                  const paramValues = isComposite ? getParamValues(r) : {};
+
+                                  return (
+                                    <React.Fragment key={r.id}>
+                                      <TableRow className={isComposite ? "border-b-0" : ""}>
+                                        <TableCell className="font-semibold">{r.exam}</TableCell>
+                                        <TableCell className="font-mono font-semibold">
+                                          {isComposite ? (
+                                            <span className="text-xs text-muted-foreground italic">{params!.length} parâmetros</span>
+                                          ) : (
+                                            <>{r.value} {r.unit}</>
+                                          )}
+                                        </TableCell>
+                                        <TableCell>
+                                          <Badge variant={r.flag === "normal" ? "secondary" : "destructive"} className="text-xs">{r.flag}</Badge>
+                                        </TableCell>
+                                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                                          {r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—"}
+                                        </TableCell>
+                                        <TableCell className="text-sm">{analyst?.full_name || "—"}</TableCell>
+                                        <TableCell className="text-right">
+                                          <div className="flex items-center justify-end gap-1">
+                                            <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrint(r); }}>
+                                              <Printer className="w-3.5 h-3.5 mr-1" /> PDF
+                                            </Button>
+                                            {isAdmin && (
+                                              <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => e.stopPropagation()} disabled={revertMutation.isPending}>
+                                                    <Undo2 className="w-3.5 h-3.5 mr-1" /> Reverter
+                                                  </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                                                  <AlertDialogHeader>
+                                                    <AlertDialogTitle>Reverter liberação?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                      O exame <span className="font-semibold">{r.exam}</span> do pedido <span className="font-mono font-semibold">{order.orderNumber}</span> será revertido para "validado".
+                                                    </AlertDialogDescription>
+                                                  </AlertDialogHeader>
+                                                  <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => revertMutation.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Reverter Liberação</AlertDialogAction>
+                                                  </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                              </AlertDialog>
+                                            )}
+                                          </div>
+                                        </TableCell>
+                                      </TableRow>
+                                      {isComposite && (
+                                        <TableRow>
+                                          <TableCell colSpan={6} className="p-0 pl-6 pr-4 pb-3 pt-0">
+                                            <div className="bg-muted/40 rounded-md border">
+                                              <Table>
+                                                <TableHeader>
+                                                  <TableRow className="text-xs">
+                                                    <TableHead className="h-8">Parâmetro</TableHead>
+                                                    <TableHead className="h-8">Resultado</TableHead>
+                                                    <TableHead className="h-8">Unidade</TableHead>
+                                                    <TableHead className="h-8">Referência</TableHead>
+                                                  </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                  {params!.map((p, idx) => (
+                                                    <TableRow key={p.id || idx} className="text-xs">
+                                                      <TableCell className="py-1.5">{p.name}</TableCell>
+                                                      <TableCell className="py-1.5 font-mono font-semibold">{paramValues[p.name] || "—"}</TableCell>
+                                                      <TableCell className="py-1.5 text-muted-foreground">{p.unit || ""}</TableCell>
+                                                      <TableCell className="py-1.5 text-muted-foreground">{p.reference_range || ""}</TableCell>
+                                                    </TableRow>
+                                                  ))}
+                                                </TableBody>
+                                              </Table>
+                                            </div>
+                                          </TableCell>
+                                        </TableRow>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          )}
+                        </div>
+                      );
+                    })}
                   </CardContent>
                 )}
               </Card>
@@ -458,7 +468,5 @@ const ExamesLiberados = () => {
     </div>
   );
 };
-
-import React from "react";
 
 export default ExamesLiberados;
