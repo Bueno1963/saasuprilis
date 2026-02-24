@@ -396,6 +396,33 @@ export type Database = {
         }
         Relationships: []
       }
+      permission_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          performed_by: string
+          route: string
+          target_role: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          performed_by: string
+          route: string
+          target_role: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          performed_by?: string
+          route?: string
+          target_role?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

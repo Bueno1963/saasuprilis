@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft, Shield, History } from "lucide-react";
+import { format } from "date-fns";
 import { navItems, type AppRole } from "@/lib/navigation";
 import { useAllRolePermissions } from "@/hooks/useRolePermissions";
 
@@ -56,6 +57,25 @@ const UsersSettings = ({ onBack }: Props) => {
   });
 
   const { data: permissions = [], isLoading: permLoading } = useAllRolePermissions();
+
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ["permission_audit_log"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("permission_audit_log")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Map user IDs to names for audit display
+  const getProfileName = (userId: string) => {
+    const p = profiles.find(pr => pr.user_id === userId);
+    return p?.full_name || "Usuário desconhecido";
+  };
 
   const updateRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
@@ -122,6 +142,10 @@ const UsersSettings = ({ onBack }: Props) => {
           <TabsTrigger value="permissions" className="gap-1.5">
             <Shield className="h-3.5 w-3.5" />
             Permissões do Menu
+          </TabsTrigger>
+          <TabsTrigger value="audit" className="gap-1.5">
+            <History className="h-3.5 w-3.5" />
+            Auditoria
           </TabsTrigger>
         </TabsList>
 
@@ -207,6 +231,55 @@ const UsersSettings = ({ onBack }: Props) => {
                   </TableBody>
                 </Table>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="audit" className="mt-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Log de Auditoria</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Histórico de alterações de permissões realizadas por administradores.
+              </p>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data/Hora</TableHead>
+                    <TableHead>Administrador</TableHead>
+                    <TableHead>Ação</TableHead>
+                    <TableHead>Perfil</TableHead>
+                    <TableHead>Módulo</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {auditLogs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        Nenhum registro de auditoria
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    auditLogs.map((log) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {format(new Date(log.created_at), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                        <TableCell className="font-medium">{getProfileName(log.performed_by)}</TableCell>
+                        <TableCell>
+                          <span className={log.action === "grant" ? "text-green-600 font-medium" : "text-destructive font-medium"}>
+                            {log.action === "grant" ? "Concedeu" : "Revogou"}
+                          </span>
+                        </TableCell>
+                        <TableCell>{ROLES.find(r => r.value === log.target_role)?.label || log.target_role}</TableCell>
+                        <TableCell>{MENU_LABELS[log.route] || log.route}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
