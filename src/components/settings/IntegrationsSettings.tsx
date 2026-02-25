@@ -1,33 +1,15 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, List, Filter, TableProperties } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, TableProperties } from "lucide-react";
 import IntegrationsListPage from "./IntegrationsListPage";
 
 interface Props { onBack: () => void; }
 
 const IntegrationsSettings = ({ onBack }: Props) => {
-  const [showEquipList, setShowEquipList] = useState(false);
   const [showListPage, setShowListPage] = useState(false);
-  const [filterProtocol, setFilterProtocol] = useState<string>("all");
-  const [filterSector, setFilterSector] = useState<string>("all");
 
-  const { data: equipment = [] } = useQuery({
-    queryKey: ["equipment-integrated"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("equipment").select("*").order("name");
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Show integrations list page
   if (showListPage) {
     return <IntegrationsListPage onBack={() => setShowListPage(false)} />;
   }
@@ -42,10 +24,7 @@ const IntegrationsSettings = ({ onBack }: Props) => {
             <p className="text-sm text-muted-foreground">HL7, ASTM, APIs externas</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setShowEquipList(true)}><List className="h-4 w-4 mr-2" />Equipamentos Integrados</Button>
-          <Button onClick={() => setShowListPage(true)}><TableProperties className="h-4 w-4 mr-2" />Integrações Cadastradas</Button>
-        </div>
+        <Button onClick={() => setShowListPage(true)}><TableProperties className="h-4 w-4 mr-2" />Integrações Cadastradas</Button>
       </div>
 
       {/* Padrões Técnicos */}
@@ -168,79 +147,6 @@ const IntegrationsSettings = ({ onBack }: Props) => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Dialog Lista Equipamentos Integrados */}
-      <Dialog open={showEquipList} onOpenChange={(open) => { setShowEquipList(open); if (!open) { setFilterProtocol("all"); setFilterSector("all"); } }}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
-          <DialogHeader>
-            <DialogTitle>Equipamentos Integrados</DialogTitle>
-          </DialogHeader>
-          <div className="flex items-center gap-3 pb-2">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={filterProtocol} onValueChange={setFilterProtocol}>
-                <SelectTrigger className="w-[160px] h-9 text-xs">
-                  <SelectValue placeholder="Protocolo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os Protocolos</SelectItem>
-                  {[...new Set(equipment.map(e => e.protocol).filter(Boolean))].map(p => (
-                    <SelectItem key={p} value={p!}>{p}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Select value={filterSector} onValueChange={setFilterSector}>
-              <SelectTrigger className="w-[160px] h-9 text-xs">
-                <SelectValue placeholder="Setor" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Setores</SelectItem>
-                {[...new Set(equipment.map(e => e.sector).filter(Boolean))].map(s => (
-                  <SelectItem key={s} value={s!}>{s}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {(filterProtocol !== "all" || filterSector !== "all") && (
-              <Button variant="ghost" size="sm" className="text-xs h-9" onClick={() => { setFilterProtocol("all"); setFilterSector("all"); }}>Limpar</Button>
-            )}
-          </div>
-          {(() => {
-            const filtered = equipment.filter(eq =>
-              (filterProtocol === "all" || eq.protocol === filterProtocol) &&
-              (filterSector === "all" || eq.sector === filterSector)
-            );
-            return (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Fabricante</TableHead>
-                    <TableHead>Modelo</TableHead>
-                    <TableHead>Protocolo</TableHead>
-                    <TableHead>Setor</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Nenhum equipamento encontrado</TableCell></TableRow>
-                  ) : filtered.map((eq) => (
-                    <TableRow key={eq.id}>
-                      <TableCell className="font-medium">{eq.name}</TableCell>
-                      <TableCell className="text-sm">{eq.manufacturer || "—"}</TableCell>
-                      <TableCell className="text-sm">{eq.model || "—"}</TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{eq.protocol || "—"}</Badge></TableCell>
-                      <TableCell className="text-sm">{eq.sector || "—"}</TableCell>
-                      <TableCell><Badge variant={eq.status === "active" ? "default" : "secondary"}>{eq.status === "active" ? "Ativo" : "Inativo"}</Badge></TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            );
-          })()}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
