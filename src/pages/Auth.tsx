@@ -65,7 +65,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="flex w-full max-w-[860px] min-h-[480px] rounded-2xl overflow-hidden shadow-2xl border border-border/40">
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
         {/* Gradient background */}
@@ -76,21 +77,21 @@ const Auth = () => {
           backgroundSize: '40px 40px'
         }} />
 
-        <div className="relative z-10 flex flex-col justify-between p-10 w-full">
+        <div className="relative z-10 flex flex-col justify-between p-7 w-full">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
-              <FlaskConical className="w-6 h-6 text-white" />
+            <div className="w-9 h-9 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+              <FlaskConical className="w-5 h-5 text-white" />
             </div>
           </div>
 
           {/* Main content */}
-          <div className="space-y-5 max-w-md">
-            <h1 className="text-4xl font-bold text-white leading-tight">
+          <div className="space-y-3 max-w-sm">
+            <h1 className="text-2xl font-bold text-white leading-tight">
               Sistema de Gestão{" "}
               <span className="text-[hsl(170,80%,70%)]">Laboratorial</span>
             </h1>
-            <p className="text-white/75 text-sm leading-relaxed">
+            <p className="text-white/75 text-xs leading-relaxed">
               Sistema de gestão laboratorial (LIS) desenvolvido para integrar processos, 
               equipamentos e informações em um único ambiente. Com interfaceamento próprio, garante 
               segurança, agilidade e confiabilidade na comunicação com analisadores, do cadastro da 
@@ -99,25 +100,25 @@ const Auth = () => {
           </div>
 
           {/* Footer */}
-          <p className="text-white/40 text-xs">© 2026 — Todos os direitos reservados</p>
+          <p className="text-white/40 text-[10px]">© 2026 — Todos os direitos reservados</p>
         </div>
       </div>
 
       {/* Right Panel - Form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
-        <div className="w-full max-w-md space-y-8">
+      <div className="flex-1 flex items-center justify-center p-5 sm:p-8 bg-card">
+        <div className="w-full max-w-sm space-y-5">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-3 justify-center mb-4">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <FlaskConical className="w-5 h-5 text-primary-foreground" />
+          <div className="lg:hidden flex items-center gap-3 justify-center mb-2">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+              <FlaskConical className="w-4 h-4 text-primary-foreground" />
             </div>
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-foreground">
+            <h2 className="text-xl font-bold text-foreground">
               {isForgotPassword ? "Recuperar Senha" : isLogin ? "Acessar Sistema" : "Criar Conta"}
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {isForgotPassword
                 ? "Digite seu email para receber o link de recuperação"
                 : isLogin ? "Entre com suas credenciais" : "Preencha os dados para cadastro"}
@@ -278,6 +279,7 @@ const Auth = () => {
             </>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
