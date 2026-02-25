@@ -5,13 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Shield, History, UserPlus } from "lucide-react";
+import { ArrowLeft, History, UserPlus } from "lucide-react";
 import { format } from "date-fns";
-import { navItems, type AppRole } from "@/lib/navigation";
-import { useAllRolePermissions } from "@/hooks/useRolePermissions";
+import { type AppRole } from "@/lib/navigation";
 import CreateUserDialog from "./CreateUserDialog";
 
 interface Props { onBack: () => void; }
@@ -35,7 +34,7 @@ const MENU_LABELS: Record<string, string> = {
   "/recepcao": "Recepção",
 };
 
-const ROUTES = Object.keys(MENU_LABELS);
+
 
 const UsersSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
@@ -59,7 +58,11 @@ const UsersSettings = ({ onBack }: Props) => {
     },
   });
 
-  const { data: permissions = [], isLoading: permLoading } = useAllRolePermissions();
+  const getRoleForUser = (userId: string) => {
+    const r = roles.find((r) => r.user_id === userId);
+    return r?.role || "tecnico";
+  };
+
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ["permission_audit_log"],
@@ -95,39 +98,6 @@ const UsersSettings = ({ onBack }: Props) => {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const togglePermission = useMutation({
-    mutationFn: async ({ role, route, allowed }: { role: AppRole; route: string; allowed: boolean }) => {
-      const existing = permissions?.find(p => p.role === role && p.route === route);
-      if (existing) {
-        const { error } = await supabase
-          .from("role_permissions")
-          .update({ allowed })
-          .eq("id", existing.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("role_permissions")
-          .insert({ role: role as any, route, allowed });
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["all_role_permissions"] });
-      qc.invalidateQueries({ queryKey: ["role_permissions"] });
-      toast.success("Permissão atualizada!");
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  const getRoleForUser = (userId: string) => {
-    const r = roles.find((r) => r.user_id === userId);
-    return r?.role || "tecnico";
-  };
-
-  const isAllowed = (role: AppRole, route: string) => {
-    const perm = permissions?.find(p => p.role === role && p.route === route);
-    return perm?.allowed ?? false;
-  };
 
   return (
     <div className="p-6 space-y-6">
@@ -154,10 +124,6 @@ const UsersSettings = ({ onBack }: Props) => {
       <Tabs defaultValue="users">
         <TabsList>
           <TabsTrigger value="users">Usuários</TabsTrigger>
-          <TabsTrigger value="permissions" className="gap-1.5">
-            <Shield className="h-3.5 w-3.5" />
-            Permissões do Menu
-          </TabsTrigger>
           <TabsTrigger value="audit" className="gap-1.5">
             <History className="h-3.5 w-3.5" />
             Auditoria
@@ -201,54 +167,6 @@ const UsersSettings = ({ onBack }: Props) => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="permissions" className="mt-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Acesso ao Menu por Perfil</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Ative ou desative o acesso a cada módulo do sistema para cada perfil de usuário.
-              </p>
-            </CardHeader>
-            <CardContent className="p-0">
-              {permLoading ? (
-                <div className="p-6 text-center text-muted-foreground">Carregando...</div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[200px]">Módulo</TableHead>
-                      {ROLES.map(r => (
-                        <TableHead key={r.value} className="text-center">{r.label}</TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {ROUTES.map(route => (
-                      <TableRow key={route}>
-                        <TableCell className="font-medium">{MENU_LABELS[route]}</TableCell>
-                        {ROLES.map(r => (
-                          <TableCell key={r.value} className="text-center">
-                            {r.value === "admin" ? (
-                              <Switch checked={true} disabled className="mx-auto" />
-                            ) : (
-                              <Switch
-                                checked={isAllowed(r.value, route)}
-                                onCheckedChange={(checked) =>
-                                  togglePermission.mutate({ role: r.value, route, allowed: checked })
-                                }
-                                className="mx-auto"
-                              />
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="audit" className="mt-4">
           <Card>
