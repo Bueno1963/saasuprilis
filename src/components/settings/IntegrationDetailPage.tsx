@@ -11,9 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Wifi, WifiOff, Clock } from "lucide-react";
+import { ArrowLeft, Save, Wifi, WifiOff } from "lucide-react";
+import IntegrationLogsTab from "./IntegrationLogsTab";
 import { useForm, Controller } from "react-hook-form";
-import { format } from "date-fns";
+
 
 interface Props {
   integrationId: string | null; // null = new
@@ -331,40 +332,10 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
 
         {/* Tab 4: Logs / Histórico */}
         <TabsContent value="logs">
-          <Card>
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground">Histórico de Sincronização</h3>
-                {integrationData?.last_sync && (
-                  <Badge variant="outline" className="gap-1 text-xs">
-                    <Clock className="h-3 w-3" />
-                    Última sync: {format(new Date(integrationData.last_sync), "dd/MM/yyyy HH:mm")}
-                  </Badge>
-                )}
-              </div>
-
-              {!integrationId ? (
-                <div className="text-center py-12 text-muted-foreground text-sm">
-                  Salve a integração primeiro para visualizar logs.
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {/* Simulated log entries */}
-                  <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-1">
-                    <p className="text-xs text-muted-foreground">Nenhum log registrado ainda para esta integração.</p>
-                    <p className="text-xs text-muted-foreground">
-                      Os logs de comunicação (envio/recebimento de mensagens, erros, timeouts) serão exibidos aqui após a primeira sincronização.
-                    </p>
-                  </div>
-                  <div className="rounded-lg border border-dashed border-border p-4 text-center">
-                    <p className="text-xs text-muted-foreground">
-                      📋 Funcionalidades futuras: filtro por data, exportação de logs, alertas automáticos de falha de conexão.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <IntegrationLogsTab
+            integrationId={integrationId}
+            lastSync={integrationData?.last_sync}
+          />
         </TabsContent>
       </Tabs>
     </div>

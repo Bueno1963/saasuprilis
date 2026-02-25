@@ -211,6 +211,62 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_sync_logs: {
+        Row: {
+          created_at: string
+          destination_system: string
+          direction: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          integration_id: string
+          message: string
+          records_created: number
+          records_failed: number
+          records_updated: number
+          source_system: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          destination_system?: string
+          direction?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          integration_id: string
+          message?: string
+          records_created?: number
+          records_failed?: number
+          records_updated?: number
+          source_system?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          destination_system?: string
+          direction?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          integration_id?: string
+          message?: string
+          records_created?: number
+          records_failed?: number
+          records_updated?: number
+          source_system?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_sync_logs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integrations: {
         Row: {
           api_key_name: string | null
