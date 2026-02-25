@@ -141,6 +141,31 @@ const IntegrationsSettings = ({ onBack }: Props) => {
               </a>
             </div>
           </div>
+          {/* TISS */}
+          <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs font-bold">TISS</Badge>
+              <span className="text-xs text-muted-foreground">Troca de Informação em Saúde Suplementar — ANS</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Padrão obrigatório da <strong className="text-foreground">ANS (Agência Nacional de Saúde Suplementar)</strong> para troca eletrônica de informações entre prestadores de serviços de saúde e operadoras de planos:
+            </p>
+            <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
+              <li><strong className="text-foreground">TISS 4.x</strong> — Versão atual do padrão, com schemas XML para guias de autorização, faturamento e demonstrativos.</li>
+              <li><strong className="text-foreground">Guia SP/SADT</strong> — Guia de Serviço Profissional / Serviço Auxiliar de Diagnóstico e Terapia, principal formulário para laboratórios clínicos.</li>
+              <li><strong className="text-foreground">Tabela TUSS</strong> — Terminologia Unificada da Saúde Suplementar: códigos padronizados para procedimentos, materiais e medicamentos.</li>
+              <li><strong className="text-foreground">Lote de Guias (XML)</strong> — Envio eletrônico de lotes de faturamento às operadoras via web service ou portal.</li>
+              <li><strong className="text-foreground">Demonstrativo de Análise</strong> — Retorno da operadora com glosas, pagamentos e justificativas.</li>
+            </ul>
+            <div className="flex flex-wrap gap-3 mt-1">
+              <a href="https://www.gov.br/ans/pt-br/assuntos/prestadores/padrao-para-troca-de-informacao-de-saude-suplementar-2013-tiss" target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                📄 TISS — Portal ANS →
+              </a>
+              <a href="https://www.gov.br/ans/pt-br/assuntos/prestadores/padrao-para-troca-de-informacao-de-saude-suplementar-2013-tiss/padrao-tiss-tabelas-relacionadas" target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                📋 Tabela TUSS →
+              </a>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
