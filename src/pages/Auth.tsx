@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FlaskConical, User, Lock, ArrowRight } from "lucide-react";
+import { FlaskConical, User, Lock, ArrowRight, Shield, Microscope, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 
 const Auth = () => {
@@ -11,6 +11,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [selectedRole, setSelectedRole] = useState("tecnico");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,6 +152,37 @@ const Auth = () => {
                 />
               </div>
             </div>
+
+            {isLogin && (
+              <div className="space-y-2">
+                <Label>Perfil de acesso</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: "admin", label: "Admin", icon: Shield },
+                    { value: "tecnico", label: "Técnico", icon: Microscope },
+                    { value: "recepcao", label: "Recepção", icon: ClipboardList },
+                  ].map((p) => {
+                    const Icon = p.icon;
+                    const selected = selectedRole === p.value;
+                    return (
+                      <button
+                        key={p.value}
+                        type="button"
+                        onClick={() => setSelectedRole(p.value)}
+                        className={`flex flex-col items-center gap-1.5 rounded-xl border p-3 text-xs font-medium transition-all ${
+                          selected
+                            ? "border-accent bg-accent/10 text-accent shadow-sm"
+                            : "border-border/60 text-muted-foreground hover:border-accent/40 hover:bg-muted/50"
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <Button
               type="submit"
