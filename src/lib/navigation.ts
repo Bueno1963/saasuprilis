@@ -14,7 +14,7 @@ import {
   Printer,
   ShieldCheck,
   FilePlus2,
-  ConciergeBell,
+  
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
@@ -52,6 +52,6 @@ export const navItems: NavItem[] = [
       { title: "Cadastro de Laudos", href: "/laudos/cadastro", icon: FilePlus2 },
     ],
   },
-  { title: "Recepção", href: "/recepcao", icon: ConciergeBell, allowedRoles: ["admin", "recepcao"] },
+  
   { title: "Configurações", href: "/configuracoes", icon: Settings, allowedRoles: ["admin"] },
 ];
