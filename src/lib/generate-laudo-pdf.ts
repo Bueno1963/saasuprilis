@@ -39,8 +39,8 @@ const FLAG_LABELS: Record<string, string> = {
   critical: "⚠ Crítico",
 };
 
-export function generateLaudoPDF(data: LaudoData) {
-  const doc = new jsPDF();
+/** Draw a laudo on an existing jsPDF doc (current page) */
+export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Header
@@ -103,13 +103,11 @@ export function generateLaudoPDF(data: LaudoData) {
   doc.text("RESULTADOS", leftCol, y);
   y += 4;
 
-  // Build table body: expand composite exams into section headers + parameter rows
+  // Build table body
   const tableBody: any[][] = [];
   for (const r of data.results) {
     if (r.parameters && r.parameters.length > 0) {
-      // Exam name as a section header row
       tableBody.push([{ content: r.exam, colSpan: 5, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
-      
       let lastSection = "";
       for (const p of r.parameters) {
         if (p.section && p.section !== lastSection) {
@@ -128,19 +126,9 @@ export function generateLaudoPDF(data: LaudoData) {
     head: [["Exame / Parâmetro", "Resultado", "Unidade", "Valor de Referência", "Flag"]],
     body: tableBody,
     theme: "grid",
-    headStyles: {
-      fillColor: [20, 55, 90],
-      textColor: 255,
-      fontSize: 9,
-      fontStyle: "bold",
-    },
-    bodyStyles: {
-      fontSize: 9,
-      textColor: 40,
-    },
-    alternateRowStyles: {
-      fillColor: [245, 248, 252],
-    },
+    headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
+    bodyStyles: { fontSize: 9, textColor: 40 },
+    alternateRowStyles: { fillColor: [245, 248, 252] },
     columnStyles: {
       0: { cellWidth: 50 },
       1: { cellWidth: 30, fontStyle: "bold", halign: "center" },
@@ -184,6 +172,10 @@ export function generateLaudoPDF(data: LaudoData) {
     pageHeight - 10,
     { align: "center" }
   );
+}
 
+export function generateLaudoPDF(data: LaudoData) {
+  const doc = new jsPDF();
+  drawLaudoOnDoc(doc, data);
   return doc;
 }
