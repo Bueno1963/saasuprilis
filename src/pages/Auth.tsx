@@ -3,8 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity } from "lucide-react";
+import { FlaskConical, User, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 const Auth = () => {
@@ -43,61 +42,127 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-            <Activity className="w-7 h-7 text-primary-foreground" />
+    <div className="min-h-screen flex bg-background">
+      {/* Left Panel - Branding */}
+      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] via-[hsl(205,70%,35%)] to-[hsl(var(--accent))]" />
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: `radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }} />
+
+        <div className="relative z-10 flex flex-col justify-between p-10 w-full">
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+              <FlaskConical className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-lg font-semibold text-white tracking-tight">GestaLIS</span>
           </div>
-          <div>
-            <CardTitle className="text-2xl">LabFlow</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              {isLogin ? "Acesse sua conta" : "Criar nova conta"}
+
+          {/* Main content */}
+          <div className="space-y-5 max-w-md">
+            <h1 className="text-4xl font-bold text-white leading-tight">
+              Sistema de Gestão{" "}
+              <span className="text-[hsl(170,80%,70%)]">Laboratorial</span>
+            </h1>
+            <p className="text-white/75 text-sm leading-relaxed">
+              O GestaLIS é um sistema de gestão laboratorial (LIS) desenvolvido para integrar processos, 
+              equipamentos e informações em um único ambiente. Com interfaceamento próprio, garante 
+              segurança, agilidade e confiabilidade na comunicação com analisadores, do cadastro da 
+              amostra à liberação dos laudos.
             </p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Footer */}
+          <p className="text-white/40 text-xs">© 2026 GestaLIS — Todos os direitos reservados</p>
+        </div>
+      </div>
+
+      {/* Right Panel - Form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
+        <div className="w-full max-w-md space-y-8">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-3 justify-center mb-4">
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+              <FlaskConical className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="text-lg font-semibold text-foreground">GestaLIS</span>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">
+              {isLogin ? "Acessar Sistema" : "Criar Conta"}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isLogin ? "Entre com suas credenciais" : "Preencha os dados para cadastro"}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="fullName">Nome Completo</Label>
-                <Input
-                  id="fullName"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  placeholder="Dr. João Silva"
-                  required={!isLogin}
-                />
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="fullName"
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                    placeholder="Dr. João Silva"
+                    required={!isLogin}
+                    className="pl-10 h-11 border-border/60 focus:border-accent"
+                  />
+                </div>
               </div>
             )}
+
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="seu@email.com"
-                required
-              />
+              <Label htmlFor="email">Usuário</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="Digite seu usuário"
+                  required
+                  className="pl-10 h-11 border-border/60 focus:border-accent"
+                />
+              </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                minLength={6}
-              />
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Digite sua senha"
+                  required
+                  minLength={6}
+                  className="pl-10 h-11 border-border/60 focus:border-accent"
+                />
+              </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
+            >
               {loading ? "Aguarde..." : isLogin ? "Entrar" : "Criar Conta"}
+              {!loading && <ArrowRight className="h-4 w-4" />}
             </Button>
           </form>
-          <div className="mt-4 text-center">
+
+          <div className="text-center">
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
@@ -106,8 +171,8 @@ const Auth = () => {
               {isLogin ? "Não tem conta? Cadastre-se" : "Já tem conta? Faça login"}
             </button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
