@@ -81,23 +81,44 @@ const IntegrationsSettings = ({ onBack }: Props) => {
             Para garantir que diferentes marcas de equipamentos (espectrofotômetros, analisadores bioquímicos) se comuniquem com o LIS, utilizam-se protocolos padronizados:
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-1.5">
+            <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-2">
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="text-xs font-bold">ASTM</Badge>
                 <span className="text-xs text-muted-foreground">American Society for Testing and Materials</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Padrão comum para conexão direta entre analisadores clínicos e LIS. Protocolos <strong className="text-foreground">E1381</strong> (camada de transporte) e <strong className="text-foreground">E1394</strong> (estrutura de mensagens) definem como os dados fluem do equipamento ao sistema.
+                Padrão para conexão direta entre analisadores clínicos e LIS:
               </p>
+              <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
+                <li><strong className="text-foreground">E1381</strong> — Camada de transporte (low-level protocol): controle de fluxo, handshake e checksums entre equipamento e host.</li>
+                <li><strong className="text-foreground">E1394</strong> — Estrutura de mensagens (high-level): define campos como ID do paciente, resultados, flags e unidades.</li>
+                <li><strong className="text-foreground">LIS2-A2 (CLSI)</strong> — Evolução do ASTM E1394, mantida pelo CLSI, amplamente adotada por analisadores modernos.</li>
+              </ul>
+              <a href="https://clsi.org/standards/products/automation-and-informatics/documents/lis02/" target="_blank" rel="noopener noreferrer" className="inline-block text-xs text-primary hover:underline mt-1">
+                📄 Documentação CLSI LIS2-A2 →
+              </a>
             </div>
-            <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-1.5">
+            <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-2">
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="text-xs font-bold">HL7</Badge>
-                <span className="text-xs text-muted-foreground">Health Level Seven</span>
+                <span className="text-xs text-muted-foreground">Health Level Seven International</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Padrão internacional focado na interoperabilidade de sistemas de informação de saúde. Essencial para troca de dados entre LIS, <strong className="text-foreground">EMR</strong> (prontuários eletrônicos) e equipamentos laboratoriais.
+                Padrão internacional de interoperabilidade em saúde. Versões relevantes:
               </p>
+              <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
+                <li><strong className="text-foreground">HL7 v2.x</strong> — Versão mais utilizada em laboratórios. Mensagens delimitadas por pipe (|) nos segmentos ORM (pedidos), ORU (resultados) e ADT (admissão).</li>
+                <li><strong className="text-foreground">HL7 v3 / CDA</strong> — Baseado em XML, utilizado em documentos clínicos estruturados (Clinical Document Architecture).</li>
+                <li><strong className="text-foreground">FHIR (R4/R5)</strong> — Padrão moderno baseado em REST/JSON. Resources como <em>DiagnosticReport</em>, <em>Observation</em> e <em>ServiceRequest</em> facilitam integração com EMRs e portais.</li>
+              </ul>
+              <div className="flex flex-wrap gap-3 mt-1">
+                <a href="https://www.hl7.org/implement/standards/product_brief.cfm?product_id=185" target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                  📄 HL7 v2.x Spec →
+                </a>
+                <a href="https://hl7.org/fhir/" target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                  🔥 FHIR Documentation →
+                </a>
+              </div>
             </div>
           </div>
         </CardContent>
