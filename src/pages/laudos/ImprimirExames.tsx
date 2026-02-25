@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Printer, Search } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { generateLaudoPDF, drawLaudoOnDoc } from "@/lib/generate-laudo-pdf";
 
 const ImprimirExames = () => {
   const [search, setSearch] = useState("");
@@ -87,8 +87,29 @@ const ImprimirExames = () => {
     const toPrint = filtered.filter(g => selected.has(g.orderId));
     if (toPrint.length === 0) return;
 
-    for (const group of toPrint) {
-      const doc = generateLaudoPDF({
+    // Generate first PDF, then add pages for remaining orders
+    const firstGroup = toPrint[0];
+    const doc = generateLaudoPDF({
+      orderNumber: firstGroup.orderNumber,
+      patientName: firstGroup.patientName,
+      patientCpf: formatCpf(firstGroup.patientCpf),
+      patientBirthDate: new Date(firstGroup.patientBirthDate).toLocaleDateString("pt-BR"),
+      patientGender: firstGroup.patientGender,
+      doctorName: firstGroup.doctorName,
+      insurance: firstGroup.insurance,
+      collectedAt: firstGroup.releasedAt ? new Date(firstGroup.releasedAt).toLocaleDateString("pt-BR") : "—",
+      releasedAt: firstGroup.releasedAt ? new Date(firstGroup.releasedAt).toLocaleString("pt-BR") : "—",
+      results: firstGroup.results,
+      analystName: "Analista",
+    });
+
+    // Append remaining orders as new pages in the same document
+    for (let i = 1; i < toPrint.length; i++) {
+      const group = toPrint[i];
+      doc.addPage();
+      // Re-use generateLaudoPDF logic by generating a temp doc and copying isn't easy with jsPDF,
+      // so we'll call a helper that draws directly on the existing doc
+      drawLaudoOnDoc(doc, {
         orderNumber: group.orderNumber,
         patientName: group.patientName,
         patientCpf: formatCpf(group.patientCpf),
@@ -101,8 +122,12 @@ const ImprimirExames = () => {
         results: group.results,
         analystName: "Analista",
       });
-      doc.save(`Laudo_${group.orderNumber}.pdf`);
     }
+
+    const fileName = toPrint.length === 1
+      ? `Laudo_${firstGroup.orderNumber}.pdf`
+      : `Laudos_${toPrint.length}_pedidos.pdf`;
+    doc.save(fileName);
   };
 
   return (
