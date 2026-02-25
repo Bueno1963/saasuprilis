@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Shield, History } from "lucide-react";
+import { ArrowLeft, Shield, History, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 import { navItems, type AppRole } from "@/lib/navigation";
 import { useAllRolePermissions } from "@/hooks/useRolePermissions";
+import CreateUserDialog from "./CreateUserDialog";
 
 interface Props { onBack: () => void; }
 
@@ -37,6 +38,7 @@ const ROUTES = Object.keys(MENU_LABELS);
 
 const UsersSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
+  const [createOpen, setCreateOpen] = useState(false);
 
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ["all_profiles"],
@@ -130,11 +132,23 @@ const UsersSettings = ({ onBack }: Props) => {
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={onBack}><ArrowLeft className="h-4 w-4" /></Button>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold text-foreground">Usuários</h1>
           <p className="text-sm text-muted-foreground">Controle de acesso e permissões</p>
         </div>
+        <Button onClick={() => setCreateOpen(true)} className="gap-1.5">
+          <UserPlus className="h-4 w-4" /> Cadastrar Usuário
+        </Button>
       </div>
+
+      <CreateUserDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onSuccess={() => {
+          qc.invalidateQueries({ queryKey: ["all_profiles"] });
+          qc.invalidateQueries({ queryKey: ["all_user_roles"] });
+        }}
+      />
 
       <Tabs defaultValue="users">
         <TabsList>
