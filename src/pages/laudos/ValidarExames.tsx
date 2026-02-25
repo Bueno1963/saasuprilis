@@ -359,6 +359,8 @@ const ValidarExames = () => {
             onClick={() => validateMutation.mutate(patient.resultIds)}
             disabled={validateMutation.isPending || !allFilled}
             title={!allFilled ? "Preencha todos os resultados antes de validar" : ""}
+            style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
+            className="text-white hover:opacity-90"
           >
             <CheckCircle className="w-4 h-4 mr-2" /> Validar Todos ({patient.results.length})
           </Button>
@@ -424,9 +426,10 @@ const ValidarExames = () => {
                             )}
                             <Button
                               size="sm"
-                              variant="outline"
                               onClick={() => validateMutation.mutate([r.id])}
                               disabled={validateMutation.isPending || !isFilled}
+                              style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
+                              className="text-white hover:opacity-90"
                             >
                               <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Validar
                             </Button>
@@ -464,9 +467,10 @@ const ValidarExames = () => {
                     )}
                     <Button
                       size="sm"
-                      variant="outline"
                       onClick={() => validateMutation.mutate([r.id])}
                       disabled={validateMutation.isPending || !allParamsFilled}
+                      style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
+                      className="text-white hover:opacity-90"
                     >
                       <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Validar
                     </Button>
@@ -539,7 +543,12 @@ const ValidarExames = () => {
           </div>
         </div>
         {filteredResults.length > 0 && (
-          <Button onClick={() => validateAllSector.mutate()} disabled={validateAllSector.isPending}>
+          <Button
+            onClick={() => validateAllSector.mutate()}
+            disabled={validateAllSector.isPending}
+            style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
+            className="text-white hover:opacity-90"
+          >
             <CheckCircle className="w-4 h-4 mr-2" /> Validar Todos ({filteredResults.length})
           </Button>
         )}
@@ -595,11 +604,12 @@ const ValidarExames = () => {
                     <TableCell className="text-right">
                       <Button
                         size="sm"
-                        variant="outline"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedOrderId(p.orderId);
                         }}
+                        style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
+                        className="text-white hover:opacity-90"
                       >
                         <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Digitar / Validar
                       </Button>
