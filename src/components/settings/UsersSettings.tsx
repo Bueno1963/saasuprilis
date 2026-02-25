@@ -32,6 +32,7 @@ const MENU_LABELS: Record<string, string> = {
   "/resultados": "Resultados",
   "/laudos": "Laudos",
   "/configuracoes": "Configurações",
+  "/recepcao": "Recepção",
 };
 
 const ROUTES = Object.keys(MENU_LABELS);
