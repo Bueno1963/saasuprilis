@@ -30,8 +30,9 @@ export const useRolePermissions = () => {
   );
 
   const isRouteAllowed = (route: string) => {
-    // If no permissions loaded yet, admin gets all access
-    if (permissions.length === 0) return role === "admin";
+    // Admin always has full access regardless of permissions table
+    if (role === "admin") return true;
+    if (permissions.length === 0) return false;
     return allowedRoutes.has(route);
   };
 
