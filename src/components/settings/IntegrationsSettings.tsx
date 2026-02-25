@@ -6,14 +6,25 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, List } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import IntegrationDetailPage from "./IntegrationDetailPage";
 
 interface Props { onBack: () => void; }
 
 const IntegrationsSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
-  const [detailId, setDetailId] = useState<string | null | undefined>(undefined); // undefined = list, null = new, string = edit
+  const [detailId, setDetailId] = useState<string | null | undefined>(undefined);
+  const [showEquipList, setShowEquipList] = useState(false);
+
+  const { data: equipment = [] } = useQuery({
+    queryKey: ["equipment-integrated"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("equipment").select("*").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["integrations"],
@@ -45,7 +56,10 @@ const IntegrationsSettings = ({ onBack }: Props) => {
             <p className="text-sm text-muted-foreground">HL7, ASTM, APIs externas</p>
           </div>
         </div>
-        <Button onClick={() => setDetailId(null)}><Plus className="h-4 w-4 mr-2" />Nova Integração</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setShowEquipList(true)}><List className="h-4 w-4 mr-2" />Lista Equipamentos Integrados</Button>
+          <Button onClick={() => setDetailId(null)}><Plus className="h-4 w-4 mr-2" />Nova Integração</Button>
+        </div>
       </div>
 
       {/* Padrões Técnicos */}
@@ -200,6 +214,41 @@ const IntegrationsSettings = ({ onBack }: Props) => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Dialog Lista Equipamentos Integrados */}
+      <Dialog open={showEquipList} onOpenChange={setShowEquipList}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Equipamentos Integrados</DialogTitle>
+          </DialogHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Fabricante</TableHead>
+                <TableHead>Modelo</TableHead>
+                <TableHead>Protocolo</TableHead>
+                <TableHead>Setor</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {equipment.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Nenhum equipamento cadastrado</TableCell></TableRow>
+              ) : equipment.map((eq) => (
+                <TableRow key={eq.id}>
+                  <TableCell className="font-medium">{eq.name}</TableCell>
+                  <TableCell className="text-sm">{eq.manufacturer || "—"}</TableCell>
+                  <TableCell className="text-sm">{eq.model || "—"}</TableCell>
+                  <TableCell><Badge variant="outline" className="text-xs">{eq.protocol || "—"}</Badge></TableCell>
+                  <TableCell className="text-sm">{eq.sector || "—"}</TableCell>
+                  <TableCell><Badge variant={eq.status === "active" ? "default" : "secondary"}>{eq.status === "active" ? "Ativo" : "Inativo"}</Badge></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
