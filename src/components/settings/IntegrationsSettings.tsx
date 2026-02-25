@@ -6,8 +6,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, List } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, List, Filter } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import IntegrationDetailPage from "./IntegrationDetailPage";
 
 interface Props { onBack: () => void; }
@@ -16,6 +17,8 @@ const IntegrationsSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
   const [detailId, setDetailId] = useState<string | null | undefined>(undefined);
   const [showEquipList, setShowEquipList] = useState(false);
+  const [filterProtocol, setFilterProtocol] = useState<string>("all");
+  const [filterSector, setFilterSector] = useState<string>("all");
 
   const { data: equipment = [] } = useQuery({
     queryKey: ["equipment-integrated"],
@@ -216,37 +219,75 @@ const IntegrationsSettings = ({ onBack }: Props) => {
       </Card>
 
       {/* Dialog Lista Equipamentos Integrados */}
-      <Dialog open={showEquipList} onOpenChange={setShowEquipList}>
+      <Dialog open={showEquipList} onOpenChange={(open) => { setShowEquipList(open); if (!open) { setFilterProtocol("all"); setFilterSector("all"); } }}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>Equipamentos Integrados</DialogTitle>
           </DialogHeader>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Fabricante</TableHead>
-                <TableHead>Modelo</TableHead>
-                <TableHead>Protocolo</TableHead>
-                <TableHead>Setor</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {equipment.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Nenhum equipamento cadastrado</TableCell></TableRow>
-              ) : equipment.map((eq) => (
-                <TableRow key={eq.id}>
-                  <TableCell className="font-medium">{eq.name}</TableCell>
-                  <TableCell className="text-sm">{eq.manufacturer || "—"}</TableCell>
-                  <TableCell className="text-sm">{eq.model || "—"}</TableCell>
-                  <TableCell><Badge variant="outline" className="text-xs">{eq.protocol || "—"}</Badge></TableCell>
-                  <TableCell className="text-sm">{eq.sector || "—"}</TableCell>
-                  <TableCell><Badge variant={eq.status === "active" ? "default" : "secondary"}>{eq.status === "active" ? "Ativo" : "Inativo"}</Badge></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="flex items-center gap-3 pb-2">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={filterProtocol} onValueChange={setFilterProtocol}>
+                <SelectTrigger className="w-[160px] h-9 text-xs">
+                  <SelectValue placeholder="Protocolo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Protocolos</SelectItem>
+                  {[...new Set(equipment.map(e => e.protocol).filter(Boolean))].map(p => (
+                    <SelectItem key={p} value={p!}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Select value={filterSector} onValueChange={setFilterSector}>
+              <SelectTrigger className="w-[160px] h-9 text-xs">
+                <SelectValue placeholder="Setor" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Setores</SelectItem>
+                {[...new Set(equipment.map(e => e.sector).filter(Boolean))].map(s => (
+                  <SelectItem key={s} value={s!}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {(filterProtocol !== "all" || filterSector !== "all") && (
+              <Button variant="ghost" size="sm" className="text-xs h-9" onClick={() => { setFilterProtocol("all"); setFilterSector("all"); }}>Limpar</Button>
+            )}
+          </div>
+          {(() => {
+            const filtered = equipment.filter(eq =>
+              (filterProtocol === "all" || eq.protocol === filterProtocol) &&
+              (filterSector === "all" || eq.sector === filterSector)
+            );
+            return (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Fabricante</TableHead>
+                    <TableHead>Modelo</TableHead>
+                    <TableHead>Protocolo</TableHead>
+                    <TableHead>Setor</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Nenhum equipamento encontrado</TableCell></TableRow>
+                  ) : filtered.map((eq) => (
+                    <TableRow key={eq.id}>
+                      <TableCell className="font-medium">{eq.name}</TableCell>
+                      <TableCell className="text-sm">{eq.manufacturer || "—"}</TableCell>
+                      <TableCell className="text-sm">{eq.model || "—"}</TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs">{eq.protocol || "—"}</Badge></TableCell>
+                      <TableCell className="text-sm">{eq.sector || "—"}</TableCell>
+                      <TableCell><Badge variant={eq.status === "active" ? "default" : "secondary"}>{eq.status === "active" ? "Ativo" : "Inativo"}</Badge></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
