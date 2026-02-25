@@ -1,11 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Clock, CheckCircle2, XCircle, Loader2, ArrowDownLeft, ArrowUpRight, AlertTriangle } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, Loader2, ArrowDownLeft, ArrowUpRight, AlertTriangle, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 import { useState } from "react";
 
 interface Props {
@@ -27,6 +29,32 @@ const directionConfig: Record<string, { label: string; icon: React.ElementType }
 
 const IntegrationLogsTab = ({ integrationId, lastSync }: Props) => {
   const [statusFilter, setStatusFilter] = useState("all");
+  const qc = useQueryClient();
+
+  const sampleLogs = [
+    { status: "success", direction: "inbound", source_system: "Analisador BC-6800", destination_system: "LIS", message: "Resultados de hemograma recebidos com sucesso", records_created: 12, records_updated: 0, records_failed: 0, duration_ms: 450 },
+    { status: "error", direction: "outbound", source_system: "LIS", destination_system: "Portal Resultados", message: "Falha ao enviar laudos liberados", error_message: "Connection timeout após 30s - servidor destino não respondeu", records_created: 0, records_updated: 0, records_failed: 5, duration_ms: 30000 },
+    { status: "success", direction: "outbound", source_system: "LIS", destination_system: "API Convênio", message: "Lote de faturamento enviado", records_created: 0, records_updated: 45, records_failed: 0, duration_ms: 1200 },
+    { status: "partial", direction: "inbound", source_system: "POCT iSTAT", destination_system: "LIS", message: "Recebimento parcial de resultados point-of-care", error_message: "3 registros com formato inválido no campo OBX.5", records_created: 8, records_updated: 0, records_failed: 3, duration_ms: 890 },
+    { status: "success", direction: "inbound", source_system: "Interfaceamento HL7", destination_system: "LIS", message: "Mensagem ORU^R01 processada - resultados de bioquímica", records_created: 6, records_updated: 2, records_failed: 0, duration_ms: 320 },
+    { status: "error", direction: "inbound", source_system: "Analisador Urinálise", destination_system: "LIS", message: "Erro de autenticação na conexão ASTM", error_message: "Token expirado - necessário renovar credenciais do equipamento", records_created: 0, records_updated: 0, records_failed: 0, duration_ms: 150 },
+  ];
+
+  const insertTestLog = useMutation({
+    mutationFn: async () => {
+      const sample = sampleLogs[Math.floor(Math.random() * sampleLogs.length)];
+      const { error } = await supabase.from("integration_sync_logs" as any).insert({
+        integration_id: integrationId,
+        ...sample,
+      } as any);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["integration-sync-logs"] });
+      toast.success("Log de teste inserido!");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["integration-sync-logs", integrationId, statusFilter],
@@ -79,6 +107,16 @@ const IntegrationLogsTab = ({ integrationId, lastSync }: Props) => {
                 Última sync: {format(new Date(lastSync), "dd/MM/yyyy HH:mm")}
               </Badge>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1 text-xs"
+              onClick={() => insertTestLog.mutate()}
+              disabled={insertTestLog.isPending}
+            >
+              {insertTestLog.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+              Log de Teste
+            </Button>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[140px] h-8 text-xs">
                 <SelectValue placeholder="Filtrar status" />
