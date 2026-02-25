@@ -121,6 +121,27 @@ const IntegrationsSettings = ({ onBack }: Props) => {
               </div>
             </div>
           </div>
+          {/* POCT1-A */}
+          <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs font-bold">POCT1-A</Badge>
+              <span className="text-xs text-muted-foreground">Point-of-Care Testing Connectivity</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Padrão CLSI para conectividade de dispositivos <strong className="text-foreground">point-of-care</strong> (glicosímetros, gasômetros, coagulômetros portáteis) ao LIS e EMR:
+            </p>
+            <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
+              <li><strong className="text-foreground">Device Interface</strong> — Define como dispositivos POCT transmitem resultados, IDs de paciente e operador ao concentrador (middleware).</li>
+              <li><strong className="text-foreground">Observation Reviewer</strong> — Camada de revisão e aprovação de resultados antes da liberação ao LIS.</li>
+              <li><strong className="text-foreground">Access Point / LIS Gateway</strong> — Integração bidirecional: recebe worklists do LIS e devolve resultados validados com rastreabilidade completa.</li>
+            </ul>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Arquitetura em camadas (Device → Access Point → LIS) garante <strong className="text-foreground">rastreabilidade</strong>, <strong className="text-foreground">controle de qualidade</strong> e conformidade regulatória para testes realizados à beira do leito.
+            </p>
+            <a href="https://clsi.org/standards/products/automation-and-informatics/documents/poct01/" target="_blank" rel="noopener noreferrer" className="inline-block text-xs text-primary hover:underline mt-1">
+              📄 Documentação CLSI POCT1-A →
+            </a>
+          </div>
         </CardContent>
       </Card>
 
