@@ -1,22 +1,20 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, List, Filter } from "lucide-react";
+import { ArrowLeft, List, Filter, TableProperties } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import IntegrationDetailPage from "./IntegrationDetailPage";
+import IntegrationsListPage from "./IntegrationsListPage";
 
 interface Props { onBack: () => void; }
 
 const IntegrationsSettings = ({ onBack }: Props) => {
-  const qc = useQueryClient();
-  const [detailId, setDetailId] = useState<string | null | undefined>(undefined);
   const [showEquipList, setShowEquipList] = useState(false);
+  const [showListPage, setShowListPage] = useState(false);
   const [filterProtocol, setFilterProtocol] = useState<string>("all");
   const [filterSector, setFilterSector] = useState<string>("all");
 
@@ -29,24 +27,9 @@ const IntegrationsSettings = ({ onBack }: Props) => {
     },
   });
 
-  const { data: items = [], isLoading } = useQuery({
-    queryKey: ["integrations"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("integrations").select("*").order("name");
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const remove = useMutation({
-    mutationFn: async (id: string) => { const { error } = await supabase.from("integrations").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["integrations"] }); toast.success("Integração removida!"); },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  // Show detail page
-  if (detailId !== undefined) {
-    return <IntegrationDetailPage integrationId={detailId} onBack={() => setDetailId(undefined)} />;
+  // Show integrations list page
+  if (showListPage) {
+    return <IntegrationsListPage onBack={() => setShowListPage(false)} />;
   }
 
   return (
@@ -60,8 +43,8 @@ const IntegrationsSettings = ({ onBack }: Props) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setShowEquipList(true)}><List className="h-4 w-4 mr-2" />Lista Equipamentos Integrados</Button>
-          <Button onClick={() => setDetailId(null)}><Plus className="h-4 w-4 mr-2" />Nova Integração</Button>
+          <Button variant="outline" onClick={() => setShowEquipList(true)}><List className="h-4 w-4 mr-2" />Equipamentos Integrados</Button>
+          <Button onClick={() => setShowListPage(true)}><TableProperties className="h-4 w-4 mr-2" />Integrações Cadastradas</Button>
         </div>
       </div>
 
@@ -183,38 +166,6 @@ const IntegrationsSettings = ({ onBack }: Props) => {
               </a>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead><TableHead>Tipo</TableHead><TableHead>Protocolo</TableHead>
-                <TableHead>Endpoint</TableHead><TableHead>Status</TableHead><TableHead className="w-24">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
-              items.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Nenhuma integração</TableCell></TableRow> :
-              items.map((item) => (
-                <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(item.id)}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.type}</TableCell>
-                  <TableCell>{item.protocol}</TableCell>
-                  <TableCell className="text-xs max-w-[200px] truncate">{item.endpoint_url}</TableCell>
-                  <TableCell><Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status === "active" ? "Ativo" : "Inativo"}</Badge></TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setDetailId(item.id); }}><Pencil className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); remove.mutate(item.id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
         </CardContent>
       </Card>
 
