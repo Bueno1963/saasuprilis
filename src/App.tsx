@@ -24,6 +24,7 @@ import ExamesLiberados from "./pages/laudos/ExamesLiberados";
 import SettingsPage from "./pages/SettingsPage";
 
 import RecepcaoPage from "./pages/RecepcaoPage";
+import AgendamentoPage from "./pages/recepcao/AgendamentoPage";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -88,6 +89,7 @@ const ProtectedRoutes = () => {
         <Route path="/laudos/cadastro" element={<DynamicGuard route="/laudos/cadastro"><CadastroLaudos /></DynamicGuard>} />
         <Route path="/configuracoes" element={<DynamicGuard route="/configuracoes"><SettingsPage /></DynamicGuard>} />
         <Route path="/recepcao" element={<DynamicGuard route="/recepcao"><RecepcaoPage /></DynamicGuard>} />
+        <Route path="/recepcao/agendamento" element={<DynamicGuard route="/recepcao"><AgendamentoPage /></DynamicGuard>} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
