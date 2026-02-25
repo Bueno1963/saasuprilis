@@ -142,6 +142,30 @@ const IntegrationsSettings = ({ onBack }: Props) => {
               📄 Documentação CLSI POCT1-A →
             </a>
           </div>
+          {/* IHE */}
+          <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs font-bold">IHE</Badge>
+              <span className="text-xs text-muted-foreground">Integrating the Healthcare Enterprise</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Iniciativa que define <strong className="text-foreground">perfis de integração</strong> baseados em padrões existentes (HL7, DICOM) para garantir interoperabilidade real entre sistemas de saúde. Perfis laboratoriais relevantes:
+            </p>
+            <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
+              <li><strong className="text-foreground">LAW (Laboratory Analytical Workflow)</strong> — Gerencia o fluxo analítico: recebimento de worklists, execução de testes, transmissão de resultados e controle de qualidade entre analisadores e LIS.</li>
+              <li><strong className="text-foreground">LTW (Laboratory Testing Workflow)</strong> — Cobre o fluxo completo do pedido ao laudo: solicitação médica → coleta → triagem → análise → validação → liberação de resultados.</li>
+              <li><strong className="text-foreground">LPOCT (Laboratory Point-of-Care Testing)</strong> — Perfil específico para gestão de dispositivos POCT dentro do contexto IHE, complementando o POCT1-A.</li>
+              <li><strong className="text-foreground">LDA (Laboratory Device Automation)</strong> — Integração com esteiras e sistemas de automação pré/pós-analítica (track systems).</li>
+            </ul>
+            <div className="flex flex-wrap gap-3 mt-1">
+              <a href="https://www.ihe.net/resources/profiles/#pathology" target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                📄 IHE Pathology & Lab Profiles →
+              </a>
+              <a href="https://wiki.ihe.net/index.php/Laboratory_Testing_Workflow" target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                🔬 LTW Wiki →
+              </a>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
