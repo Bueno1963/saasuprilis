@@ -82,7 +82,6 @@ const Auth = () => {
             <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
               <FlaskConical className="w-6 h-6 text-white" />
             </div>
-            <span className="text-lg font-semibold text-white tracking-tight">GestaLIS</span>
           </div>
 
           {/* Main content */}
@@ -92,7 +91,7 @@ const Auth = () => {
               <span className="text-[hsl(170,80%,70%)]">Laboratorial</span>
             </h1>
             <p className="text-white/75 text-sm leading-relaxed">
-              O GestaLIS é um sistema de gestão laboratorial (LIS) desenvolvido para integrar processos, 
+              Sistema de gestão laboratorial (LIS) desenvolvido para integrar processos, 
               equipamentos e informações em um único ambiente. Com interfaceamento próprio, garante 
               segurança, agilidade e confiabilidade na comunicação com analisadores, do cadastro da 
               amostra à liberação dos laudos.
@@ -100,7 +99,7 @@ const Auth = () => {
           </div>
 
           {/* Footer */}
-          <p className="text-white/40 text-xs">© 2026 GestaLIS — Todos os direitos reservados</p>
+          <p className="text-white/40 text-xs">© 2026 — Todos os direitos reservados</p>
         </div>
       </div>
 
@@ -112,7 +111,6 @@ const Auth = () => {
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <FlaskConical className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-semibold text-foreground">GestaLIS</span>
           </div>
 
           <div>
