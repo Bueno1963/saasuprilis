@@ -116,7 +116,7 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-[80%] bg-foreground/10 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
