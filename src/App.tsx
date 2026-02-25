@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { useUserRole } from "@/hooks/useUserRole";
 import AppLayout from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
@@ -22,6 +23,7 @@ import CadastroLaudos from "./pages/laudos/CadastroLaudos";
 import ExamesLiberados from "./pages/laudos/ExamesLiberados";
 import SettingsPage from "./pages/SettingsPage";
 
+import RecepcaoPage from "./pages/RecepcaoPage";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -30,10 +32,13 @@ const queryClient = new QueryClient();
 
 const DynamicGuard = ({ route, children }: { route: string; children: React.ReactNode }) => {
   const { isRouteAllowed, isLoading } = useRolePermissions();
-  if (isLoading) return null;
+  const { role, isLoading: roleLoading } = useUserRole();
+  if (isLoading || roleLoading) return null;
   // For child routes like /laudos/validar, check parent route /laudos
   const parentRoute = route.split("/").slice(0, 2).join("/") || route;
   if (!isRouteAllowed(route) && !isRouteAllowed(parentRoute)) {
+    // Recepcao always goes to /recepcao, others to /pacientes
+    if (role === "recepcao") return <Navigate to="/recepcao" replace />;
     return <Navigate to="/pacientes" replace />;
   }
   return <>{children}</>;
@@ -41,7 +46,9 @@ const DynamicGuard = ({ route, children }: { route: string; children: React.Reac
 
 const DefaultRedirect = () => {
   const { isRouteAllowed, isLoading } = useRolePermissions();
-  if (isLoading) return null;
+  const { role, isLoading: roleLoading } = useUserRole();
+  if (isLoading || roleLoading) return null;
+  if (role === "recepcao") return <Navigate to="/recepcao" replace />;
   if (isRouteAllowed("/")) return <Dashboard />;
   return <Navigate to="/pacientes" replace />;
 };
@@ -80,7 +87,7 @@ const ProtectedRoutes = () => {
         <Route path="/laudos/imprimir" element={<DynamicGuard route="/laudos/imprimir"><ImprimirExames /></DynamicGuard>} />
         <Route path="/laudos/cadastro" element={<DynamicGuard route="/laudos/cadastro"><CadastroLaudos /></DynamicGuard>} />
         <Route path="/configuracoes" element={<DynamicGuard route="/configuracoes"><SettingsPage /></DynamicGuard>} />
-        
+        <Route path="/recepcao" element={<DynamicGuard route="/recepcao"><RecepcaoPage /></DynamicGuard>} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
