@@ -73,6 +73,36 @@ const IntegrationsSettings = ({ onBack }: Props) => {
         <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Nova Integração</Button>
       </div>
 
+      {/* Padrões Técnicos */}
+      <Card>
+        <CardContent className="p-5 space-y-4">
+          <h2 className="text-base font-semibold text-foreground">Padrões Técnicos Utilizados</h2>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Para garantir que diferentes marcas de equipamentos (espectrofotômetros, analisadores bioquímicos) se comuniquem com o LIS, utilizam-se protocolos padronizados:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs font-bold">ASTM</Badge>
+                <span className="text-xs text-muted-foreground">American Society for Testing and Materials</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Padrão comum para conexão direta entre analisadores clínicos e LIS. Protocolos <strong className="text-foreground">E1381</strong> (camada de transporte) e <strong className="text-foreground">E1394</strong> (estrutura de mensagens) definem como os dados fluem do equipamento ao sistema.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs font-bold">HL7</Badge>
+                <span className="text-xs text-muted-foreground">Health Level Seven</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Padrão internacional focado na interoperabilidade de sistemas de informação de saúde. Essencial para troca de dados entre LIS, <strong className="text-foreground">EMR</strong> (prontuários eletrônicos) e equipamentos laboratoriais.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent className="p-0">
           <Table>
