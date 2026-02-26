@@ -52,15 +52,15 @@
     --phase-post: 152 60% 40%;
 
     /* Sidebar */
-    --sidebar-background: 224 62% 46%;
-    --sidebar-foreground: 220 15% 92%;
-    --sidebar-primary: 200 80% 75%;
+    --sidebar-background: 0 0% 26%;
+    --sidebar-foreground: 0 0% 88%;
+    --sidebar-primary: 0 0% 95%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 224 62% 40%;
-    --sidebar-accent-foreground: 220 15% 95%;
-    --sidebar-border: 224 55% 42%;
-    --sidebar-ring: 200 80% 75%;
-    --sidebar-muted: 224 20% 60%;
+    --sidebar-accent: 0 0% 22%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 22%;
+    --sidebar-ring: 0 0% 70%;
+    --sidebar-muted: 0 0% 55%;
   }
 
   .dark {
