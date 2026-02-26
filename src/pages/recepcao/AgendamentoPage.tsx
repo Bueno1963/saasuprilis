@@ -32,9 +32,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Clock, User, CalendarDays, Trash2 } from "lucide-react";
+import { Plus, Clock, User, CalendarDays, Trash2, LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import WeeklyCalendarView from "@/components/recepcao/WeeklyCalendarView";
 
 const statusColors: Record<string, string> = {
   agendado: "bg-blue-100 text-blue-800 border-blue-200",
@@ -54,6 +55,7 @@ const AgendamentoPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -192,6 +194,25 @@ const AgendamentoPage = () => {
               : "Nenhum pendente para hoje"}
           </p>
         </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center border border-border rounded-lg overflow-hidden">
+            <Button
+              variant={viewMode === "day" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode("day")}
+            >
+              <List className="h-4 w-4 mr-1" /> Dia
+            </Button>
+            <Button
+              variant={viewMode === "week" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode("week")}
+            >
+              <LayoutGrid className="h-4 w-4 mr-1" /> Semana
+            </Button>
+          </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2" style={{ backgroundColor: "#244294", borderColor: "#244294" }}>
@@ -291,111 +312,120 @@ const AgendamentoPage = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
-      {/* Content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-        {/* Calendar */}
-        <div className="bg-card border border-border rounded-xl p-4">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(d) => d && setSelectedDate(d)}
-            locale={ptBR}
-            className={cn("p-0 pointer-events-auto")}
-            modifiers={{
-              hasAppointment: (date: Date) =>
-                datesWithAppointments.has(format(date, "yyyy-MM-dd")),
-            }}
-            modifiersClassNames={{
-              hasAppointment: "bg-primary/15 font-bold text-primary",
-            }}
-          />
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            <CalendarDays className="inline h-4 w-4 mr-1" />
-            {format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-          </div>
-        </div>
-
-        {/* Appointments list */}
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="p-4 border-b border-border flex items-center gap-3">
-            <Input
-              placeholder="Buscar paciente..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-xs"
+      {viewMode === "week" ? (
+        <WeeklyCalendarView
+          selectedDate={selectedDate}
+          appointments={appointments}
+          onSelectDate={setSelectedDate}
+        />
+      ) : (
+        /* Content grid - Day view */
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+          {/* Calendar */}
+          <div className="bg-card border border-border rounded-xl p-4">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(d) => d && setSelectedDate(d)}
+              locale={ptBR}
+              className={cn("p-0 pointer-events-auto")}
+              modifiers={{
+                hasAppointment: (date: Date) =>
+                  datesWithAppointments.has(format(date, "yyyy-MM-dd")),
+              }}
+              modifiersClassNames={{
+                hasAppointment: "bg-primary/15 font-bold text-primary",
+              }}
             />
-            <span className="text-sm text-muted-foreground ml-auto">
-              {filteredAppointments.length} agendamento(s)
-            </span>
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              <CalendarDays className="inline h-4 w-4 mr-1" />
+              {format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+            </div>
           </div>
 
-          {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Carregando...</div>
-          ) : filteredAppointments.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              Nenhum agendamento para esta data.
+          {/* Appointments list */}
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-border flex items-center gap-3">
+              <Input
+                placeholder="Buscar paciente..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="max-w-xs"
+              />
+              <span className="text-sm text-muted-foreground ml-auto">
+                {filteredAppointments.length} agendamento(s)
+              </span>
             </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Horário</TableHead>
-                  <TableHead>Paciente</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAppointments.map((a: any) => (
-                  <TableRow key={a.id}>
-                    <TableCell className="font-medium">
-                      <Clock className="inline h-3.5 w-3.5 mr-1 text-muted-foreground" />
-                      {a.scheduled_time?.slice(0, 5)}
-                    </TableCell>
-                    <TableCell>
-                      <User className="inline h-3.5 w-3.5 mr-1 text-muted-foreground" />
-                      {a.patients?.name || "—"}
-                    </TableCell>
-                    <TableCell className="capitalize">{a.type}</TableCell>
-                    <TableCell>
-                      <Select
-                        value={a.status}
-                        onValueChange={(v) => updateStatusMutation.mutate({ id: a.id, status: v })}
-                      >
-                        <SelectTrigger className="w-[130px] h-7 text-xs">
-                          <Badge variant="outline" className={cn("text-[10px]", statusColors[a.status])}>
-                            {statusLabels[a.status] || a.status}
-                          </Badge>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(statusLabels).map(([k, v]) => (
-                            <SelectItem key={k} value={k}>
-                              {v}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive hover:text-destructive"
-                        onClick={() => deleteMutation.mutate(a.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </TableCell>
+
+            {isLoading ? (
+              <div className="p-8 text-center text-muted-foreground">Carregando...</div>
+            ) : filteredAppointments.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                Nenhum agendamento para esta data.
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Horário</TableHead>
+                    <TableHead>Paciente</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+                </TableHeader>
+                <TableBody>
+                  {filteredAppointments.map((a: any) => (
+                    <TableRow key={a.id}>
+                      <TableCell className="font-medium">
+                        <Clock className="inline h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                        {a.scheduled_time?.slice(0, 5)}
+                      </TableCell>
+                      <TableCell>
+                        <User className="inline h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                        {a.patients?.name || "—"}
+                      </TableCell>
+                      <TableCell className="capitalize">{a.type}</TableCell>
+                      <TableCell>
+                        <Select
+                          value={a.status}
+                          onValueChange={(v) => updateStatusMutation.mutate({ id: a.id, status: v })}
+                        >
+                          <SelectTrigger className="w-[130px] h-7 text-xs">
+                            <Badge variant="outline" className={cn("text-[10px]", statusColors[a.status])}>
+                              {statusLabels[a.status] || a.status}
+                            </Badge>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(statusLabels).map(([k, v]) => (
+                              <SelectItem key={k} value={k}>
+                                {v}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          onClick={() => deleteMutation.mutate(a.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
