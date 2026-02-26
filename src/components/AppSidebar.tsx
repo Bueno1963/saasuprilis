@@ -27,9 +27,9 @@ const AppSidebar = () => {
   };
 
   const phases = [
-    { label: "Pré-Analítica", items: filteredItems.filter(n => n.phase === "pre"), color: "text-yellow-400" },
-    { label: "Analítica", items: filteredItems.filter(n => n.phase === "analytical"), color: "text-blue-400" },
-    { label: "Pós-Analítica", items: filteredItems.filter(n => n.phase === "post"), color: "text-emerald-400" },
+    { label: "Pré-Analítica", items: filteredItems.filter(n => n.phase === "pre") },
+    { label: "Analítica", items: filteredItems.filter(n => n.phase === "analytical") },
+    { label: "Pós-Analítica", items: filteredItems.filter(n => n.phase === "post") },
   ];
 
   const otherItems = filteredItems.filter(n => !n.phase && n.href !== "/");
@@ -68,8 +68,8 @@ const AppSidebar = () => {
           <div key={phase.label}>
             {!collapsed && (
               <div className="flex items-center gap-2 px-3 pt-4 pb-1">
-                <span className={cn("w-1.5 h-1.5 rounded-full", phase.color.replace("text-", "bg-"))} />
-                <p className={cn("text-[10px] font-semibold uppercase tracking-widest", phase.color)}>
+                <span className="w-1.5 h-1.5 rounded-full bg-sidebar-primary-foreground" />
+                <p className="text-xs font-semibold uppercase tracking-widest text-sidebar-primary-foreground">
                   {phase.label}
                 </p>
               </div>
