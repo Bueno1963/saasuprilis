@@ -1,5 +1,8 @@
-import { DollarSign, TrendingUp, Receipt, CreditCard } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DollarSign, Receipt, CreditCard, BarChart3 } from "lucide-react";
+import FaturamentoTab from "@/components/financeiro/FaturamentoTab";
+import ContasTab from "@/components/financeiro/ContasTab";
+import RelatoriosTab from "@/components/financeiro/RelatoriosTab";
 
 const FinanceiroPage = () => {
   return (
@@ -9,59 +12,39 @@ const FinanceiroPage = () => {
         <p className="text-sm text-muted-foreground">Gestão financeira do laboratório</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Receita Mensal</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R$ 0,00</div>
-            <p className="text-xs text-muted-foreground">Nenhum registro ainda</p>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="faturamento" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="faturamento" className="gap-1.5 text-xs sm:text-sm">
+            <CreditCard className="h-4 w-4" />
+            <span className="hidden sm:inline">Faturamento</span>
+          </TabsTrigger>
+          <TabsTrigger value="receber" className="gap-1.5 text-xs sm:text-sm">
+            <DollarSign className="h-4 w-4" />
+            <span className="hidden sm:inline">A Receber</span>
+          </TabsTrigger>
+          <TabsTrigger value="pagar" className="gap-1.5 text-xs sm:text-sm">
+            <Receipt className="h-4 w-4" />
+            <span className="hidden sm:inline">A Pagar</span>
+          </TabsTrigger>
+          <TabsTrigger value="relatorios" className="gap-1.5 text-xs sm:text-sm">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Relatórios</span>
+          </TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Contas a Receber</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">Nenhuma pendência</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Faturamento Convênios</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R$ 0,00</div>
-            <p className="text-xs text-muted-foreground">Nenhum registro ainda</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Particular</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R$ 0,00</div>
-            <p className="text-xs text-muted-foreground">Nenhum registro ainda</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardContent className="p-8 text-center text-muted-foreground">
-          <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-30" />
-          <p className="text-lg font-medium">Módulo financeiro em construção</p>
-          <p className="text-sm">Em breve: faturamento, contas a receber/pagar, relatórios financeiros e integração com convênios.</p>
-        </CardContent>
-      </Card>
+        <TabsContent value="faturamento">
+          <FaturamentoTab />
+        </TabsContent>
+        <TabsContent value="receber">
+          <ContasTab type="receivables" />
+        </TabsContent>
+        <TabsContent value="pagar">
+          <ContasTab type="payables" />
+        </TabsContent>
+        <TabsContent value="relatorios">
+          <RelatoriosTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -64,6 +64,65 @@ export type Database = {
           },
         ]
       }
+      billing_batches: {
+        Row: {
+          batch_number: string
+          created_at: string
+          created_by: string | null
+          glosa_amount: number | null
+          id: string
+          insurance_plan_id: string
+          notes: string | null
+          paid_amount: number | null
+          paid_at: string | null
+          reference_month: string
+          sent_at: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          batch_number: string
+          created_at?: string
+          created_by?: string | null
+          glosa_amount?: number | null
+          id?: string
+          insurance_plan_id: string
+          notes?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          reference_month: string
+          sent_at?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          batch_number?: string
+          created_at?: string
+          created_by?: string | null
+          glosa_amount?: number | null
+          id?: string
+          insurance_plan_id?: string
+          notes?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          reference_month?: string
+          sent_at?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_batches_insurance_plan_id_fkey"
+            columns: ["insurance_plan_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment: {
         Row: {
           created_at: string
@@ -502,6 +561,60 @@ export type Database = {
         }
         Relationships: []
       }
+      payables: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          due_date: string
+          id: string
+          notes: string | null
+          paid_amount: number | null
+          paid_at: string | null
+          payment_method: string | null
+          recurrence: string | null
+          status: string
+          supplier: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          payment_method?: string | null
+          recurrence?: string | null
+          status?: string
+          supplier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          payment_method?: string | null
+          recurrence?: string | null
+          status?: string
+          supplier?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       permission_audit_log: {
         Row: {
           action: string
@@ -600,6 +713,91 @@ export type Database = {
           value?: number
         }
         Relationships: []
+      }
+      receivables: {
+        Row: {
+          amount: number
+          billing_batch_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          discount: number
+          due_date: string
+          id: string
+          net_amount: number
+          notes: string | null
+          order_id: string | null
+          paid_amount: number | null
+          paid_at: string | null
+          patient_id: string
+          payment_method: string | null
+          payment_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          billing_batch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          discount?: number
+          due_date?: string
+          id?: string
+          net_amount?: number
+          notes?: string | null
+          order_id?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          patient_id: string
+          payment_method?: string | null
+          payment_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          billing_batch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          discount?: number
+          due_date?: string
+          id?: string
+          net_amount?: number
+          notes?: string | null
+          order_id?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          patient_id?: string
+          payment_method?: string | null
+          payment_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receivables_billing_batch_id_fkey"
+            columns: ["billing_batch_id"]
+            isOneToOne: false
+            referencedRelation: "billing_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receivables_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receivables_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       results: {
         Row: {
