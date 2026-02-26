@@ -19,6 +19,7 @@ import {
   Receipt,
   BookOpen,
   Scale,
+  Upload,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
@@ -69,6 +70,7 @@ export const navItems: NavItem[] = [
       { title: "Contas a Pagar", href: "/financeiro/contas-pagar", icon: Receipt },
       { title: "Contas a Receber", href: "/financeiro/contas-receber", icon: DollarSign },
       { title: "Lançamentos Contábeis", href: "/financeiro/lancamentos", icon: FilePlus2 },
+      { title: "Importar Extrato", href: "/financeiro/importar-extrato", icon: Upload },
       { title: "Razão Contábil", href: "/financeiro/razao", icon: BookOpen },
       { title: "Balancete", href: "/financeiro/balancete", icon: Scale },
     ],
