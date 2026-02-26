@@ -105,7 +105,7 @@ Return ONLY the JSON array, no markdown, no explanation.`,
           },
         ],
         temperature: 0.1,
-        max_tokens: 16000,
+        max_tokens: 32000,
       }),
     });
 
@@ -132,8 +132,21 @@ Return ONLY the JSON array, no markdown, no explanation.`,
     try {
       transactions = JSON.parse(jsonStr);
     } catch {
-      console.error("Failed to parse AI response as JSON:", content);
-      transactions = [];
+      // Try to recover truncated JSON by finding last complete object
+      const lastBrace = jsonStr.lastIndexOf("}");
+      if (lastBrace > 0) {
+        const truncated = jsonStr.substring(0, lastBrace + 1) + "]";
+        try {
+          transactions = JSON.parse(truncated);
+          console.log(`Recovered ${transactions.length} transactions from truncated JSON`);
+        } catch {
+          console.error("Failed to recover truncated JSON");
+          transactions = [];
+        }
+      } else {
+        console.error("Failed to parse AI response as JSON");
+        transactions = [];
+      }
     }
 
     // Post-process: validate and clean transactions
