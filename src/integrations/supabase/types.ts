@@ -123,6 +123,53 @@ export type Database = {
           },
         ]
       }
+      chart_of_accounts: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_group: boolean
+          level: number
+          name: string
+          parent_id: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_group?: boolean
+          level?: number
+          name: string
+          parent_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_group?: boolean
+          level?: number
+          name?: string
+          parent_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chart_of_accounts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment: {
         Row: {
           created_at: string
