@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Upload, FileText, FileSpreadsheet, CheckCircle, AlertCircle, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
 interface ParsedTransaction {
   date: string;
@@ -76,6 +77,8 @@ function parseOFX(text: string): ParsedTransaction[] {
 const ImportarExtratoPage = () => {
   const [transactions, setTransactions] = useState<ParsedTransaction[]>([]);
   const [parsing, setParsing] = useState(false);
+  const [parseStep, setParseStep] = useState<"reading" | "extracting" | "done">("reading");
+  const [parseProgress, setParseProgress] = useState(0);
   const [classifying, setClassifying] = useState(false);
   const [fileName, setFileName] = useState("");
   const [defaultDebitAccount, setDefaultDebitAccount] = useState("");
@@ -103,14 +106,20 @@ const ImportarExtratoPage = () => {
 
     setFileName(file.name);
     setParsing(true);
+    setParseStep("reading");
+    setParseProgress(10);
     setTransactions([]);
 
     try {
       const ext = file.name.split(".").pop()?.toLowerCase();
 
       if (ext === "ofx" || ext === "qfx") {
+        setParseStep("extracting");
+        setParseProgress(50);
         const text = await file.text();
         const parsed = parseOFX(text);
+        setParseProgress(100);
+        setParseStep("done");
         if (parsed.length === 0) {
           toast.error("Nenhuma transação encontrada no arquivo OFX");
         } else {
@@ -118,7 +127,8 @@ const ImportarExtratoPage = () => {
         }
         setTransactions(parsed);
       } else if (ext === "pdf") {
-        // Convert to base64 and send to edge function
+        setParseStep("reading");
+        setParseProgress(20);
         const arrayBuffer = await file.arrayBuffer();
         const bytes = new Uint8Array(arrayBuffer);
         let binary = "";
@@ -127,12 +137,23 @@ const ImportarExtratoPage = () => {
         }
         const base64 = btoa(binary);
 
+        setParseStep("extracting");
+        setParseProgress(40);
+
+        // Simulate progress while waiting for AI
+        const progressInterval = setInterval(() => {
+          setParseProgress(prev => Math.min(prev + 3, 85));
+        }, 800);
+
         const { data, error } = await supabase.functions.invoke("parse-bank-statement", {
           body: { pdfBase64: base64 },
         });
 
+        clearInterval(progressInterval);
+
         if (error) throw error;
 
+        setParseProgress(95);
         const parsed: ParsedTransaction[] = (data.transactions || []).map((t: any) => ({
           date: t.date,
           description: t.description,
@@ -142,6 +163,9 @@ const ImportarExtratoPage = () => {
           debit_account_id: "",
           credit_account_id: "",
         }));
+
+        setParseProgress(100);
+        setParseStep("done");
 
         if (parsed.length === 0) {
           toast.error("Nenhuma transação encontrada no PDF");
@@ -299,9 +323,19 @@ const ImportarExtratoPage = () => {
               )}
             >
               {parsing ? (
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-3 w-full max-w-xs px-4">
                   <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                  <p className="text-sm text-muted-foreground">Processando arquivo...</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {parseStep === "reading" && "Lendo arquivo..."}
+                    {parseStep === "extracting" && "Extraindo transações com IA..."}
+                    {parseStep === "done" && "Concluído!"}
+                  </p>
+                  <Progress value={parseProgress} className="w-full h-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {parseStep === "reading" && "Preparando documento para análise"}
+                    {parseStep === "extracting" && "Isso pode levar até 30 segundos para extratos grandes"}
+                    {parseStep === "done" && `${transactions.length} transações encontradas`}
+                  </p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2">
