@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   FilePlus2,
   ConciergeBell,
+  DollarSign,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
@@ -54,5 +55,6 @@ export const navItems: NavItem[] = [
     ],
   },
   
+  { title: "Financeiro", href: "/financeiro", icon: DollarSign, allowedRoles: ["admin"] },
   { title: "Configurações", href: "/configuracoes", icon: Settings, allowedRoles: ["admin"] },
 ];
