@@ -27,9 +27,9 @@ const AppSidebar = () => {
   };
 
   const phases = [
-    { label: "Pré-Analítica", items: filteredItems.filter(n => n.phase === "pre") },
-    { label: "Analítica", items: filteredItems.filter(n => n.phase === "analytical") },
-    { label: "Pós-Analítica", items: filteredItems.filter(n => n.phase === "post") },
+    { label: "Pré-Analítica", items: filteredItems.filter(n => n.phase === "pre"), color: "text-yellow-400" },
+    { label: "Analítica", items: filteredItems.filter(n => n.phase === "analytical"), color: "text-blue-400" },
+    { label: "Pós-Analítica", items: filteredItems.filter(n => n.phase === "post"), color: "text-emerald-400" },
   ];
 
   const otherItems = filteredItems.filter(n => !n.phase && n.href !== "/");
@@ -67,9 +67,12 @@ const AppSidebar = () => {
         {phases.map(phase => (
           <div key={phase.label}>
             {!collapsed && (
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-muted px-3 pt-4 pb-1">
-                {phase.label}
-              </p>
+              <div className="flex items-center gap-2 px-3 pt-4 pb-1">
+                <span className={cn("w-1.5 h-1.5 rounded-full", phase.color.replace("text-", "bg-"))} />
+                <p className={cn("text-[10px] font-semibold uppercase tracking-widest", phase.color)}>
+                  {phase.label}
+                </p>
+              </div>
             )}
             {collapsed && <div className="h-px bg-sidebar-border mx-2 my-2" />}
             {phase.items.map(item =>
