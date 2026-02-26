@@ -16,6 +16,7 @@ import {
   FilePlus2,
   ConciergeBell,
   DollarSign,
+  Receipt,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
@@ -55,6 +56,18 @@ export const navItems: NavItem[] = [
     ],
   },
   
-  { title: "Financeiro", href: "/financeiro", icon: DollarSign, allowedRoles: ["admin"] },
+  {
+    title: "Financeiro",
+    href: "/financeiro",
+    icon: DollarSign,
+    allowedRoles: ["admin"],
+    children: [
+      { title: "Plano de Contas", href: "/financeiro/plano-contas", icon: ClipboardList },
+      { title: "DRE", href: "/financeiro/dre", icon: BarChart3 },
+      { title: "Contas a Pagar", href: "/financeiro/contas-pagar", icon: Receipt },
+      { title: "Contas a Receber", href: "/financeiro/contas-receber", icon: DollarSign },
+      { title: "Lançamentos Contábeis", href: "/financeiro/lancamentos", icon: FilePlus2 },
+    ],
+  },
   { title: "Configurações", href: "/configuracoes", icon: Settings, allowedRoles: ["admin"] },
 ];
