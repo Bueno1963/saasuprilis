@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Upload, FileText, FileSpreadsheet, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, FileText, FileSpreadsheet, CheckCircle, AlertCircle, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ParsedTransaction {
@@ -76,6 +76,7 @@ function parseOFX(text: string): ParsedTransaction[] {
 const ImportarExtratoPage = () => {
   const [transactions, setTransactions] = useState<ParsedTransaction[]>([]);
   const [parsing, setParsing] = useState(false);
+  const [classifying, setClassifying] = useState(false);
   const [fileName, setFileName] = useState("");
   const [defaultDebitAccount, setDefaultDebitAccount] = useState("");
   const [defaultCreditAccount, setDefaultCreditAccount] = useState("");
@@ -184,6 +185,67 @@ const ImportarExtratoPage = () => {
     toast.success("Contas padrão aplicadas");
   };
 
+  const classifyWithAI = async () => {
+    if (transactions.length === 0 || leafAccounts.length === 0) return;
+
+    setClassifying(true);
+    try {
+      const txList = transactions.map((t, i) => ({
+        date: t.date,
+        description: t.description,
+        amount: t.amount,
+        type: t.type,
+      }));
+
+      const acctList = leafAccounts.map(a => ({
+        id: a.id,
+        code: a.code,
+        name: a.name,
+        type: a.type,
+      }));
+
+      const { data, error } = await supabase.functions.invoke("classify-transactions", {
+        body: { transactions: txList, accounts: acctList },
+      });
+
+      if (error) throw error;
+
+      const classifications = data?.classifications || [];
+      if (classifications.length === 0) {
+        toast.error("Não foi possível classificar as transações");
+        return;
+      }
+
+      setTransactions(prev => {
+        const updated = [...prev];
+        classifications.forEach((c: any) => {
+          if (c.index >= 0 && c.index < updated.length) {
+            // Validate that suggested accounts exist
+            const debitExists = leafAccounts.some(a => a.id === c.debit_account_id);
+            const creditExists = leafAccounts.some(a => a.id === c.credit_account_id);
+            if (debitExists) updated[c.index] = { ...updated[c.index], debit_account_id: c.debit_account_id };
+            if (creditExists) updated[c.index] = { ...updated[c.index], credit_account_id: c.credit_account_id };
+          }
+        });
+        return updated;
+      });
+
+      const classified = classifications.filter((c: any) => c.confidence !== "low").length;
+      toast.success(`${classified} transações classificadas com IA`);
+    } catch (err: any) {
+      console.error(err);
+      if (err.message?.includes("429")) {
+        toast.error("Limite de requisições excedido. Tente novamente em instantes.");
+      } else if (err.message?.includes("402")) {
+        toast.error("Créditos insuficientes. Adicione créditos ao workspace.");
+      } else {
+        toast.error(`Erro na classificação: ${err.message}`);
+      }
+    } finally {
+      setClassifying(false);
+    }
+  };
+
   const importMutation = useMutation({
     mutationFn: async () => {
       const selected = transactions.filter(t => t.selected);
@@ -278,9 +340,9 @@ const ImportarExtratoPage = () => {
         <>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Contas Padrão</CardTitle>
+              <CardTitle className="text-sm">Classificação de Contas</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                 <div className="space-y-2">
                   <Label className="text-xs">Conta Débito (para despesas)</Label>
@@ -307,6 +369,23 @@ const ImportarExtratoPage = () => {
                 <Button variant="outline" onClick={applyDefaultAccounts}>
                   Aplicar a todas
                 </Button>
+              </div>
+              <div className="flex items-center gap-3 pt-2 border-t">
+                <Button
+                  variant="outline"
+                  onClick={classifyWithAI}
+                  disabled={classifying || transactions.length === 0}
+                  className="gap-2"
+                >
+                  {classifying ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Classificando...</>
+                  ) : (
+                    <><Sparkles className="w-4 h-4 text-amber-500" /> Classificar com IA</>
+                  )}
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  A IA sugere contas débito/crédito automaticamente com base na descrição
+                </span>
               </div>
             </CardContent>
           </Card>

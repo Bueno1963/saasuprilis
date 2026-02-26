@@ -1,1 +1,7 @@
 project_id = "lozdvdytcbpfhjveghzz"
+
+[functions.parse-bank-statement]
+verify_jwt = false
+
+[functions.classify-transactions]
+verify_jwt = false
