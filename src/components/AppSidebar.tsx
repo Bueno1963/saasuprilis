@@ -101,14 +101,25 @@ const AppSidebar = () => {
           <>
             {!collapsed && <div className="h-px bg-sidebar-border mx-2 my-3" />}
             {collapsed && <div className="h-px bg-sidebar-border mx-2 my-2" />}
-            {otherItems.map(item => (
-              <SidebarLink
-                key={item.href}
-                item={item}
-                active={location.pathname === item.href}
-                collapsed={collapsed}
-              />
-            ))}
+            {otherItems.map(item =>
+              item.children && item.children.length > 0 ? (
+                <SidebarGroup
+                  key={item.href}
+                  item={item}
+                  collapsed={collapsed}
+                  open={openMenus.has(item.href) || !!item.children.some(c => location.pathname === c.href)}
+                  onToggle={() => toggleMenu(item.href)}
+                  pathname={location.pathname}
+                />
+              ) : (
+                <SidebarLink
+                  key={item.href}
+                  item={item}
+                  active={location.pathname === item.href}
+                  collapsed={collapsed}
+                />
+              )
+            )}
           </>
         )}
       </nav>

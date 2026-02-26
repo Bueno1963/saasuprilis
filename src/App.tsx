@@ -26,6 +26,11 @@ import SettingsPage from "./pages/SettingsPage";
 import RecepcaoPage from "./pages/RecepcaoPage";
 import AgendamentoPage from "./pages/recepcao/AgendamentoPage";
 import FinanceiroPage from "./pages/FinanceiroPage";
+import PlanoContasPage from "./pages/financeiro/PlanoContasPage";
+import DREPage from "./pages/financeiro/DREPage";
+import ContasPagarPage from "./pages/financeiro/ContasPagarPage";
+import ContasReceberPage from "./pages/financeiro/ContasReceberPage";
+import LancamentosPage from "./pages/financeiro/LancamentosPage";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -90,6 +95,11 @@ const ProtectedRoutes = () => {
         <Route path="/laudos/cadastro" element={<DynamicGuard route="/laudos/cadastro"><CadastroLaudos /></DynamicGuard>} />
         <Route path="/configuracoes" element={<DynamicGuard route="/configuracoes"><SettingsPage /></DynamicGuard>} />
         <Route path="/financeiro" element={<DynamicGuard route="/financeiro"><FinanceiroPage /></DynamicGuard>} />
+        <Route path="/financeiro/plano-contas" element={<DynamicGuard route="/financeiro"><PlanoContasPage /></DynamicGuard>} />
+        <Route path="/financeiro/dre" element={<DynamicGuard route="/financeiro"><DREPage /></DynamicGuard>} />
+        <Route path="/financeiro/contas-pagar" element={<DynamicGuard route="/financeiro"><ContasPagarPage /></DynamicGuard>} />
+        <Route path="/financeiro/contas-receber" element={<DynamicGuard route="/financeiro"><ContasReceberPage /></DynamicGuard>} />
+        <Route path="/financeiro/lancamentos" element={<DynamicGuard route="/financeiro"><LancamentosPage /></DynamicGuard>} />
         <Route path="/recepcao" element={<DynamicGuard route="/recepcao"><RecepcaoPage /></DynamicGuard>} />
         <Route path="/recepcao/agendamento" element={<DynamicGuard route="/recepcao"><AgendamentoPage /></DynamicGuard>} />
       </Route>
