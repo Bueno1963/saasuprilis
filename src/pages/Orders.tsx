@@ -47,7 +47,7 @@ const Orders = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, patients(name, birth_date)")
+        .select("*, patients(name, birth_date, cpf, gender, phone, email, insurance)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -381,8 +381,14 @@ const Orders = () => {
                              }
                            }}>
                              <Globe className="w-4 h-4 mr-2" />Protocolo de Acesso Web
-                           </DropdownMenuItem>
-                           <DropdownMenuSeparator />
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              const p = (order.patients as any);
+                              if (p) printAtendimento({ id: order.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date, gender: p.gender, phone: p.phone, email: p.email, insurance: order.insurance });
+                            }}>
+                              <Printer className="w-4 h-4 mr-2" />Comprovante de Atendimento
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                            <DropdownMenuItem onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
                              <Pencil className="w-4 h-4 mr-2" />Editar Pedido
                            </DropdownMenuItem>
