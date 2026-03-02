@@ -43,6 +43,7 @@ import LandingPage from "./pages/LandingPage";
 import ColetasPage from "./pages/landing/ColetasPage";
 import ExamesPage from "./pages/landing/ExamesPage";
 import ConveniosPage from "./pages/landing/ConveniosPage";
+import VacinasPage from "./pages/landing/VacinasPage";
 
 const queryClient = new QueryClient();
 
@@ -143,6 +144,7 @@ const App = () => (
             <Route path="/landing/coletas" element={<ColetasPage />} />
             <Route path="/landing/exames" element={<ExamesPage />} />
             <Route path="/landing/convenios" element={<ConveniosPage />} />
+            <Route path="/landing/vacinas" element={<VacinasPage />} />
             <Route path="/*" element={<ProtectedRoutes />} />
           </Routes>
         </AuthProvider>

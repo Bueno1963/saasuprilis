@@ -105,7 +105,7 @@ const LandingPage = () => {
     { label: "Convênios", href: "/landing/convenios" },
     { label: "Exames", href: "/landing/exames" },
     { label: "Coletas", href: "/landing/coletas" },
-    { label: "Vacinas", href: "#servicos" },
+    { label: "Vacinas", href: "/landing/vacinas" },
     { label: "Acesso Admin", href: "/auth" },
     { label: "Contato", href: "#contato" },
   ];
