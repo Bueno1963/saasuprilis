@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { navItems, NavItem } from "@/lib/navigation";
 import { ChevronDown, ChevronLeft, ChevronRight, LogOut, User } from "lucide-react";
-import logoDraDielem from "@/assets/logo-dra-dielem.jpg";
+
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -47,12 +47,9 @@ const AppSidebar = () => {
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border shrink-0">
-        <img src={logoDraDielem} alt="Lab Dra. Dielem Feijó" className={cn("object-contain shrink-0", collapsed ? "h-8 w-8 rounded-lg" : "h-10 w-auto max-w-[180px]")} />
+      <div className="flex items-center gap-3 px-4 h-12 border-b border-sidebar-border shrink-0">
         {!collapsed && (
-          <div className="overflow-hidden">
-            <p className="text-[10px] text-sidebar-muted uppercase tracking-widest">LIS System</p>
-          </div>
+          <p className="text-xs font-semibold text-sidebar-foreground uppercase tracking-widest">LIS System</p>
         )}
       </div>
 
