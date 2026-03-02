@@ -123,20 +123,24 @@ export function printEtiquetaColeta(patient: { name: string; id: string }, exams
   win.document.close();
 }
 
-export function printAtendimento(patient: { name: string; cpf: string; birth_date: string; gender: string; phone?: string | null; email?: string | null; insurance?: string | null; id: string }) {
+export function printAtendimento(patient: { name: string; cpf: string; birth_date: string; gender: string; phone?: string | null; email?: string | null; insurance?: string | null; id: string }, logoUrl?: string) {
   const win = window.open("", "_blank", "width=600,height=500");
   if (!win) return;
   const birthFormatted = new Date(patient.birth_date).toLocaleDateString("pt-BR");
+  const logoHtml = logoUrl ? `<div class="logo-area"><img src="${logoUrl}" alt="Logo" class="logo" /></div>` : "";
   win.document.write(`
     <html><head><title>Comprovante de Atendimento</title>
     <style>
       @media print { body { margin: 20px; } }
-      body { font-family: Arial, sans-serif; padding: 20px; max-width: 500px; }
+      body { font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; }
+      .logo-area { text-align: center; margin-bottom: 12px; }
+      .logo { max-height: 70px; }
       h2 { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
       .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 13px; }
       .row .label { font-weight: bold; color: #555; }
       .footer { margin-top: 20px; font-size: 11px; color: #888; text-align: center; }
     </style></head><body>
+    ${logoHtml}
     <h2>Comprovante de Atendimento</h2>
     <div class="row"><span class="label">Paciente:</span><span>${patient.name}</span></div>
     <div class="row"><span class="label">CPF:</span><span>${patient.cpf}</span></div>
@@ -153,7 +157,7 @@ export function printAtendimento(patient: { name: string; cpf: string; birth_dat
   win.document.close();
 }
 
-export function printProtocoloAcesso(order: { order_number: string; created_at: string; exams?: string[] }, patient: { name: string; birth_date: string }, portalUrl: string) {
+export function printProtocoloAcesso(order: { order_number: string; created_at: string; exams?: string[] }, patient: { name: string; birth_date: string }, portalUrl: string, logoUrl?: string) {
   const win = window.open("", "_blank", "width=600,height=700");
   if (!win) return;
   const birthFormatted = new Date(patient.birth_date).toLocaleDateString("pt-BR");
@@ -189,7 +193,10 @@ export function printProtocoloAcesso(order: { order_number: string; created_at: 
       .note { font-size: 11px; color: #999; text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
       .cut-line { border-top: 1px dashed #ccc; margin: 24px 0; position: relative; }
       .cut-line::before { content: "✂"; position: absolute; top: -10px; left: -5px; color: #ccc; font-size: 14px; }
+      .logo-area { text-align: center; margin-bottom: 8px; }
+      .logo { max-height: 60px; }
     </style></head><body>
+    ${logoUrl ? `<div class="logo-area"><img src="${logoUrl}" alt="Logo" class="logo" /></div>` : ""}
     <div class="header">
       <h1>🔬 Protocolo de Acesso</h1>
       <p>Resultados de Exames Online</p>
