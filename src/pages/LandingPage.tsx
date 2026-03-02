@@ -300,7 +300,7 @@ const LandingPage = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="rounded-full px-7 h-12 text-sm border-white/40 text-white hover:bg-white/10 hover-scale"
+                  className="rounded-full px-7 h-12 text-sm border-2 border-white text-white bg-white/10 hover:bg-white/20 hover-scale font-semibold"
                 >
                   Portal do Médico
                 </Button>
