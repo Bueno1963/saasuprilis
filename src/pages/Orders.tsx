@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { orderSchema, OrderFormData } from "@/lib/validations";
 import { printEtiquetaColeta, printAtendimento, printProtocoloAcesso } from "@/lib/print-utils";
+import logoImg from "@/assets/logo-dra-dielem.png";
 
 const Orders = () => {
   const [search, setSearch] = useState("");
@@ -287,7 +288,7 @@ const Orders = () => {
                     </Button>
                     <Button variant="outline" className="flex-1" onClick={() => {
                       const p = createdOrder.patients as any;
-                      if (p) printAtendimento({ id: createdOrder.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date, gender: p.gender, phone: p.phone, email: p.email, insurance: p.insurance });
+                      if (p) printAtendimento({ id: createdOrder.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date, gender: p.gender, phone: p.phone, email: p.email, insurance: p.insurance }, logoImg);
                     }}>
                       <Printer className="w-4 h-4 mr-2" />Atendimento
                     </Button>
@@ -299,7 +300,8 @@ const Orders = () => {
                       printProtocoloAcesso(
                         { order_number: createdOrder.order_number, created_at: createdOrder.created_at, exams: createdOrder.exams || [] },
                         { name: p.name, birth_date: p.birth_date },
-                        portalUrl
+                        portalUrl,
+                        logoImg
                       );
                     }
                   }}>
@@ -376,7 +378,8 @@ const Orders = () => {
                                printProtocoloAcesso(
                                  { order_number: order.order_number, created_at: order.created_at, exams: order.exams || [] },
                                  { name: p.name, birth_date: p.birth_date },
-                                 portalUrl
+                                  portalUrl,
+                                  logoImg
                                );
                              }
                            }}>
@@ -384,7 +387,7 @@ const Orders = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => {
                               const p = (order.patients as any);
-                              if (p) printAtendimento({ id: order.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date, gender: p.gender, phone: p.phone, email: p.email, insurance: order.insurance });
+                              if (p) printAtendimento({ id: order.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date, gender: p.gender, phone: p.phone, email: p.email, insurance: order.insurance }, logoImg);
                             }}>
                               <Printer className="w-4 h-4 mr-2" />Comprovante de Atendimento
                             </DropdownMenuItem>
