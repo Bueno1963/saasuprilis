@@ -221,18 +221,18 @@ const LandingPage = () => {
 
         <div className="relative max-w-7xl mx-auto px-6 w-full py-16 md:py-20">
           <div className="max-w-xl space-y-5">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight animate-fade-in [animation-duration:0.6s]">
               Cuidando da sua saúde com precisão e tecnologia.
             </h1>
-            <p className="text-base md:text-lg text-white/75 leading-relaxed max-w-md">
+            <p className="text-base md:text-lg text-white/75 leading-relaxed max-w-md animate-fade-in [animation-duration:0.6s] [animation-delay:0.15s] [animation-fill-mode:backwards]">
               Resultados rápidos, atendimento humanizado e laudos disponíveis
               online para você e seu médico.
             </p>
-            <div className="flex flex-wrap gap-3 pt-3">
+            <div className="flex flex-wrap gap-3 pt-3 animate-fade-in [animation-duration:0.6s] [animation-delay:0.3s] [animation-fill-mode:backwards]">
               <Link to="/portal-paciente">
                 <Button
                   size="lg"
-                  className="rounded-full px-7 h-12 text-sm bg-white text-[hsl(205,78%,25%)] hover:bg-white/90 shadow-lg font-semibold"
+                  className="rounded-full px-7 h-12 text-sm bg-white text-[hsl(205,78%,25%)] hover:bg-white/90 shadow-lg font-semibold hover-scale"
                 >
                   Consultar Resultados
                 </Button>
@@ -241,7 +241,7 @@ const LandingPage = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="rounded-full px-7 h-12 text-sm border-white/40 text-white hover:bg-white/10"
+                  className="rounded-full px-7 h-12 text-sm border-white/40 text-white hover:bg-white/10 hover-scale"
                 >
                   Portal do Médico
                 </Button>
