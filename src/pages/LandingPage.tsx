@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import heroLabImg from "@/assets/hero-lab.jpg";
-import logoDraDielem from "@/assets/logo-dra-dielem.png";
+import logoDraDielem from "@/assets/logo-dra-dielem.jpg";
 
 const serviceCards = [
   {
@@ -164,7 +164,7 @@ const LandingPage = () => {
             <img
               src={logoDraDielem}
               alt="Laboratório Dra. Dielem Feijó"
-              className="h-20 w-auto"
+              className="h-14 w-auto max-w-[220px] object-contain"
             />
           </Link>
 
@@ -557,8 +557,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <img src={logoDraDielem} alt="Laboratório Dra. Dielem Feijó" className="h-10 w-auto" />
-              <span className="font-bold text-white text-sm">Lab Dra. Dielem Feijó</span>
+              <img src={logoDraDielem} alt="Laboratório Dra. Dielem Feijó" className="h-10 w-auto object-contain brightness-0 invert" />
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/60">
               <Link
