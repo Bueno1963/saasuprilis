@@ -3,6 +3,9 @@ import { Activity, Phone, ArrowRight, MapPin, Building2, Stethoscope, Baby, Chev
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import coletaDomiciliarImg from "@/assets/coleta-domiciliar.jpg";
+import coletaEmpresarialImg from "@/assets/coleta-empresarial.jpg";
+import coletaInfantilImg from "@/assets/coleta-infantil.jpg";
 
 const ColetasPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,6 +26,7 @@ const ColetasPage = () => {
     {
       icon: MapPin,
       title: "Coleta Domiciliar",
+      image: coletaDomiciliarImg,
       description:
         "Pensando na comodidade e no conforto de seus pacientes, o Laboratório VEROLIS oferece o serviço de Coleta Domiciliar, para que você possa cuidar da sua saúde no conforto da sua casa. Contamos com uma equipe de coletores rigorosamente treinados e capacitados para atendê-lo em seu domicílio, seja realizando a coleta de sangue ou transportando os diversos tipos de amostras para exames laboratoriais.",
       color: "hsl(205,78%,45%)",
@@ -30,6 +34,7 @@ const ColetasPage = () => {
     {
       icon: Stethoscope,
       title: "Coleta Empresarial",
+      image: coletaEmpresarialImg,
       description:
         'Para atender às necessidades das empresas na realização de exames e garantir o cuidado com os colaboradores, o Laboratório VEROLIS oferece duas opções: uma delas é disponibilizar uma estrutura "in loco", montada especialmente para a coleta de material dos colaboradores, seguindo rigorosamente as boas práticas ocupacionais; a outra opção é realizar os exames contratados em qualquer uma de nossas unidades.',
       color: "hsl(205,78%,35%)",
@@ -37,6 +42,7 @@ const ColetasPage = () => {
     {
       icon: Baby,
       title: "Coleta Infantil",
+      image: coletaInfantilImg,
       description:
         "Todos os equipamentos utilizados na coleta são especialmente projetados para atender nossos pequenos pacientes, empregando garrotes, agulhas e scalps pediátricos. Isso permite uma coleta menos traumática. A posição durante a coleta é adaptada conforme a idade, podendo ser sentados na cadeira, no colo dos pais ou deitados na maca.",
       color: "hsl(205,78%,55%)",
@@ -140,11 +146,12 @@ const ColetasPage = () => {
             <div key={coleta.title} className={cn("grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center", idx % 2 === 1 && "lg:[direction:rtl]")}>
               {/* Icon / Visual */}
               <div className={cn(idx % 2 === 1 && "lg:[direction:ltr]")}>
-                <div className="w-full h-[280px] rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center">
-                  <div className="w-24 h-24 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${coleta.color}` }}>
-                    <coleta.icon className="w-12 h-12 text-white" />
-                  </div>
-                </div>
+                <img
+                  src={coleta.image}
+                  alt={coleta.title}
+                  className="w-full h-[280px] rounded-2xl object-cover shadow-lg"
+                  loading="lazy"
+                />
               </div>
 
               {/* Text */}
