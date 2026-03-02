@@ -251,7 +251,7 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero — curved blue overlay inspired by Dom Bosco */}
-      <section className="relative min-h-[100vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[70vh] flex items-center overflow-hidden">
         {/* Background image */}
         <img
           src={heroLabImg}
