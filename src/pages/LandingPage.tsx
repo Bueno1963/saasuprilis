@@ -102,8 +102,8 @@ const LandingPage = () => {
     { label: "Institucional", href: "#sobre", hasDropdown: true },
     { label: "Unidades", href: "#sobre" },
     { label: "Convênios", href: "#servicos" },
-    { label: "Exames", href: "#servicos" },
-    { label: "Coletas", href: "#servicos" },
+    { label: "Exames", href: "/landing/exames" },
+    { label: "Coletas", href: "/landing/coletas" },
     { label: "Vacinas", href: "#servicos" },
     { label: "Blog", href: "#duvidas" },
     { label: "Contato", href: "#contato" },
@@ -170,16 +170,27 @@ const LandingPage = () => {
           </Link>
 
           <div className="hidden md:flex items-center gap-7">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors flex items-center gap-1"
-              >
-                {link.label}
-                {link.hasDropdown && <ChevronDown className="w-3.5 h-3.5" />}
-              </a>
-            ))}
+            {navLinks.map((link) =>
+              link.href.startsWith("/") ? (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors flex items-center gap-1"
+                >
+                  {link.label}
+                  {link.hasDropdown && <ChevronDown className="w-3.5 h-3.5" />}
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors flex items-center gap-1"
+                >
+                  {link.label}
+                  {link.hasDropdown && <ChevronDown className="w-3.5 h-3.5" />}
+                </a>
+              )
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -200,17 +211,29 @@ const LandingPage = () => {
           )}
         >
           <div className="px-6 py-4 space-y-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between py-3 text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors border-b border-border/30 last:border-0"
-              >
-                {link.label}
-                {link.hasDropdown && <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-              </a>
-            ))}
+            {navLinks.map((link) =>
+              link.href.startsWith("/") ? (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between py-3 text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors border-b border-border/30 last:border-0"
+                >
+                  {link.label}
+                  {link.hasDropdown && <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between py-3 text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors border-b border-border/30 last:border-0"
+                >
+                  {link.label}
+                  {link.hasDropdown && <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                </a>
+              )
+            )}
             <div className="flex flex-col gap-2 pt-4">
               <Link to="/portal-paciente" onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full rounded h-10 text-sm font-semibold bg-[hsl(205,78%,25%)] hover:bg-[hsl(205,78%,30%)] text-white">
