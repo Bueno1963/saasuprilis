@@ -97,30 +97,34 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background font-sans">
       {/* Top bar - contact info */}
-      <div className="bg-[hsl(210,50%,15%)] text-white text-sm hidden md:block">
-        <div className="max-w-7xl mx-auto px-6 h-10 flex items-center justify-between">
+      <div className="bg-[hsl(0,0%,96%)] text-sm hidden md:block border-b border-border/40">
+        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <a
               href="tel:+5511999999999"
-              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Phone className="w-3.5 h-3.5" />
+              <Phone className="w-4 h-4 text-[hsl(205,78%,35%)]" />
               Central de Atendimento: (11) 99999-9999
             </a>
             <a
-              href="mailto:contato@verolis.com.br"
-              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
+              href="https://wa.me/5511999999999"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Mail className="w-3.5 h-3.5" />
-              contato@verolis.com.br
+              <svg className="w-4 h-4 text-[hsl(142,70%,35%)]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.79 23.329l4.47-1.47A11.93 11.93 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-2.168 0-4.19-.587-5.932-1.608l-.425-.252-2.652.872.89-2.583-.277-.44A9.77 9.77 0 012.182 12 9.818 9.818 0 0112 2.182 9.818 9.818 0 0121.818 12 9.818 9.818 0 0112 21.818z"/>
+              </svg>
+              (11) 99999-9999
             </a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link to="/portal-paciente">
               <Button
                 size="sm"
-                variant="outline"
-                className="rounded-md h-7 px-4 text-xs border-white/30 text-white hover:bg-white/10 bg-transparent"
+                className="rounded h-9 px-5 text-xs font-semibold bg-[hsl(205,78%,25%)] hover:bg-[hsl(205,78%,30%)] text-white"
               >
                 Resultados de Exames
               </Button>
@@ -128,7 +132,7 @@ const LandingPage = () => {
             <Link to="/portal-paciente">
               <Button
                 size="sm"
-                className="rounded-md h-7 px-4 text-xs bg-[hsl(205,78%,45%)] hover:bg-[hsl(205,78%,50%)] text-white"
+                className="rounded h-9 px-5 text-xs font-semibold bg-[hsl(205,78%,45%)] hover:bg-[hsl(205,78%,50%)] text-white"
               >
                 Agende seu Exame
               </Button>
@@ -139,39 +143,44 @@ const LandingPage = () => {
 
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white border-b border-border/40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
           <Link to="/landing" className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-[hsl(205,78%,28%)] flex items-center justify-center">
               <Activity className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-foreground">
-              VEROLIS
-            </span>
+            <div className="flex flex-col leading-tight">
+              <span className="text-lg font-bold tracking-tight text-foreground">VEROLIS</span>
+              <span className="text-[10px] text-muted-foreground tracking-wide">Laboratório</span>
+            </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
-            <a
-              href="#sobre"
-              className="text-base font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
-            >
-              Institucional
+          <div className="hidden md:flex items-center gap-7">
+            <a href="#" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
+              Home
             </a>
-            <a
-              href="#servicos"
-              className="text-base font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
-            >
+            <a href="#sobre" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors flex items-center gap-1">
+              Institucional
+              <ChevronDown className="w-3.5 h-3.5" />
+            </a>
+            <a href="#sobre" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
+              Unidades
+            </a>
+            <a href="#servicos" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
+              Convênios
+            </a>
+            <a href="#servicos" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
               Exames
             </a>
-            <a
-              href="#duvidas"
-              className="text-base font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
-            >
-              Dúvidas
+            <a href="#servicos" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
+              Coletas
             </a>
-            <a
-              href="#contato"
-              className="text-base font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
-            >
+            <a href="#servicos" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
+              Vacinas
+            </a>
+            <a href="#duvidas" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
+              Blog
+            </a>
+            <a href="#contato" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
               Contato
             </a>
           </div>
