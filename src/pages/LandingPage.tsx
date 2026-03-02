@@ -188,25 +188,33 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero — curved blue overlay inspired by Dom Bosco */}
-      <section className="relative min-h-[520px] md:min-h-[560px] flex items-center overflow-hidden">
+      <section className="relative min-h-[520px] md:min-h-[580px] flex items-center overflow-hidden">
         {/* Background image */}
         <img
           src={heroLabImg}
           alt="Laboratório clínico moderno"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-top"
           loading="eager"
         />
-        {/* Blue curved overlay */}
+        {/* Blue curved overlay — smooth organic shape */}
         <div className="absolute inset-0">
           <svg
-            viewBox="0 0 1440 560"
+            viewBox="0 0 1440 580"
             preserveAspectRatio="none"
             className="absolute inset-0 w-full h-full"
           >
             <path
-              d="M0,0 L0,560 L720,560 Q900,560 1000,480 Q1100,400 1100,300 Q1100,150 1000,80 Q950,40 900,20 Q850,0 800,0 Z"
-              fill="hsl(205,78%,28%)"
-              fillOpacity="0.92"
+              d="M0,0 L0,580 L780,580 C850,580 920,560 980,520 C1060,465 1120,380 1140,280 C1160,180 1130,90 1060,40 C1020,15 970,0 920,0 Z"
+              fill="hsl(205,78%,25%)"
+              fillOpacity="0.94"
+            />
+            {/* Subtle lighter accent curve */}
+            <path
+              d="M0,580 L680,580 C740,580 800,565 850,535 C920,490 970,420 985,340 C1000,260 975,185 920,140 C885,112 840,95 795,90"
+              fill="none"
+              stroke="hsl(205,78%,50%)"
+              strokeWidth="1.5"
+              strokeOpacity="0.25"
             />
           </svg>
         </div>
@@ -214,18 +222,17 @@ const LandingPage = () => {
         <div className="relative max-w-7xl mx-auto px-6 w-full py-16 md:py-20">
           <div className="max-w-xl space-y-5">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight">
-              Seus exames com precisão e resultados online.
+              Cuidando da sua saúde com precisão e tecnologia.
             </h1>
             <p className="text-base md:text-lg text-white/75 leading-relaxed max-w-md">
-              Segurança e cuidado para toda a sua família. Resultados rápidos e
-              atendimento humanizado.
+              Resultados rápidos, atendimento humanizado e laudos disponíveis
+              online para você e seu médico.
             </p>
-            <div className="flex flex-wrap gap-3 pt-2">
+            <div className="flex flex-wrap gap-3 pt-3">
               <Link to="/portal-paciente">
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="rounded-full px-7 h-11 text-sm border-white/50 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm"
+                  className="rounded-full px-7 h-12 text-sm bg-white text-[hsl(205,78%,25%)] hover:bg-white/90 shadow-lg font-semibold"
                 >
                   Consultar Resultados
                 </Button>
@@ -234,7 +241,7 @@ const LandingPage = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="rounded-full px-7 h-11 text-sm border-white/30 text-white/80 hover:bg-white/10"
+                  className="rounded-full px-7 h-12 text-sm border-white/40 text-white hover:bg-white/10"
                 >
                   Portal do Médico
                 </Button>
