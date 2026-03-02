@@ -152,25 +152,25 @@ const LandingPage = () => {
           <div className="hidden md:flex items-center gap-8">
             <a
               href="#sobre"
-              className="text-sm font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
+              className="text-base font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
             >
               Institucional
             </a>
             <a
               href="#servicos"
-              className="text-sm font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
+              className="text-base font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
             >
               Exames
             </a>
             <a
               href="#duvidas"
-              className="text-sm font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
+              className="text-base font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
             >
               Dúvidas
             </a>
             <a
               href="#contato"
-              className="text-sm font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
+              className="text-base font-medium text-muted-foreground hover:text-[hsl(205,78%,28%)] transition-colors"
             >
               Contato
             </a>
