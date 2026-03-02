@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,12 +56,47 @@ const PortalPaciente = () => {
   const [schedLoading, setSchedLoading] = useState(false);
   const [schedError, setSchedError] = useState("");
   const [schedSuccess, setSchedSuccess] = useState(false);
+  const [occupiedSlots, setOccupiedSlots] = useState<Set<string>>(new Set());
+  const [slotsLoading, setSlotsLoading] = useState(false);
   const [schedForm, setSchedForm] = useState({
     date: "",
-    time: "08:00",
+    time: "",
     type: "exame",
     notes: "",
   });
+
+  // Time slots from 07:00 to 17:30 every 30 min
+  const TIME_SLOTS = Array.from({ length: 22 }, (_, i) => {
+    const h = Math.floor(i / 2) + 7;
+    const m = (i % 2) * 30;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  });
+
+  const fetchOccupiedSlots = useCallback(async (date: string) => {
+    if (!date) return;
+    setSlotsLoading(true);
+    try {
+      const { data: appts } = await supabase
+        .from("appointments")
+        .select("scheduled_time")
+        .eq("scheduled_date", date)
+        .neq("status", "cancelado");
+      const occupied = new Set((appts || []).map((a: any) => a.scheduled_time?.slice(0, 5)));
+      setOccupiedSlots(occupied);
+    } catch {
+      setOccupiedSlots(new Set());
+    } finally {
+      setSlotsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (schedForm.date) {
+      fetchOccupiedSlots(schedForm.date);
+      // Reset time when date changes
+      setSchedForm((f) => ({ ...f, time: "" }));
+    }
+  }, [schedForm.date, fetchOccupiedSlots]);
 
   // === Results handlers ===
   const handleSearch = async (e: React.FormEvent) => {
@@ -158,7 +193,8 @@ const PortalPaciente = () => {
     setSchedPatient(null);
     setSchedSuccess(false);
     setSchedError("");
-    setSchedForm({ date: "", time: "08:00", type: "exame", notes: "" });
+    setSchedForm({ date: "", time: "", type: "exame", notes: "" });
+    setOccupiedSlots(new Set());
     setSchedCpf("");
     setSchedBirthDate("");
   };
@@ -501,16 +537,48 @@ const PortalPaciente = () => {
                           required
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sched-time">Horário</Label>
-                        <Input
-                          id="sched-time"
-                          type="time"
-                          value={schedForm.time}
-                          onChange={(e) => setSchedForm((f) => ({ ...f, time: e.target.value }))}
-                          required
-                        />
-                      </div>
+                      {schedForm.date && (
+                        <div className="space-y-2">
+                          <Label>Horário disponível</Label>
+                          {slotsLoading ? (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Verificando disponibilidade...
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-4 gap-1.5">
+                              {TIME_SLOTS.map((slot) => {
+                                const isOccupied = occupiedSlots.has(slot);
+                                const isSelected = schedForm.time === slot;
+                                return (
+                                  <button
+                                    key={slot}
+                                    type="button"
+                                    disabled={isOccupied}
+                                    onClick={() => setSchedForm((f) => ({ ...f, time: slot }))}
+                                    className={cn(
+                                      "py-2 px-1 rounded-md text-xs font-medium border transition-all",
+                                      isOccupied
+                                        ? "bg-muted text-muted-foreground/40 border-border cursor-not-allowed line-through"
+                                        : isSelected
+                                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                          : "bg-card text-foreground border-border hover:border-primary/50 hover:bg-primary/5"
+                                    )}
+                                  >
+                                    <Clock className="w-3 h-3 inline mr-0.5" />
+                                    {slot}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {!slotsLoading && occupiedSlots.size > 0 && (
+                            <p className="text-[11px] text-muted-foreground">
+                              Horários riscados já estão ocupados.
+                            </p>
+                          )}
+                        </div>
+                      )}
                       <div className="space-y-2">
                         <Label>Tipo</Label>
                         <Select value={schedForm.type} onValueChange={(v) => setSchedForm((f) => ({ ...f, type: v }))}>
@@ -541,7 +609,7 @@ const PortalPaciente = () => {
                         </div>
                       )}
 
-                      <Button type="submit" className="w-full" disabled={schedLoading}>
+                      <Button type="submit" className="w-full" disabled={schedLoading || !schedForm.time || !schedForm.date}>
                         {schedLoading ? (
                           <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
