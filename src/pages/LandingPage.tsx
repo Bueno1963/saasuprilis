@@ -91,7 +91,7 @@ const LandingPage = () => {
           className="absolute inset-0 w-full h-full object-cover"
           loading="eager"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(205,78%,18%)]/90 via-[hsl(205,60%,25%)]/75 to-[hsl(205,50%,30%)]/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(205,78%,18%)]/60 via-[hsl(205,60%,25%)]/45 to-[hsl(205,50%,30%)]/20" />
 
         <div className="relative max-w-7xl mx-auto px-6 w-full py-20">
           <div className="max-w-2xl space-y-6">
