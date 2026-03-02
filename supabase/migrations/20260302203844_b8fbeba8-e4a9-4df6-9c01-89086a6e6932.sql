@@ -1,0 +1,2 @@
+ALTER TABLE public.samples DROP CONSTRAINT samples_sector_check;
+ALTER TABLE public.samples ADD CONSTRAINT samples_sector_check CHECK (sector = ANY (ARRAY['Hematologia', 'Bioquímica', 'Imunologia', 'Microbiologia', 'Uroanálise', 'Coagulação', 'Parasitologia', 'Endocrinologia']));
