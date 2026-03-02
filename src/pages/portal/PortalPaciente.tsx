@@ -320,35 +320,35 @@ const PortalPaciente = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Panel - Branding */}
-      <div className="lg:w-[45%] bg-gradient-to-br from-[hsl(205,78%,20%)] via-[hsl(205,78%,25%)] to-[hsl(205,70%,30%)] text-white relative overflow-hidden flex flex-col">
+      <div className="lg:w-[40%] bg-gradient-to-br from-[hsl(205,78%,20%)] via-[hsl(205,78%,25%)] to-[hsl(205,70%,30%)] text-white relative overflow-hidden flex flex-col">
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-20 left-0 w-48 h-48 bg-white/5 rounded-full -translate-x-1/2" />
 
-        <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12 flex-1">
+        <div className="relative z-10 flex flex-col justify-between p-6 lg:p-10 flex-1">
           {/* Logo */}
           <div className="flex items-center gap-3">
             <img
               src={logoDraDielem}
               alt="Laboratório Dra. Dielem Feijó"
-              className="h-16 w-auto rounded-lg bg-white/95 p-2 shadow-lg"
+              className="h-12 w-auto rounded-lg bg-white/95 p-1.5 shadow-lg"
             />
             <div>
-              <h1 className="text-lg font-bold tracking-tight">Laboratório Dra. Dielem</h1>
-              <p className="text-xs text-white/60">Sistema de Gestão Laboratorial</p>
+              <h1 className="text-base font-bold tracking-tight">Laboratório Dra. Dielem</h1>
+              <p className="text-[10px] text-white/60">Sistema de Gestão Laboratorial</p>
             </div>
           </div>
 
           {/* Welcome message */}
-          <div className="my-8 lg:my-0 space-y-6">
-            <p className="text-lg text-white/90 font-medium">
+          <div className="my-6 lg:my-0 space-y-4">
+            <p className="text-base text-white/90 font-medium">
               Prezado paciente,
             </p>
-            <blockquote className="text-base lg:text-lg leading-relaxed text-white/80 italic border-l-2 border-white/30 pl-4">
-              "Ficamos muito felizes por escolher nosso Laboratório, trabalhamos com tecnologia de ponta para garantir a fidelidade do resultado.<br />
+            <blockquote className="text-sm lg:text-base leading-relaxed text-white/80 italic border-l-2 border-white/30 pl-4">
+              "Ficamos muito Felizes por escolher nosso Laboratório, trabalhamos com tecnologia de ponta para garantir a fidelidade do resultado.
               Seu diagnóstico preciso é o produto final do nosso esforço"
             </blockquote>
-            <p className="text-xl font-semibold text-white/95 font-serif italic">
+            <p className="text-lg font-semibold text-white/95 font-serif italic">
               Dra. Dielem Feijó
             </p>
           </div>
@@ -361,7 +361,7 @@ const PortalPaciente = () => {
       </div>
 
       {/* Right Panel - Forms */}
-      <div className="lg:w-[55%] flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50">
+      <div className="lg:w-[60%] flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50">
         {/* Tab Switcher */}
         <div className="border-b border-slate-200 bg-white">
           <div className="flex max-w-lg mx-auto">
@@ -393,14 +393,14 @@ const PortalPaciente = () => {
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 flex items-start justify-center p-6 lg:p-10 overflow-y-auto">
-          <div className="w-full max-w-md space-y-6">
+        <div className="flex-1 flex items-start justify-center p-6 lg:p-8 overflow-y-auto">
+          <div className="w-full max-w-md space-y-5">
             {/* ===================== RESULTADOS TAB ===================== */}
             {activeTab === "resultados" && (
               <>
                 <div className="text-center space-y-2">
-                  <div className="w-14 h-14 rounded-2xl bg-[hsl(205,78%,35%)]/10 flex items-center justify-center mx-auto">
-                    <FileText className="w-7 h-7 text-[hsl(205,78%,35%)]" />
+                  <div className="w-12 h-12 rounded-xl bg-[hsl(205,78%,35%)]/10 flex items-center justify-center mx-auto">
+                    <FileText className="w-6 h-6 text-[hsl(205,78%,35%)]" />
                   </div>
                   <h2 className="text-xl font-bold text-foreground">Consultar Resultados</h2>
                   <p className="text-sm text-muted-foreground">
