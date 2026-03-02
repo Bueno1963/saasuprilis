@@ -264,7 +264,7 @@ const Orders = () => {
                     if (p) {
                       const portalUrl = `${window.location.origin}/portal-paciente`;
                       printProtocoloAcesso(
-                        { order_number: createdOrder.order_number, created_at: createdOrder.created_at },
+                        { order_number: createdOrder.order_number, created_at: createdOrder.created_at, exams: createdOrder.exams || [] },
                         { name: p.name, birth_date: p.birth_date },
                         portalUrl
                       );

@@ -153,7 +153,7 @@ export function printAtendimento(patient: { name: string; cpf: string; birth_dat
   win.document.close();
 }
 
-export function printProtocoloAcesso(order: { order_number: string; created_at: string }, patient: { name: string; birth_date: string }, portalUrl: string) {
+export function printProtocoloAcesso(order: { order_number: string; created_at: string; exams?: string[] }, patient: { name: string; birth_date: string }, portalUrl: string) {
   const win = window.open("", "_blank", "width=600,height=700");
   if (!win) return;
   const birthFormatted = new Date(patient.birth_date).toLocaleDateString("pt-BR");
@@ -181,6 +181,11 @@ export function printProtocoloAcesso(order: { order_number: string; created_at: 
       .instructions h3 { font-size: 13px; margin: 0 0 10px; color: #333; }
       .instructions ol { margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.8; color: #555; }
       .instructions .url { font-family: monospace; font-weight: bold; color: #1a56db; font-size: 13px; word-break: break-all; }
+      .exams-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }
+      .exams-box h3 { font-size: 13px; margin: 0 0 8px; color: #333; }
+      .exams-list { list-style: none; padding: 0; margin: 0; }
+      .exams-list li { font-size: 12px; padding: 3px 0; color: #555; border-bottom: 1px dotted #e5e7eb; }
+      .exams-list li:last-child { border-bottom: none; }
       .note { font-size: 11px; color: #999; text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
       .cut-line { border-top: 1px dashed #ccc; margin: 24px 0; position: relative; }
       .cut-line::before { content: "✂"; position: absolute; top: -10px; left: -5px; color: #ccc; font-size: 14px; }
@@ -195,6 +200,14 @@ export function printProtocoloAcesso(order: { order_number: string; created_at: 
       <div class="info-row"><span class="lbl">Pedido:</span><span>${order.order_number}</span></div>
       <div class="info-row"><span class="lbl">Data do Atendimento:</span><span>${dateFormatted} às ${timeFormatted}</span></div>
     </div>
+
+    ${(order.exams && order.exams.length > 0) ? `
+    <div class="exams-box">
+      <h3>🧪 Exames Solicitados (${order.exams.length})</h3>
+      <ul class="exams-list">
+        ${order.exams.map(e => `<li>• ${e}</li>`).join("")}
+      </ul>
+    </div>` : ""}
 
     <div class="credentials">
       <h3>🔑 Dados para Acesso</h3>
