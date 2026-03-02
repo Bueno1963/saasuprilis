@@ -144,7 +144,7 @@ const LandingPage = () => {
                 Resultados de Exames
               </Button>
             </Link>
-            <Link to="/portal-paciente">
+            <Link to="/portal-paciente?tab=agendamento">
               <Button
                 size="sm"
                 className="rounded h-9 px-5 text-xs font-semibold bg-[hsl(205,78%,45%)] hover:bg-[hsl(205,78%,50%)] text-white"
@@ -217,7 +217,7 @@ const LandingPage = () => {
                   Resultados de Exames
                 </Button>
               </Link>
-              <Link to="/portal-paciente" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/portal-paciente?tab=agendamento" onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full rounded h-10 text-sm font-semibold bg-[hsl(205,78%,45%)] hover:bg-[hsl(205,78%,50%)] text-white">
                   Agende seu Exame
                 </Button>
