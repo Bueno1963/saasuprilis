@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Activity, Clock, CalendarCheck, MonitorSmartphone, ChevronDown, ChevronUp, ArrowRight, FileText, Shield, Phone, Mail, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import heroLabImg from "@/assets/hero-lab.jpg";
 
 const featureCards = [
   {
@@ -83,11 +84,14 @@ const LandingPage = () => {
 
       {/* Hero — full-width background image style */}
       <section className="relative pt-16 min-h-[600px] md:min-h-[680px] flex items-center overflow-hidden">
-        {/* Background gradient simulating a medical/clinical photo */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(205,78%,22%)] via-[hsl(205,60%,32%)] to-[hsl(195,50%,38%)]" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')] opacity-60" />
-        {/* Subtle light overlay on right side */}
-        <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-white/[0.08] to-transparent" />
+        {/* Background image */}
+        <img
+          src={heroLabImg}
+          alt="Laboratório clínico moderno"
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(205,78%,18%)]/90 via-[hsl(205,60%,25%)]/75 to-[hsl(205,50%,30%)]/50" />
 
         <div className="relative max-w-7xl mx-auto px-6 w-full py-20">
           <div className="max-w-2xl space-y-6">
