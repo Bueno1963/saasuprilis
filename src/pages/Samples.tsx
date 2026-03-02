@@ -33,6 +33,7 @@ const STATUS_FLOW = [
 
 const Samples = () => {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -114,13 +115,19 @@ const Samples = () => {
   }, [samples, selectedDate]);
 
   const filtered = useMemo(() => {
-    if (!search) return filteredByDate;
-    const q = search.toLowerCase();
-    return filteredByDate.filter(s => {
-      const patientName = (s.orders as any)?.patients?.name || "";
-      return patientName.toLowerCase().includes(q) || s.barcode.includes(search);
-    });
-  }, [filteredByDate, search]);
+    let result = filteredByDate;
+    if (statusFilter !== "all") {
+      result = result.filter(s => s.status === statusFilter);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(s => {
+        const patientName = (s.orders as any)?.patients?.name || "";
+        return patientName.toLowerCase().includes(q) || s.barcode.includes(search);
+      });
+    }
+    return result;
+  }, [filteredByDate, search, statusFilter]);
 
   // Group by sector
   const groupedBySector = useMemo(() => {
@@ -169,12 +176,19 @@ const Samples = () => {
       {/* Status Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Coletadas", count: statusCounts.collected, icon: TestTubes, color: "text-warning", bg: "bg-warning/10 border-warning/20" },
-          { label: "Triadas", count: statusCounts.triaged, icon: FlaskConical, color: "text-info", bg: "bg-info/10 border-info/20" },
-          { label: "Em Análise", count: statusCounts.processing, icon: Microscope, color: "text-phase-analytical", bg: "bg-phase-analytical/10 border-phase-analytical/20" },
-          { label: "Analisadas", count: statusCounts.analyzed, icon: BadgeCheck, color: "text-success", bg: "bg-success/10 border-success/20" },
+          { label: "Coletadas", count: statusCounts.collected, value: "collected", icon: TestTubes, color: "text-warning", bg: "bg-warning/10 border-warning/20", activeBg: "bg-warning/25 border-warning/50 ring-2 ring-warning/30" },
+          { label: "Triadas", count: statusCounts.triaged, value: "triaged", icon: FlaskConical, color: "text-info", bg: "bg-info/10 border-info/20", activeBg: "bg-info/25 border-info/50 ring-2 ring-info/30" },
+          { label: "Em Análise", count: statusCounts.processing, value: "processing", icon: Microscope, color: "text-phase-analytical", bg: "bg-phase-analytical/10 border-phase-analytical/20", activeBg: "bg-phase-analytical/25 border-phase-analytical/50 ring-2 ring-phase-analytical/30" },
+          { label: "Analisadas", count: statusCounts.analyzed, value: "analyzed", icon: BadgeCheck, color: "text-success", bg: "bg-success/10 border-success/20", activeBg: "bg-success/25 border-success/50 ring-2 ring-success/30" },
         ].map(card => (
-          <Card key={card.label} className={cn("border", card.bg)}>
+          <Card
+            key={card.value}
+            className={cn(
+              "border cursor-pointer transition-all hover:shadow-md",
+              statusFilter === card.value ? card.activeBg : card.bg,
+            )}
+            onClick={() => setStatusFilter(prev => prev === card.value ? "all" : card.value)}
+          >
             <CardContent className="p-4 flex items-center gap-3">
               <card.icon className={cn("w-8 h-8", card.color)} />
               <div>
@@ -185,6 +199,15 @@ const Samples = () => {
           </Card>
         ))}
       </div>
+      {statusFilter !== "all" && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Filtrando por:</span>
+          <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => setStatusFilter("all")}>
+            {STATUS_FLOW.find(s => s.value === statusFilter)?.label || statusFilter}
+            <span className="ml-1">×</span>
+          </Button>
+        </div>
+      )}
 
       <Tabs defaultValue="amostras" className="space-y-4">
         <TabsList>
