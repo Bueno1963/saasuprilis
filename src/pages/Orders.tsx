@@ -141,12 +141,19 @@ const Orders = () => {
       }
 
       if (sectorMaterialMap.size > 0) {
-        const sampleRows = Array.from(sectorMaterialMap.entries()).map(([sector, material]) => ({
-          order_id: orderData.id,
-          sample_type: material,
-          sector,
-          barcode: "",
-        }));
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "");
+        const timeStr = now.toISOString().slice(11, 19).replace(/:/g, "");
+        let idx = 0;
+        const sampleRows = Array.from(sectorMaterialMap.entries()).map(([sector, material]) => {
+          idx++;
+          return {
+            order_id: orderData.id,
+            sample_type: material,
+            sector,
+            barcode: `LAB${dateStr}${timeStr}${idx.toString().padStart(3, "0")}`,
+          };
+        });
         const { error: sampleError } = await supabase.from("samples").insert(sampleRows);
         if (sampleError) console.error("Erro ao criar amostras:", sampleError);
       }
