@@ -101,7 +101,7 @@ const LandingPage = () => {
     { label: "Home", href: "#" },
     { label: "Institucional", href: "#sobre", hasDropdown: true },
     { label: "Unidades", href: "#sobre" },
-    { label: "Convênios", href: "#servicos" },
+    { label: "Convênios", href: "/landing/convenios" },
     { label: "Exames", href: "/landing/exames" },
     { label: "Coletas", href: "/landing/coletas" },
     { label: "Vacinas", href: "#servicos" },
