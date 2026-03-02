@@ -199,6 +199,18 @@ const Samples = () => {
           </Card>
         ))}
       </div>
+
+      {/* Legenda do fluxo */}
+      <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+        <span className="font-medium">Fluxo:</span>
+        <span className="inline-flex items-center gap-1"><TestTubes className="w-3.5 h-3.5 text-warning" />Coleta</span>
+        <span>→</span>
+        <span className="inline-flex items-center gap-1"><FlaskConical className="w-3.5 h-3.5 text-info" />Triagem</span>
+        <span>→</span>
+        <span className="inline-flex items-center gap-1"><Microscope className="w-3.5 h-3.5 text-phase-analytical" />Análise</span>
+        <span>→</span>
+        <span className="inline-flex items-center gap-1"><BadgeCheck className="w-3.5 h-3.5 text-success" />Concluída</span>
+      </div>
       {statusFilter !== "all" && (
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Filtrando por:</span>
