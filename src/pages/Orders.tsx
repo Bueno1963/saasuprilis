@@ -179,7 +179,18 @@ const Orders = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      // Delete related results first
+      // Check if order has any results with values entered
+      const { data: existingResults } = await supabase
+        .from("results")
+        .select("id, value, status")
+        .eq("order_id", id);
+      
+      const hasFilledResults = existingResults?.some(r => r.value && r.value.trim() !== "");
+      if (hasFilledResults) {
+        throw new Error("Não é possível excluir: este pedido possui resultados preenchidos.");
+      }
+
+      // Delete pending (empty) results
       await supabase.from("results").delete().eq("order_id", id);
       // Delete related samples
       await supabase.from("samples").delete().eq("order_id", id);
