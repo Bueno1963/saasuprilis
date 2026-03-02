@@ -204,9 +204,9 @@ const LandingPage = () => {
             className="absolute inset-0 w-full h-full"
           >
             <path
-              d="M0,0 L0,580 L780,580 C850,580 920,560 980,520 C1060,465 1120,380 1140,280 C1160,180 1130,90 1060,40 C1020,15 970,0 920,0 Z"
+              d="M0,0 L0,580 L580,580 C640,580 700,560 750,520 C830,460 880,370 890,270 C900,170 870,80 810,35 C775,12 730,0 690,0 Z"
               fill="hsl(205,78%,25%)"
-              fillOpacity="0.94"
+              fillOpacity="0.92"
             />
             {/* Subtle lighter accent curve */}
             <path
