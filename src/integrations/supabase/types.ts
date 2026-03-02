@@ -1053,36 +1053,213 @@ export type Database = {
         }
         Relationships: []
       }
+      sample_nonconformities: {
+        Row: {
+          corrective_action: string | null
+          created_at: string
+          description: string | null
+          id: string
+          reason: string
+          reported_by: string | null
+          reported_by_name: string
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          sample_id: string
+          severity: Database["public"]["Enums"]["nonconformity_severity"]
+          updated_at: string
+        }
+        Insert: {
+          corrective_action?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason: string
+          reported_by?: string | null
+          reported_by_name?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          sample_id: string
+          severity?: Database["public"]["Enums"]["nonconformity_severity"]
+          updated_at?: string
+        }
+        Update: {
+          corrective_action?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason?: string
+          reported_by?: string | null
+          reported_by_name?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          sample_id?: string
+          severity?: Database["public"]["Enums"]["nonconformity_severity"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_nonconformities_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: false
+            referencedRelation: "samples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sample_temperature_logs: {
+        Row: {
+          id: string
+          is_within_range: boolean
+          location: string | null
+          max_acceptable: number
+          min_acceptable: number
+          notes: string | null
+          recorded_at: string
+          recorded_by: string | null
+          recorded_by_name: string
+          sample_id: string
+          temperature_celsius: number
+          transport_condition: string | null
+        }
+        Insert: {
+          id?: string
+          is_within_range?: boolean
+          location?: string | null
+          max_acceptable?: number
+          min_acceptable?: number
+          notes?: string | null
+          recorded_at?: string
+          recorded_by?: string | null
+          recorded_by_name?: string
+          sample_id: string
+          temperature_celsius: number
+          transport_condition?: string | null
+        }
+        Update: {
+          id?: string
+          is_within_range?: boolean
+          location?: string | null
+          max_acceptable?: number
+          min_acceptable?: number
+          notes?: string | null
+          recorded_at?: string
+          recorded_by?: string | null
+          recorded_by_name?: string
+          sample_id?: string
+          temperature_celsius?: number
+          transport_condition?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_temperature_logs_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: false
+            referencedRelation: "samples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sample_tracking_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          location: string | null
+          new_status: string | null
+          notes: string | null
+          performed_by: string | null
+          performed_by_name: string
+          previous_status: string | null
+          sample_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          location?: string | null
+          new_status?: string | null
+          notes?: string | null
+          performed_by?: string | null
+          performed_by_name?: string
+          previous_status?: string | null
+          sample_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          location?: string | null
+          new_status?: string | null
+          notes?: string | null
+          performed_by?: string | null
+          performed_by_name?: string
+          previous_status?: string | null
+          sample_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_tracking_events_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: false
+            referencedRelation: "samples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       samples: {
         Row: {
           barcode: string
           collected_at: string
           created_at: string
+          disposal_at: string | null
+          disposal_by: string | null
           id: string
+          is_rejected: boolean
           order_id: string
+          rejection_reason: string | null
           sample_type: string
           sector: string
+          stability_hours: number | null
           status: string
+          storage_location: string | null
+          transport_condition: string | null
         }
         Insert: {
           barcode: string
           collected_at?: string
           created_at?: string
+          disposal_at?: string | null
+          disposal_by?: string | null
           id?: string
+          is_rejected?: boolean
           order_id: string
+          rejection_reason?: string | null
           sample_type: string
           sector: string
+          stability_hours?: number | null
           status?: string
+          storage_location?: string | null
+          transport_condition?: string | null
         }
         Update: {
           barcode?: string
           collected_at?: string
           created_at?: string
+          disposal_at?: string | null
+          disposal_by?: string | null
           id?: string
+          is_rejected?: boolean
           order_id?: string
+          rejection_reason?: string | null
           sample_type?: string
           sector?: string
+          stability_hours?: number | null
           status?: string
+          storage_location?: string | null
+          transport_condition?: string | null
         }
         Relationships: [
           {
@@ -1127,6 +1304,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "tecnico" | "recepcao"
+      nonconformity_severity: "baixa" | "media" | "alta" | "critica"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1255,6 +1433,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "tecnico", "recepcao"],
+      nonconformity_severity: ["baixa", "media", "alta", "critica"],
     },
   },
 } as const
