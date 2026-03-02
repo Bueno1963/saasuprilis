@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, Plus, X, Printer, Tag, Pencil, Trash2, Globe } from "lucide-react";
+import { Search, Plus, X, Printer, Tag, Pencil, Trash2, Globe, MoreHorizontal } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -24,6 +25,8 @@ const Orders = () => {
   const [editingOrder, setEditingOrder] = useState<any>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [autoPatient, setAutoPatient] = useState<any>(null);
+  const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
+  const [deleteOrderNumber, setDeleteOrderNumber] = useState("");
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const location = useLocation();
@@ -346,49 +349,49 @@ const Orders = () => {
                     <TableCell><StatusBadge status={order.priority} /></TableCell>
                      <TableCell className="text-sm">{new Date(order.created_at).toLocaleDateString("pt-BR")}</TableCell>
                      <TableCell>
-                       <div className="flex items-center gap-0.5">
-                         <Button variant="ghost" size="icon" className="h-8 w-8" title="Imprimir Etiqueta" onClick={() => {
-                            const p = (order.patients as any);
-                            printEtiquetaColeta({ id: order.order_number || order.id, name: p?.name || "" }, order.exams || []);
-                          }}>
-                            <Tag className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Protocolo de Acesso Web" onClick={() => {
-                            const p = (order.patients as any);
-                            if (p) {
-                              const portalUrl = `${window.location.origin}/portal-paciente`;
-                              printProtocoloAcesso(
-                                { order_number: order.order_number, created_at: order.created_at, exams: order.exams || [] },
-                                { name: p.name, birth_date: p.birth_date },
-                                portalUrl
-                              );
-                            }
-                          }}>
-                            <Globe className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Editar" onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
-                           <Pencil className="w-4 h-4" />
-                         </Button>
-                         {!ordersWithResultsSet.has(order.id) && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Excluir">
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir pedido {order.order_number}?</AlertDialogTitle>
-                                <AlertDialogDescription>Esta ação não pode ser desfeita. Todos os resultados e amostras associados serão excluídos.</AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deleteMutation.mutate(order.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                         )}
-                       </div>
+                       <DropdownMenu>
+                         <DropdownMenuTrigger asChild>
+                           <Button variant="ghost" size="icon" className="h-8 w-8">
+                             <MoreHorizontal className="w-4 h-4" />
+                           </Button>
+                         </DropdownMenuTrigger>
+                         <DropdownMenuContent align="end">
+                           <DropdownMenuItem onClick={() => {
+                             const p = (order.patients as any);
+                             printEtiquetaColeta({ id: order.order_number || order.id, name: p?.name || "" }, order.exams || []);
+                           }}>
+                             <Tag className="w-4 h-4 mr-2" />Imprimir Etiqueta
+                           </DropdownMenuItem>
+                           <DropdownMenuItem onClick={() => {
+                             const p = (order.patients as any);
+                             if (p) {
+                               const portalUrl = `${window.location.origin}/portal-paciente`;
+                               printProtocoloAcesso(
+                                 { order_number: order.order_number, created_at: order.created_at, exams: order.exams || [] },
+                                 { name: p.name, birth_date: p.birth_date },
+                                 portalUrl
+                               );
+                             }
+                           }}>
+                             <Globe className="w-4 h-4 mr-2" />Protocolo de Acesso Web
+                           </DropdownMenuItem>
+                           <DropdownMenuSeparator />
+                           <DropdownMenuItem onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
+                             <Pencil className="w-4 h-4 mr-2" />Editar Pedido
+                           </DropdownMenuItem>
+                           {!ordersWithResultsSet.has(order.id) && (
+                             <DropdownMenuItem
+                               className="text-destructive focus:text-destructive"
+                               onClick={() => {
+                                 setDeleteOrderId(order.id);
+                                 setDeleteOrderNumber(order.order_number);
+                               }}
+                             >
+                               <Trash2 className="w-4 h-4 mr-2" />Excluir Pedido
+                             </DropdownMenuItem>
+                           )}
+                         </DropdownMenuContent>
+                       </DropdownMenu>
                      </TableCell>
                    </TableRow>
                  ))}
@@ -397,6 +400,20 @@ const Orders = () => {
            )}
          </CardContent>
        </Card>
+
+       {/* Delete Confirmation Dialog */}
+       <AlertDialog open={!!deleteOrderId} onOpenChange={(v) => { if (!v) { setDeleteOrderId(null); setDeleteOrderNumber(""); } }}>
+         <AlertDialogContent>
+           <AlertDialogHeader>
+             <AlertDialogTitle>Excluir pedido {deleteOrderNumber}?</AlertDialogTitle>
+             <AlertDialogDescription>Esta ação não pode ser desfeita. Todos os resultados e amostras associados serão excluídos.</AlertDialogDescription>
+           </AlertDialogHeader>
+           <AlertDialogFooter>
+             <AlertDialogCancel>Cancelar</AlertDialogCancel>
+             <AlertDialogAction onClick={() => { if (deleteOrderId) deleteMutation.mutate(deleteOrderId); setDeleteOrderId(null); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+           </AlertDialogFooter>
+         </AlertDialogContent>
+       </AlertDialog>
 
        {/* Edit Dialog */}
        <Dialog open={editOpen} onOpenChange={(v) => { setEditOpen(v); if (!v) setEditingOrder(null); }}>
