@@ -299,7 +299,10 @@ const Samples = () => {
                         </TableHeader>
                         <TableBody>
                           {sectorSamples.map(sample => (
-                            <TableRow key={sample.id} className={(sample as any).is_rejected ? "bg-destructive/5" : ""}>
+                            <TableRow key={sample.id} className={cn(
+                              (sample as any).is_rejected && "bg-destructive/5",
+                              !((sample as any).is_rejected) && (sample as any).condition && (sample as any).condition !== "de_acordo" && "bg-warning/5 border-l-2 border-l-warning",
+                            )}>
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <Barcode className="w-4 h-4 text-muted-foreground" />
