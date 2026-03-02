@@ -169,6 +169,13 @@ const PortalPaciente = () => {
     setSchedError("");
 
     try {
+      // Fetch patient email for confirmation
+      const { data: patientData } = await supabase
+        .from("patients")
+        .select("email")
+        .eq("id", schedPatient.id)
+        .single();
+
       const { error: insertErr } = await supabase.from("appointments").insert({
         patient_id: schedPatient.id,
         scheduled_date: schedForm.date,
@@ -182,6 +189,22 @@ const PortalPaciente = () => {
 
       setSchedSuccess(true);
       toast.success("Agendamento realizado com sucesso!");
+
+      // Send confirmation email (fire-and-forget)
+      if (patientData?.email) {
+        supabase.functions.invoke("send-appointment-confirmation", {
+          body: {
+            patient_name: schedPatient.name,
+            patient_email: patientData.email,
+            scheduled_date: schedForm.date,
+            scheduled_time: schedForm.time,
+            appointment_type: schedForm.type,
+          },
+        }).then(({ error }) => {
+          if (error) console.error("Erro ao enviar e-mail:", error);
+          else toast.success("E-mail de confirmação enviado!");
+        });
+      }
     } catch (err: any) {
       setSchedError(err?.message || "Erro ao criar agendamento.");
     } finally {
