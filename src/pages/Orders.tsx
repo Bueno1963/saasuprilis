@@ -44,7 +44,7 @@ const Orders = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, patients(name)")
+        .select("*, patients(name, birth_date)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -325,12 +325,25 @@ const Orders = () => {
                      <TableCell>
                        <div className="flex items-center gap-0.5">
                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Imprimir Etiqueta" onClick={() => {
-                           const p = (order.patients as any);
-                           printEtiquetaColeta({ id: order.order_number || order.id, name: p?.name || "" }, order.exams || []);
-                         }}>
-                           <Tag className="w-4 h-4" />
-                         </Button>
-                         <Button variant="ghost" size="icon" className="h-8 w-8" title="Editar" onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
+                            const p = (order.patients as any);
+                            printEtiquetaColeta({ id: order.order_number || order.id, name: p?.name || "" }, order.exams || []);
+                          }}>
+                            <Tag className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Protocolo de Acesso Web" onClick={() => {
+                            const p = (order.patients as any);
+                            if (p) {
+                              const portalUrl = `${window.location.origin}/portal-paciente`;
+                              printProtocoloAcesso(
+                                { order_number: order.order_number, created_at: order.created_at, exams: order.exams || [] },
+                                { name: p.name, birth_date: p.birth_date },
+                                portalUrl
+                              );
+                            }
+                          }}>
+                            <Globe className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Editar" onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
                            <Pencil className="w-4 h-4" />
                          </Button>
                          {!ordersWithResultsSet.has(order.id) && (
