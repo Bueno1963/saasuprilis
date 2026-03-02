@@ -248,6 +248,25 @@ const PatientForm = ({ onSubmit, loading, initialData, submitLabel }: {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [cpfCheck, setCpfCheck] = useState<{ loading: boolean; found: any | null; checked: boolean }>({ loading: false, found: null, checked: false });
+
+  const checkCpfDuplicate = async (cpf: string) => {
+    const cleanCpf = cpf.replace(/\D/g, "");
+    if (cleanCpf.length < 11) {
+      setCpfCheck({ loading: false, found: null, checked: false });
+      return;
+    }
+    setCpfCheck(c => ({ ...c, loading: true }));
+    const { data } = await supabase
+      .from("patients")
+      .select("id, name, cpf")
+      .eq("cpf", cpf)
+      .maybeSingle();
+    
+    // If editing, ignore the current patient
+    const isCurrentPatient = initialData && data?.cpf === initialData.cpf;
+    setCpfCheck({ loading: false, found: isCurrentPatient ? null : data, checked: true });
+  };
 
   const handleBlur = (field: string) => {
     setTouched(t => ({ ...t, [field]: true }));
@@ -262,10 +281,18 @@ const PatientForm = ({ onSubmit, loading, initialData, submitLabel }: {
     } else {
       setErrors(e => { const n = { ...e }; delete n[field]; return n; });
     }
+
+    if (field === "cpf") {
+      checkCpfDuplicate(form.cpf);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (cpfCheck.found) {
+      toast.error("CPF já cadastrado no sistema.");
+      return;
+    }
     setTouched({ name: true, cpf: true, birth_date: true, gender: true, phone: true, email: true, insurance: true });
     const result = patientSchema.safeParse(form);
     if (result.success) {
@@ -295,8 +322,21 @@ const PatientForm = ({ onSubmit, loading, initialData, submitLabel }: {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
           <Label htmlFor="cpf">CPF <span className="text-destructive">*</span></Label>
-          <Input id="cpf" value={form.cpf} onChange={e => setForm(f => ({ ...f, cpf: formatCPF(e.target.value) }))} onBlur={() => handleBlur("cpf")} placeholder="000.000.000-00" maxLength={14} className={touched.cpf && errors.cpf ? "border-destructive" : ""} />
+          <Input id="cpf" value={form.cpf} onChange={e => {
+            setForm(f => ({ ...f, cpf: formatCPF(e.target.value) }));
+            setCpfCheck({ loading: false, found: null, checked: false });
+          }} onBlur={() => handleBlur("cpf")} placeholder="000.000.000-00" maxLength={14} className={touched.cpf && (errors.cpf || cpfCheck.found) ? "border-destructive" : ""} />
           {fieldError("cpf")}
+          {cpfCheck.loading && <p className="text-xs text-muted-foreground mt-1">Verificando CPF...</p>}
+          {cpfCheck.found && (
+            <div className="mt-1.5 p-2 rounded-md bg-destructive/10 border border-destructive/20">
+              <p className="text-xs text-destructive font-medium">CPF já cadastrado</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Paciente: {cpfCheck.found.name}</p>
+            </div>
+          )}
+          {cpfCheck.checked && !cpfCheck.found && !errors.cpf && form.cpf.replace(/\D/g, "").length === 11 && (
+            <p className="text-xs text-green-600 mt-1">✓ CPF disponível</p>
+          )}
         </div>
         <div className="space-y-1">
           <Label htmlFor="birth_date">Data de Nascimento <span className="text-destructive">*</span></Label>
@@ -335,7 +375,7 @@ const PatientForm = ({ onSubmit, loading, initialData, submitLabel }: {
         </div>
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading}>
+      <Button type="submit" className="w-full" disabled={loading || !!cpfCheck.found}>
         {loading ? "Salvando..." : (submitLabel || "Cadastrar Paciente")}
       </Button>
     </form>
