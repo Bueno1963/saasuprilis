@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
-import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer, PenTool, Undo2 } from "lucide-react";
+import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer, PenTool, Undo2, AlertTriangle } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -95,7 +95,7 @@ const LiberarExames = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("results")
-        .select("*, orders(order_number, doctor_name, insurance, patients(name, cpf, birth_date, gender))")
+        .select("*, orders(order_number, doctor_name, insurance, patients(name, cpf, birth_date, gender)), samples(condition)")
         .eq("status", "validated")
         .order("validated_at", { ascending: false });
       if (error) throw error;
@@ -160,6 +160,21 @@ const LiberarExames = () => {
 
   const examSectorMap = new Map(examCatalog.map(e => [e.name, e.sector]));
   const uniqueSectors = [...new Set(examCatalog.map(e => e.sector).filter(Boolean))] as string[];
+
+  const isSampleDeAcordo = useCallback((r: any) => {
+    const condition = (r.samples as any)?.condition;
+    return !condition || condition === "de_acordo";
+  }, []);
+
+  const getSampleConditionLabel = useCallback((r: any) => {
+    const condition = (r.samples as any)?.condition;
+    const labels: Record<string, string> = {
+      hemolisada: "Amostra hemolisada",
+      insuficiente: "Amostra Insuficiente",
+      nao_coletou: "Paciente Não coletou",
+    };
+    return labels[condition] || condition;
+  }, []);
 
   const sectorCounts = new Map<string, number>();
   for (const r of results as any[]) {
@@ -271,8 +286,11 @@ const LiberarExames = () => {
 
   const releaseAllSector = useMutation({
     mutationFn: async () => {
-      const ids = filteredResults.map((r: any) => r.id);
-      if (ids.length === 0) return;
+      const ids = filteredResults.filter((r: any) => isSampleDeAcordo(r)).map((r: any) => r.id);
+      if (ids.length === 0) {
+        toast.error("Nenhuma amostra com condição adequada para liberação");
+        return;
+      }
       const { error } = await supabase.from("results").update({
         status: "released",
         released_at: new Date().toISOString(),
@@ -391,11 +409,23 @@ const LiberarExames = () => {
             </p>
           </div>
         </div>
-        {filteredResults.length > 0 && (
-          <Button onClick={() => setConfirmRelease({ type: "all" })} disabled={releaseAllSector.isPending}>
-            <CheckCircle className="w-4 h-4 mr-2" /> Liberar Todos ({filteredResults.length})
-          </Button>
-        )}
+        {filteredResults.length > 0 && (() => {
+          const validableCount = filteredResults.filter((r: any) => isSampleDeAcordo(r)).length;
+          const blockedCount = filteredResults.length - validableCount;
+          return (
+            <div className="flex items-center gap-3">
+              {blockedCount > 0 && (
+                <span className="text-xs text-warning flex items-center gap-1">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {blockedCount} bloqueado{blockedCount !== 1 ? "s" : ""}
+                </span>
+              )}
+              <Button onClick={() => setConfirmRelease({ type: "all" })} disabled={releaseAllSector.isPending || validableCount === 0}>
+                <CheckCircle className="w-4 h-4 mr-2" /> Liberar Todos ({validableCount})
+              </Button>
+            </div>
+          );
+        })()}
       </div>
 
       {filteredResults.length > 0 && (
@@ -478,16 +508,19 @@ const LiberarExames = () => {
                           <TableCell className={cn("font-mono font-semibold", r.flag !== "normal" && "text-destructive")}>{r.value} {r.unit}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
                           <TableCell><StatusBadge status={r.flag} /></TableCell>
-                          <TableCell className="text-right">
+                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
+                              {!isSampleDeAcordo(r) && (
+                                <span className="text-xs text-warning flex items-center gap-1"><AlertTriangle className="w-3 h-3" />{getSampleConditionLabel(r)}</span>
+                              )}
                               <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => revertValidationMutation.mutate(r.id)} disabled={isPending || revertValidationMutation.isPending}>
                                 <Undo2 className="w-3.5 h-3.5 mr-1" /> Reverter
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending}>
+                              <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending || !isSampleDeAcordo(r)} title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : ""}>
                                 <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                               </Button>
                               {printButton}
-                              {nextButton}
+                              {isSampleDeAcordo(r) && nextButton}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -518,14 +551,17 @@ const LiberarExames = () => {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
+                      {!isSampleDeAcordo(r) && (
+                        <span className="text-xs text-warning flex items-center gap-1"><AlertTriangle className="w-3 h-3" />{getSampleConditionLabel(r)}</span>
+                      )}
                       <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => revertValidationMutation.mutate(r.id)} disabled={isPending || revertValidationMutation.isPending}>
                         <Undo2 className="w-3.5 h-3.5 mr-1" /> Reverter
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending}>
+                      <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending || !isSampleDeAcordo(r)} title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : ""}>
                         <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                       </Button>
                       {printButton}
-                      {nextButton}
+                      {isSampleDeAcordo(r) && nextButton}
                     </div>
                   </div>
                 </CardHeader>
