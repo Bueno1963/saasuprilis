@@ -51,6 +51,21 @@ const Orders = () => {
     },
   });
 
+  // Fetch which orders have filled results
+  const { data: ordersWithResults = [] } = useQuery({
+    queryKey: ["orders-with-filled-results"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("results")
+        .select("order_id, value")
+        .neq("value", "");
+      if (error) throw error;
+      return [...new Set((data || []).map(r => r.order_id))];
+    },
+  });
+
+  const ordersWithResultsSet = new Set(ordersWithResults);
+
   const { data: patients = [] } = useQuery({
     queryKey: ["patients"],
     queryFn: async () => {
@@ -318,23 +333,25 @@ const Orders = () => {
                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Editar" onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
                            <Pencil className="w-4 h-4" />
                          </Button>
-                         <AlertDialog>
-                           <AlertDialogTrigger asChild>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Excluir">
-                               <Trash2 className="w-4 h-4" />
-                             </Button>
-                           </AlertDialogTrigger>
-                           <AlertDialogContent>
-                             <AlertDialogHeader>
-                               <AlertDialogTitle>Excluir pedido {order.order_number}?</AlertDialogTitle>
-                               <AlertDialogDescription>Esta ação não pode ser desfeita. Todos os resultados e amostras associados serão excluídos.</AlertDialogDescription>
-                             </AlertDialogHeader>
-                             <AlertDialogFooter>
-                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                               <AlertDialogAction onClick={() => deleteMutation.mutate(order.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
-                             </AlertDialogFooter>
-                           </AlertDialogContent>
-                         </AlertDialog>
+                         {!ordersWithResultsSet.has(order.id) && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Excluir">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir pedido {order.order_number}?</AlertDialogTitle>
+                                <AlertDialogDescription>Esta ação não pode ser desfeita. Todos os resultados e amostras associados serão excluídos.</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteMutation.mutate(order.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                         )}
                        </div>
                      </TableCell>
                    </TableRow>
