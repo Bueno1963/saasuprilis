@@ -81,6 +81,8 @@ const ExamesLiberados = () => {
     },
   });
 
+  const examNameToSector = useMemo(() => new Map(examCatalogFull.map(e => [e.name, e.sector || "Geral"])), [examCatalogFull]);
+
   const { data: allExamParams = [] } = useQuery<ExamParam[]>({
     queryKey: ["exam_parameters_all"],
     queryFn: async () => {
@@ -122,18 +124,48 @@ const ExamesLiberados = () => {
 
   const buildResultWithParams = useCallback((r: any) => {
     const params = getExamParams(r);
+    const sector = examNameToSector.get(r.exam) || "Geral";
     if (!params) {
-      return { exam: r.exam, value: r.value, unit: r.unit, referenceRange: r.reference_range, flag: r.flag };
+      return { exam: r.exam, value: r.value, unit: r.unit, referenceRange: r.reference_range, flag: r.flag, sector };
     }
     const paramValues = getParamValues(r);
     return {
-      exam: r.exam, value: "", unit: "", referenceRange: "", flag: r.flag,
+      exam: r.exam, value: "", unit: "", referenceRange: "", flag: r.flag, sector,
       parameters: params.map(p => ({
         section: p.section || "", name: p.name, value: paramValues[p.name] || "—",
         unit: p.unit || "", referenceRange: p.reference_range || "",
       })),
     };
-  }, [getExamParams]);
+  }, [getExamParams, examNameToSector]);
+
+  const fetchPatientHistory = useCallback(async (patientCpf: string, examNames: string[]) => {
+    if (!patientCpf || examNames.length === 0) return [];
+    // Find patient by CPF
+    const { data: patients } = await supabase.from("patients").select("id").eq("cpf", patientCpf);
+    if (!patients || patients.length === 0) return [];
+    const patientId = patients[0].id;
+    // Find all orders for this patient
+    const { data: orders } = await supabase.from("orders").select("id").eq("patient_id", patientId);
+    if (!orders || orders.length === 0) return [];
+    const orderIds = orders.map(o => o.id);
+    // Find all released results for these exams (excluding current)
+    const { data: histResults } = await supabase
+      .from("results")
+      .select("exam, value, unit, flag, released_at")
+      .in("order_id", orderIds)
+      .in("exam", examNames)
+      .eq("status", "released")
+      .order("released_at", { ascending: false })
+      .limit(100);
+    if (!histResults) return [];
+    return histResults.map(h => ({
+      exam: h.exam,
+      date: h.released_at ? format(new Date(h.released_at), "dd/MM/yyyy") : "—",
+      value: h.value,
+      unit: h.unit,
+      flag: h.flag,
+    }));
+  }, []);
 
   const revertMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -210,10 +242,11 @@ const ExamesLiberados = () => {
     });
   };
 
-  const handlePrint = useCallback((r: any) => {
+  const handlePrint = useCallback(async (r: any) => {
     const order = r.orders as any;
     const patient = order?.patients;
     const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
+    const history = await fetchPatientHistory(patient?.cpf || "", [r.exam]);
     const doc = generateLaudoPDF({
       orderNumber: order?.order_number || "", patientName: patient?.name || "",
       patientCpf: patient?.cpf || "",
@@ -224,17 +257,20 @@ const ExamesLiberados = () => {
       releasedAt: r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—",
       results: [buildResultWithParams(r)],
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      history,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
-  }, [profileMap, buildResultWithParams]);
+  }, [profileMap, buildResultWithParams, fetchPatientHistory]);
 
-  const handlePrintOrder = useCallback((group: GroupedPatient, order: GroupedOrder) => {
+  const handlePrintOrder = useCallback(async (group: GroupedPatient, order: GroupedOrder) => {
     const first = order.results[0];
     const analyst = first?.analyst_id ? profileMap.get(first.analyst_id) : null;
     const latestRelease = order.results.reduce((l: string | null, r: any) => {
       if (!r.released_at) return l; if (!l) return r.released_at;
       return r.released_at > l ? r.released_at : l;
     }, null);
+    const examNames = [...new Set(order.results.map((r: any) => r.exam as string))];
+    const history = await fetchPatientHistory(group.patientCpf, examNames);
     const doc = generateLaudoPDF({
       orderNumber: order.orderNumber, patientName: group.patientName, patientCpf: group.patientCpf,
       patientBirthDate: group.patientBirthDate ? new Date(group.patientBirthDate).toLocaleDateString("pt-BR") : "—",
@@ -243,11 +279,12 @@ const ExamesLiberados = () => {
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
       results: order.results.map((r: any) => buildResultWithParams(r)),
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      history,
     });
     doc.save(`Laudo_${order.orderNumber}.pdf`);
-  }, [profileMap, buildResultWithParams]);
+  }, [profileMap, buildResultWithParams, fetchPatientHistory]);
 
-  const handlePrintAll = useCallback((group: GroupedPatient) => {
+  const handlePrintAll = useCallback(async (group: GroupedPatient) => {
     const allResults = group.orders.flatMap(o => o.results);
     const first = allResults[0];
     const order = first?.orders as any;
@@ -256,6 +293,8 @@ const ExamesLiberados = () => {
       if (!r.released_at) return l; if (!l) return r.released_at;
       return r.released_at > l ? r.released_at : l;
     }, null);
+    const examNames = [...new Set(allResults.map((r: any) => r.exam as string))];
+    const history = await fetchPatientHistory(group.patientCpf, examNames);
     const doc = generateLaudoPDF({
       orderNumber: group.orders.map(o => o.orderNumber).join(", "),
       patientName: group.patientName, patientCpf: group.patientCpf,
@@ -266,9 +305,10 @@ const ExamesLiberados = () => {
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
       results: allResults.map((r: any) => buildResultWithParams(r)),
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      history,
     });
     doc.save(`Laudo_${group.patientName.replace(/\s+/g, "_")}_completo.pdf`);
-  }, [profileMap, buildResultWithParams]);
+  }, [profileMap, buildResultWithParams, fetchPatientHistory]);
 
   const totalExams = grouped.reduce((sum, g) => sum + g.totalExams, 0);
   const totalOrders = grouped.reduce((sum, g) => sum + g.orders.length, 0);
