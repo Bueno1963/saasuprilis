@@ -180,10 +180,10 @@ const SidebarGroup = ({
         <Link
           to={item.href}
           className={cn(
-            "flex-1 flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+            "flex-1 flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all",
             isParentActive
-              ? "bg-sidebar-accent text-sidebar-primary font-medium"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              ? "bg-sidebar-primary/15 text-sidebar-primary font-semibold border-l-[3px] border-sidebar-primary shadow-sm"
+              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-[3px] border-transparent",
             collapsed && "justify-center px-2"
           )}
           title={collapsed ? item.title : undefined}
@@ -225,10 +225,10 @@ const SidebarLink = ({
     <Link
       to={item.href}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+        "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all",
         active
-          ? "bg-sidebar-accent text-sidebar-primary font-medium"
-          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+          ? "bg-sidebar-primary/15 text-sidebar-primary font-semibold border-l-[3px] border-sidebar-primary shadow-sm"
+          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-[3px] border-transparent",
         collapsed && "justify-center px-2"
       )}
       title={collapsed ? item.title : undefined}
