@@ -164,7 +164,7 @@ const LandingPage = () => {
             <img
               src={logoDraDielem}
               alt="Laboratório Dra. Dielem Feijó"
-              className="h-14 w-auto max-w-[220px] object-contain"
+              className="h-[73px] w-auto max-w-[290px] object-contain"
             />
           </Link>
 
@@ -557,7 +557,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <img src={logoDraDielem} alt="Laboratório Dra. Dielem Feijó" className="h-10 w-auto object-contain brightness-0 invert" />
+              <img src={logoDraDielem} alt="Laboratório Dra. Dielem Feijó" className="h-[52px] w-auto object-contain brightness-0 invert" />
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/60">
               <Link
