@@ -251,32 +251,29 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero — curved blue overlay inspired by Dom Bosco */}
-      <section className="relative min-h-[416px] md:min-h-[464px] flex items-center overflow-hidden">
+      <section className="relative min-h-[460px] md:min-h-[520px] flex items-center overflow-hidden">
         {/* Background image */}
         <img
           src={heroLabImg}
           alt="Laboratório clínico moderno"
-          className="absolute inset-0 w-full h-full object-cover object-top"
+          className="absolute inset-0 w-full h-full object-cover object-center"
           loading="eager"
         />
-        {/* Blue curved overlay — smooth organic shape */}
-        <div className="absolute inset-0">
+        {/* Subtle gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(205,78%,20%)]/85 via-[hsl(205,78%,25%)]/50 to-transparent" />
+        {/* Decorative curved accent line */}
+        <div className="absolute inset-0 pointer-events-none">
           <svg
             viewBox="0 0 1440 580"
             preserveAspectRatio="none"
             className="absolute inset-0 w-full h-full"
           >
             <path
-              d="M0,0 L0,580 L420,580 C480,580 530,555 570,515 C630,455 670,365 675,265 C680,165 655,80 600,35 C570,12 530,0 490,0 Z"
-              fill="hsl(205,78%,25%)"
-              fillOpacity="0.93"
-            />
-            <path
               d="M0,580 L380,580 C430,580 480,560 520,530 C575,485 610,415 620,335 C630,255 610,180 565,135 C535,110 500,95 460,90"
               fill="none"
-              stroke="hsl(205,78%,50%)"
+              stroke="hsl(205,78%,60%)"
               strokeWidth="1.5"
-              strokeOpacity="0.2"
+              strokeOpacity="0.25"
             />
           </svg>
         </div>
