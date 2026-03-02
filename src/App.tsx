@@ -42,6 +42,7 @@ import PortalMedico from "./pages/portal/PortalMedico";
 import LandingPage from "./pages/LandingPage";
 import ColetasPage from "./pages/landing/ColetasPage";
 import ExamesPage from "./pages/landing/ExamesPage";
+import ConveniosPage from "./pages/landing/ConveniosPage";
 
 const queryClient = new QueryClient();
 
@@ -141,6 +142,7 @@ const App = () => (
             <Route path="/landing" element={<LandingPage />} />
             <Route path="/landing/coletas" element={<ColetasPage />} />
             <Route path="/landing/exames" element={<ExamesPage />} />
+            <Route path="/landing/convenios" element={<ConveniosPage />} />
             <Route path="/*" element={<ProtectedRoutes />} />
           </Routes>
         </AuthProvider>
