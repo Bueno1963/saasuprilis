@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Activity,
   Clock,
   CalendarCheck,
   MonitorSmartphone,
@@ -17,13 +16,12 @@ import {
   Stethoscope,
   FlaskConical,
   Building2,
-  Menu,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import heroLabImg from "@/assets/hero-lab.jpg";
-import logoDraDielem from "@/assets/logo-dra-dielem.jpg";
+import LandingNavbar from "@/components/landing/LandingNavbar";
+import LandingFooter from "@/components/landing/LandingFooter";
 
 const serviceCards = [
   {
@@ -94,160 +92,24 @@ const faqItems = [
   },
 ];
 
+const landingNavLinks = [
+  { label: "Home", href: "#" },
+  { label: "Institucional", href: "#sobre", hasDropdown: true },
+  { label: "Unidades", href: "#sobre" },
+  { label: "Convênios", href: "/landing/convenios" },
+  { label: "Exames", href: "/landing/exames" },
+  { label: "Coletas", href: "/landing/coletas" },
+  { label: "Vacinas", href: "/landing/vacinas" },
+  { label: "Acesso Admin", href: "/auth" },
+  { label: "Contato", href: "#contato" },
+];
+
 const LandingPage = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const navLinks = [
-    { label: "Home", href: "#" },
-    { label: "Institucional", href: "#sobre", hasDropdown: true },
-    { label: "Unidades", href: "#sobre" },
-    { label: "Convênios", href: "/landing/convenios" },
-    { label: "Exames", href: "/landing/exames" },
-    { label: "Coletas", href: "/landing/coletas" },
-    { label: "Vacinas", href: "/landing/vacinas" },
-    { label: "Acesso Admin", href: "/auth" },
-    { label: "Contato", href: "#contato" },
-  ];
 
   return (
     <div className="min-h-screen bg-background font-sans">
-      {/* Top bar - contact info */}
-      <div className="bg-[hsl(0,0%,96%)] text-sm hidden md:block border-b border-border/40">
-        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <a
-              href="tel:+5511999999999"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Phone className="w-4 h-4 text-[hsl(205,78%,35%)]" />
-              Central de Atendimento: (11) 99999-9999
-            </a>
-            <a
-              href="https://wa.me/5511999999999"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <svg className="w-4 h-4 text-[hsl(142,70%,35%)]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.79 23.329l4.47-1.47A11.93 11.93 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-2.168 0-4.19-.587-5.932-1.608l-.425-.252-2.652.872.89-2.583-.277-.44A9.77 9.77 0 012.182 12 9.818 9.818 0 0112 2.182 9.818 9.818 0 0121.818 12 9.818 9.818 0 0112 21.818z"/>
-              </svg>
-              (11) 99999-9999
-            </a>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link to="/portal-paciente">
-              <Button
-                size="sm"
-                className="rounded h-9 px-5 text-xs font-semibold bg-[hsl(205,78%,25%)] hover:bg-[hsl(205,78%,30%)] text-white"
-              >
-                Resultados de Exames
-              </Button>
-            </Link>
-            <Link to="/portal-paciente?tab=agendamento">
-              <Button
-                size="sm"
-                className="rounded h-9 px-5 text-xs font-semibold bg-[hsl(205,78%,45%)] hover:bg-[hsl(205,78%,50%)] text-white"
-              >
-                Agende seu Exame
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-border/40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 h-[100px] flex items-center justify-between">
-          <Link to="/landing" className="flex items-center">
-            <img
-              src={logoDraDielem}
-              alt="Laboratório Dra. Dielem Feijó"
-              className="h-[88px] w-auto max-w-[348px] object-contain"
-            />
-          </Link>
-
-          <div className="hidden md:flex items-center gap-7">
-            {navLinks.map((link) =>
-              link.href.startsWith("/") ? (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors flex items-center gap-1"
-                >
-                  {link.label}
-                  {link.hasDropdown && <ChevronDown className="w-3.5 h-3.5" />}
-                </Link>
-              ) : (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors flex items-center gap-1"
-                >
-                  {link.label}
-                  {link.hasDropdown && <ChevronDown className="w-3.5 h-3.5" />}
-                </a>
-              )
-            )}
-          </div>
-
-          {/* Mobile hamburger */}
-          <button
-            className="flex md:hidden items-center justify-center w-10 h-10 rounded-lg hover:bg-muted transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Menu"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile menu drawer */}
-        <div
-          className={cn(
-            "md:hidden overflow-hidden transition-all duration-300 bg-white border-t border-border/40",
-            mobileMenuOpen ? "max-h-[600px]" : "max-h-0"
-          )}
-        >
-          <div className="px-6 py-4 space-y-1">
-            {navLinks.map((link) =>
-              link.href.startsWith("/") ? (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between py-3 text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors border-b border-border/30 last:border-0"
-                >
-                  {link.label}
-                  {link.hasDropdown && <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-                </Link>
-              ) : (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between py-3 text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors border-b border-border/30 last:border-0"
-                >
-                  {link.label}
-                  {link.hasDropdown && <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-                </a>
-              )
-            )}
-            <div className="flex flex-col gap-2 pt-4">
-              <Link to="/portal-paciente" onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full rounded h-10 text-sm font-semibold bg-[hsl(205,78%,25%)] hover:bg-[hsl(205,78%,30%)] text-white">
-                  Resultados de Exames
-                </Button>
-              </Link>
-              <Link to="/portal-paciente?tab=agendamento" onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full rounded h-10 text-sm font-semibold bg-[hsl(205,78%,45%)] hover:bg-[hsl(205,78%,50%)] text-white">
-                  Agende seu Exame
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <LandingNavbar navLinksOverride={landingNavLinks} />
 
       {/* Hero — curved blue overlay inspired by Dom Bosco */}
       <section className="relative min-h-[70vh] flex items-center overflow-hidden">
@@ -354,7 +216,7 @@ const LandingPage = () => {
                 className="rounded-2xl shadow-xl w-full h-[360px] object-cover"
               />
               <div className="absolute -bottom-4 -right-4 w-24 h-24 rounded-2xl bg-[hsl(205,78%,28%)] flex items-center justify-center shadow-lg">
-                <Activity className="w-10 h-10 text-white" />
+                <FlaskConical className="w-10 h-10 text-white" />
               </div>
             </div>
 
@@ -552,40 +414,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[hsl(210,50%,15%)] text-white py-10">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2.5">
-              <img src={logoDraDielem} alt="Laboratório Dra. Dielem Feijó" className="h-[62px] w-auto object-contain brightness-0 invert" />
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/60">
-              <Link
-                to="/portal-paciente"
-                className="hover:text-white transition-colors"
-              >
-                Portal do Paciente
-              </Link>
-              <Link
-                to="/portal-medico"
-                className="hover:text-white transition-colors"
-              >
-                Portal do Médico
-              </Link>
-              <Link
-                to="/auth"
-                className="hover:text-white transition-colors"
-              >
-                Acesso Interno
-              </Link>
-            </div>
-          </div>
-          <p className="text-xs text-white/40 text-center mt-8">
-            © {new Date().getFullYear()} Laboratório Dra. Dielem Feijó — Todos os direitos reservados.
-            Em conformidade com a LGPD (Lei nº 13.709/2018).
-          </p>
-        </div>
-      </footer>
+      <LandingFooter showLogo />
     </div>
   );
 };
