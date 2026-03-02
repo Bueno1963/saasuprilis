@@ -256,7 +256,7 @@ const LandingPage = () => {
         <img
           src={heroLabImg}
           alt="Laboratório clínico moderno"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute inset-0 w-[130%] h-[130%] -top-[15%] -left-[15%] object-cover object-top"
           loading="eager"
         />
         {/* Subtle gradient overlay for text readability */}
