@@ -42,7 +42,6 @@ export const navItems: NavItem[] = [
   { title: "Amostras", href: "/amostras", icon: TestTubes, phase: "analytical", allowedRoles: ["admin", "tecnico", "recepcao"] },
   { title: "Mapa de Trabalho", href: "/worklist", icon: FlaskConical, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
   { title: "Controle de Qualidade", href: "/qc", icon: BarChart3, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
-  { title: "Resultados", href: "/resultados", icon: FileCheck, phase: "post", allowedRoles: ["admin", "tecnico"] },
   {
     title: "Laudos",
     href: "/laudos",
@@ -58,6 +57,7 @@ export const navItems: NavItem[] = [
       { title: "Cadastro de Laudos", href: "/laudos/cadastro", icon: FilePlus2 },
     ],
   },
+  { title: "Resultados", href: "/resultados", icon: FileCheck, phase: "post", allowedRoles: ["admin", "tecnico"] },
   
   {
     title: "Financeiro",
