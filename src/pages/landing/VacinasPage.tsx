@@ -5,6 +5,33 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import logoDraDielem from "@/assets/logo-dra-dielem.jpg";
 
+const faqVacinas = [
+  {
+    question: "Preciso de receita médica para tomar vacina?",
+    answer: "Na maioria dos casos, não é necessária receita médica. No entanto, algumas vacinas especiais podem exigir prescrição. Consulte nossa equipe para mais informações sobre a vacina desejada.",
+  },
+  {
+    question: "Qual é o calendário vacinal recomendado para crianças?",
+    answer: "O calendário vacinal infantil segue as orientações do Ministério da Saúde e da Sociedade Brasileira de Pediatria (SBP). Inclui vacinas como BCG, Hepatite B, Pentavalente, Pneumocócica, Meningocócica, Tríplice Viral, entre outras, com doses específicas para cada faixa etária.",
+  },
+  {
+    question: "Adultos também precisam se vacinar?",
+    answer: "Sim! Adultos devem manter o calendário vacinal em dia. Vacinas como Influenza (gripe), Hepatite B, Tríplice Viral, Febre Amarela e Herpes Zóster são recomendadas para adultos, variando conforme a idade e condições de saúde.",
+  },
+  {
+    question: "É necessário algum preparo antes de tomar vacina?",
+    answer: "Em geral, não é necessário jejum. Recomenda-se estar bem alimentado e hidratado. Em caso de febre ou doença aguda, é melhor adiar a vacinação. Informe ao profissional sobre alergias, uso de medicamentos e condições de saúde.",
+  },
+  {
+    question: "Posso tomar mais de uma vacina no mesmo dia?",
+    answer: "Sim, na maioria dos casos é seguro e recomendado aplicar múltiplas vacinas na mesma visita, desde que sejam em locais de aplicação diferentes. Isso é especialmente comum no calendário infantil.",
+  },
+  {
+    question: "Quais são os efeitos colaterais mais comuns?",
+    answer: "Os efeitos colaterais mais comuns são leves: dor no local da aplicação, vermelhidão, febre baixa e mal-estar. Esses sintomas costumam desaparecer em 24 a 48 horas. Reações graves são muito raras.",
+  },
+];
+
 const vacinas = [
   "Vacina Pneumocócica 20",
   "Pneumocócica ou Pneumo-15",
@@ -34,6 +61,7 @@ const vacinas = [
 
 const VacinasPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const navLinks = [
     { label: "Home", href: "/landing" },
@@ -151,6 +179,31 @@ const VacinasPage = () => {
                   <span className="text-sm font-medium text-foreground group-hover:text-[hsl(205,78%,45%)] transition-colors">
                     {vacina}
                   </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-16 md:py-20 bg-muted/40">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-8">Perguntas Frequentes sobre Vacinas</h2>
+          <div className="divide-y divide-border">
+            {faqVacinas.map((item, idx) => (
+              <div key={idx}>
+                <button
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className="w-full flex items-center justify-between py-5 text-left group"
+                >
+                  <span className="font-medium text-foreground text-[15px] pr-4 group-hover:text-[hsl(205,78%,45%)] transition-colors">
+                    {item.question}
+                  </span>
+                  <ChevronDown className={cn("w-5 h-5 text-muted-foreground shrink-0 transition-transform", openFaq === idx && "rotate-180")} />
+                </button>
+                <div className={cn("overflow-hidden transition-all duration-300", openFaq === idx ? "max-h-60 pb-5" : "max-h-0")}>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.answer}</p>
                 </div>
               </div>
             ))}
