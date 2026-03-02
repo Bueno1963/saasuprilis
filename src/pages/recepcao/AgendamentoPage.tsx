@@ -146,14 +146,30 @@ const AgendamentoPage = () => {
   });
 
   // Update status
+  const sendWhatsAppConfirmation = (appointment: any) => {
+    const patientName = appointment.patients?.name || "Paciente";
+    const phone = "(mock)";
+    const time = appointment.scheduled_time?.slice(0, 5);
+    const date = format(parseISO(appointment.scheduled_date), "dd/MM/yyyy");
+    console.log(`[MOCK] WhatsApp enviado para ${patientName} ${phone}: Seu agendamento em ${date} às ${time} foi confirmado.`);
+    toast.success(
+      `📱 WhatsApp enviado para ${patientName}`,
+      { description: `Confirmação do agendamento em ${date} às ${time}. (simulado)` }
+    );
+  };
+
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status, appointment }: { id: string; status: string; appointment?: any }) => {
       const { error } = await supabase.from("appointments").update({ status }).eq("id", id);
       if (error) throw error;
+      return { status, appointment };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
       toast.success("Status atualizado!");
+      if (result?.status === "confirmado" && result?.appointment) {
+        sendWhatsAppConfirmation(result.appointment);
+      }
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -392,7 +408,7 @@ const AgendamentoPage = () => {
                       <TableCell>
                         <Select
                           value={a.status}
-                          onValueChange={(v) => updateStatusMutation.mutate({ id: a.id, status: v })}
+                          onValueChange={(v) => updateStatusMutation.mutate({ id: a.id, status: v, appointment: a })}
                         >
                           <SelectTrigger className="w-[130px] h-7 text-xs">
                             <Badge variant="outline" className={cn("text-[10px]", statusColors[a.status])}>
