@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import SampleTrackingTab from "@/components/samples/SampleTrackingTab";
 import NonConformityTab from "@/components/samples/NonConformityTab";
 import TemperatureTab from "@/components/samples/TemperatureTab";
+import ComplianceReportTab from "@/components/samples/ComplianceReportTab";
 
 const SAMPLE_TYPES = ["Sangue", "Urina", "Soro", "Plasma"] as const;
 const SECTORS = ["Hematologia", "Bioquímica", "Imunologia", "Microbiologia"] as const;
@@ -137,6 +138,7 @@ const Samples = () => {
           <TabsTrigger value="rastreabilidade">Rastreabilidade</TabsTrigger>
           <TabsTrigger value="nao-conformidades">Não-Conformidades</TabsTrigger>
           <TabsTrigger value="temperatura">Temperatura</TabsTrigger>
+          <TabsTrigger value="relatorio">Relatório RDC</TabsTrigger>
         </TabsList>
 
         <TabsContent value="amostras">
@@ -233,6 +235,14 @@ const Samples = () => {
           <Card>
             <CardContent className="pt-6">
               <TemperatureTab />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="relatorio">
+          <Card>
+            <CardContent className="pt-6">
+              <ComplianceReportTab />
             </CardContent>
           </Card>
         </TabsContent>
