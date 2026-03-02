@@ -1,431 +1,315 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Activity, ArrowRight, CheckCircle, Shield, Zap, BarChart3, TestTubes, FileCheck, Users, Clock, Lock, Globe, ChevronRight, Star, Phone, Mail, MapPin } from "lucide-react";
+import { Activity, Clock, CalendarCheck, MonitorSmartphone, ChevronDown, ChevronUp, ArrowRight, FileText, Shield, Phone, Mail, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-const features = [
+const featureCards = [
   {
-    icon: TestTubes,
-    title: "Gestão de Amostras",
-    description: "Rastreabilidade total do ciclo de vida da amostra, da coleta à liberação do laudo.",
+    icon: Clock,
+    title: "Resultados rápidos",
+    description: "Laudos liberados com agilidade e precisão, disponíveis online assim que prontos.",
   },
   {
-    icon: BarChart3,
-    title: "Controle de Qualidade",
-    description: "Regras de Westgard automáticas, gráficos Levey-Jennings e alertas em tempo real.",
+    icon: CalendarCheck,
+    title: "Agendamento fácil",
+    description: "Escolha o melhor dia e horário para realizar seus exames, sem filas.",
   },
   {
-    icon: FileCheck,
-    title: "Laudos Digitais",
-    description: "Geração, validação e liberação de laudos com assinatura eletrônica e rastreabilidade.",
-  },
-  {
-    icon: Users,
-    title: "Portal do Paciente",
-    description: "Acesso seguro aos resultados via código do pedido, com compliance LGPD.",
-  },
-  {
-    icon: Shield,
-    title: "Segurança & LGPD",
-    description: "Controle de acesso por perfil (RBAC), auditoria completa e criptografia de dados.",
-  },
-  {
-    icon: Zap,
-    title: "Integrações",
-    description: "Conecte equipamentos via ASTM/HL7 e integre com sistemas externos via API REST.",
+    icon: MonitorSmartphone,
+    title: "Acesso online",
+    description: "Consulte seus resultados de qualquer lugar, pelo celular ou computador.",
   },
 ];
 
-const benefits = [
-  { value: "99.9%", label: "Uptime garantido" },
-  { value: "3x", label: "Mais produtividade" },
-  { value: "<2min", label: "Tempo médio de laudo" },
-  { value: "100%", label: "Rastreabilidade" },
-];
-
-const testimonials = [
+const faqItems = [
   {
-    name: "Dra. Marina Oliveira",
-    role: "Diretora Técnica — Laboratório Diagnóstica",
-    text: "O VEROLIS transformou nossa operação. A rastreabilidade completa e o controle de qualidade integrado nos deram confiança total nos resultados.",
-    stars: 5,
+    question: "Como acesso meus resultados de exames?",
+    answer: "Acesse o Portal do Paciente com o número do seu pedido e data de nascimento. Seus resultados estarão disponíveis assim que liberados pelo laboratório.",
   },
   {
-    name: "Dr. Ricardo Mendes",
-    role: "Patologista Clínico — LabCenter",
-    text: "A interface é intuitiva e o portal do paciente reduziu em 70% as ligações para retirada de laudos. Excelente investimento.",
-    stars: 5,
+    question: "Quais tipos de exames são realizados?",
+    answer: "Realizamos exames de análises clínicas em diversas especialidades: bioquímica, hematologia, imunologia, microbiologia, parasitologia, uroanálise e muito mais.",
   },
   {
-    name: "Ana Paula Santos",
-    role: "Gerente de TI — Rede BioVida",
-    text: "A integração com nossos equipamentos foi rápida e o suporte técnico é excepcional. Recomendo fortemente.",
-    stars: 5,
+    question: "Quanto tempo leva para os resultados ficarem prontos?",
+    answer: "O prazo varia de acordo com o tipo de exame. Exames de rotina geralmente ficam prontos em até 24 horas. Exames especializados podem levar até 7 dias úteis.",
   },
-];
-
-const phases = [
-  { label: "Pré-Analítica", color: "from-amber-500 to-orange-500", items: ["Recepção e cadastro", "Agendamento", "Coleta e triagem"] },
-  { label: "Analítica", color: "from-blue-500 to-cyan-500", items: ["Mapa de trabalho", "Interfaceamento", "Controle de qualidade"] },
-  { label: "Pós-Analítica", color: "from-emerald-500 to-teal-500", items: ["Validação de resultados", "Liberação de laudos", "Portal do paciente"] },
+  {
+    question: "Preciso de pedido médico para realizar exames?",
+    answer: "Sim, para a maioria dos exames é necessário apresentar o pedido médico no momento da coleta. Alguns exames de rotina podem ser realizados sem pedido.",
+  },
+  {
+    question: "O médico solicitante pode acessar meus resultados?",
+    answer: "Sim, através do Portal do Médico, o profissional que solicitou seus exames pode acompanhar os resultados em tempo real, de forma segura e auditada.",
+  },
 ];
 
 const LandingPage = () => {
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-border/50">
+    <div className="min-h-screen bg-background font-sans">
+      {/* Navbar */}
+      <nav className="fixed top-0 w-full z-50 bg-white border-b border-border/40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-              <Activity className="w-5 h-5 text-primary-foreground" />
+          <Link to="/landing" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[hsl(205,78%,28%)] flex items-center justify-center">
+              <Activity className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-foreground">VEROLIS</span>
-          </div>
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#funcionalidades" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Funcionalidades</a>
-            <a href="#fluxo" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Como funciona</a>
-            <a href="#depoimentos" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Depoimentos</a>
+            <span className="text-xl font-bold tracking-tight text-foreground">VEROLIS</span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-6">
+            <a href="#sobre" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Sobre</a>
+            <a href="#duvidas" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Dúvidas</a>
             <a href="#contato" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contato</a>
           </div>
+
           <div className="flex items-center gap-3">
-            <Link to="/auth">
-              <Button variant="ghost" size="sm">Entrar</Button>
-            </Link>
-            <a href="#contato">
-              <Button size="sm" className="shadow-lg shadow-primary/20">
-                Solicitar Demo
+            <Link to="/portal-paciente">
+              <Button variant="outline" size="sm" className="rounded-full px-5 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                Resultados
               </Button>
-            </a>
+            </Link>
+            <Link to="/portal-paciente">
+              <Button size="sm" className="rounded-full px-5">
+                Acessar Laudos
+              </Button>
+            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-transparent" />
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-primary/5 blur-3xl" />
-        
-        <div className="max-w-7xl mx-auto px-6 relative">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              <Zap className="w-3.5 h-3.5" />
-              Sistema de Informação Laboratorial
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
-              Gestão laboratorial{" "}
-              <span className="text-gradient">inteligente</span>{" "}
-              e completa
+      {/* Hero — full-width background image style */}
+      <section className="relative pt-16 min-h-[600px] md:min-h-[680px] flex items-center overflow-hidden">
+        {/* Background gradient simulating a medical/clinical photo */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(205,78%,22%)] via-[hsl(205,60%,32%)] to-[hsl(195,50%,38%)]" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')] opacity-60" />
+        {/* Subtle light overlay on right side */}
+        <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-white/[0.08] to-transparent" />
+
+        <div className="relative max-w-7xl mx-auto px-6 w-full py-20">
+          <div className="max-w-2xl space-y-6">
+            <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-white leading-[1.12] tracking-tight">
+              Seus exames com precisão e resultados online.
             </h1>
-            
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Do cadastro do paciente à entrega do laudo — o VEROLIS automatiza e rastreia cada etapa do seu laboratório com segurança e conformidade LGPD.
+            <p className="text-lg md:text-xl text-white/70 leading-relaxed max-w-lg">
+              Sua plataforma laboratorial completa — do agendamento à entrega do laudo digital.
             </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <a href="#contato">
-                <Button size="lg" className="text-base px-8 shadow-xl shadow-primary/25 h-12">
-                  Agendar Demonstração
-                  <ArrowRight className="w-4 h-4 ml-2" />
+            <div className="flex flex-wrap gap-4 pt-2">
+              <Link to="/portal-paciente">
+                <Button size="lg" className="rounded-full px-8 h-12 text-base bg-white text-[hsl(205,78%,28%)] hover:bg-white/90 shadow-xl">
+                  Consultar Resultados
                 </Button>
-              </a>
-              <a href="#funcionalidades">
-                <Button variant="outline" size="lg" className="text-base px-8 h-12">
-                  Conhecer Funcionalidades
+              </Link>
+              <Link to="/portal-medico">
+                <Button size="lg" variant="outline" className="rounded-full px-8 h-12 text-base border-white/40 text-white hover:bg-white/10">
+                  Portal do Médico
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
-
-          {/* Stats */}
-          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-3xl mx-auto">
-            {benefits.map((b) => (
-              <div key={b.label} className="text-center">
-                <p className="text-3xl md:text-4xl font-bold text-gradient">{b.value}</p>
-                <p className="text-sm text-muted-foreground mt-1">{b.label}</p>
-              </div>
-            ))}
-          </div>
         </div>
-      </section>
 
-      {/* Features */}
-      <section id="funcionalidades" className="py-20 md:py-28 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">Funcionalidades</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Tudo que seu laboratório precisa
-            </h2>
-            <p className="text-muted-foreground mt-4">
-              Uma plataforma completa para gerenciar todas as fases do processo laboratorial.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <Card key={f.title} className="group hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 border-border/60 hover:border-primary/20">
-                <CardContent className="pt-6 pb-6">
-                  <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
-                    <f.icon className="w-5 h-5 text-primary" />
+        {/* Feature cards overlapping hero bottom */}
+        <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 z-10">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              {featureCards.map((card) => (
+                <div
+                  key={card.title}
+                  className="bg-card rounded-2xl shadow-xl border border-border/50 p-6 md:p-8 text-center hover:shadow-2xl transition-shadow"
+                >
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <card.icon className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+                  <h3 className="font-semibold text-foreground text-lg mb-2">{card.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{card.description}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Workflow / Phases */}
-      <section id="fluxo" className="py-20 md:py-28">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">Como funciona</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Fluxo laboratorial completo
-            </h2>
-            <p className="text-muted-foreground mt-4">
-              O VEROLIS cobre as três fases do processo laboratorial com rastreabilidade total.
-            </p>
-          </div>
+      {/* Spacer for overlapping cards */}
+      <div className="h-32 md:h-40" />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {phases.map((phase, idx) => (
-              <div key={phase.label} className="relative">
-                <div className={cn("h-1.5 rounded-full bg-gradient-to-r mb-6", phase.color)} />
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
-                    {idx + 1}
+      {/* FAQ Section */}
+      <section id="duvidas" className="py-20 md:py-28">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground text-center mb-12">
+            Dúvidas frequentes
+          </h2>
+
+          <div className="divide-y divide-border">
+            {faqItems.map((item, idx) => (
+              <div key={idx}>
+                <button
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className="w-full flex items-center justify-between py-5 text-left group"
+                >
+                  <span className="font-medium text-foreground text-[15px] pr-4 group-hover:text-primary transition-colors">
+                    {item.question}
                   </span>
-                  <h3 className="font-semibold text-foreground text-lg">{phase.label}</h3>
+                  {openFaq === idx ? (
+                    <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />
+                  )}
+                </button>
+                <div
+                  className={cn(
+                    "overflow-hidden transition-all duration-300",
+                    openFaq === idx ? "max-h-60 pb-5" : "max-h-0"
+                  )}
+                >
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.answer}</p>
                 </div>
-                <ul className="space-y-3">
-                  {phase.items.map((item) => (
-                    <li key={item} className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                      <CheckCircle className="w-4 h-4 text-primary shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Differentials */}
-      <section className="py-20 md:py-28 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-6">
+      {/* About / What is VEROLIS */}
+      <section id="sobre" className="py-20 md:py-28 bg-muted/40">
+        <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
-              <p className="text-sm font-semibold text-primary uppercase tracking-widest">Diferenciais</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                Por que escolher o VEROLIS?
+              <p className="text-sm font-semibold text-primary uppercase tracking-widest">O que é o VEROLIS?</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-snug">
+                Seu laboratório digital, completo e seguro.
               </h2>
-              <div className="space-y-5 pt-2">
-                {[
-                  { icon: Lock, title: "Segurança de ponta", desc: "Criptografia, RBAC, auditoria completa e conformidade total com a LGPD." },
-                  { icon: Clock, title: "Implementação rápida", desc: "Onboarding em até 7 dias com migração de dados e treinamento da equipe." },
-                  { icon: Globe, title: "100% na nuvem", desc: "Sem instalação, sem servidor local. Acesse de qualquer lugar, a qualquer hora." },
-                ].map((d) => (
-                  <div key={d.title} className="flex gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <d.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-foreground">{d.title}</h4>
-                      <p className="text-sm text-muted-foreground mt-1">{d.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Visual card mockup */}
-            <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent rounded-3xl blur-2xl" />
-              <div className="relative bg-card rounded-2xl border border-border shadow-2xl p-8 space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-border">
-                  <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                    <Activity className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-foreground">VEROLIS LIS</p>
-                    <p className="text-xs text-muted-foreground">Dashboard — Hoje</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: "Pedidos Hoje", value: "47", color: "text-primary" },
-                    { label: "Laudos Liberados", value: "38", color: "text-emerald-600" },
-                    { label: "Amostras Pendentes", value: "12", color: "text-amber-600" },
-                    { label: "CQ Aprovados", value: "100%", color: "text-primary" },
-                  ].map((s) => (
-                    <div key={s.label} className="bg-muted/50 rounded-xl p-4">
-                      <p className={cn("text-2xl font-bold", s.color)}>{s.value}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section id="depoimentos" className="py-20 md:py-28">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">Depoimentos</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              O que dizem nossos clientes
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((t) => (
-              <Card key={t.name} className="border-border/60">
-                <CardContent className="pt-6 pb-6 space-y-4">
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: t.stars }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed italic">
-                    "{t.text}"
-                  </p>
-                  <div className="pt-2 border-t border-border">
-                    <p className="font-medium text-sm text-foreground">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA / Contact */}
-      <section id="contato" className="py-20 md:py-28 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="text-center space-y-4 mb-10">
-              <p className="text-sm font-semibold text-primary uppercase tracking-widest">Contato</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                Pronto para modernizar seu laboratório?
-              </h2>
-              <p className="text-muted-foreground">
-                Agende uma demonstração gratuita e descubra como o VEROLIS pode transformar sua operação.
+              <p className="text-muted-foreground leading-relaxed">
+                O VEROLIS é um Sistema de Informação Laboratorial (LIS) na nuvem que gerencia todo o fluxo do laboratório — da recepção do paciente à entrega do laudo. Com rastreabilidade total, controle de qualidade integrado e portais dedicados para pacientes e médicos. <strong>Simples, preciso e em conformidade com a LGPD.</strong>
               </p>
-            </div>
-
-            <Card className="border-border/60 shadow-xl">
-              <CardContent className="pt-8 pb-8">
-                <form
-                  className="space-y-5"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const form = e.target as HTMLFormElement;
-                    const name = (form.elements.namedItem("name") as HTMLInputElement).value;
-                    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-                    const lab = (form.elements.namedItem("lab") as HTMLInputElement).value;
-                    const phone = (form.elements.namedItem("phone") as HTMLInputElement).value;
-                    const subject = encodeURIComponent(`Demo VEROLIS — ${lab}`);
-                    const body = encodeURIComponent(`Nome: ${name}\nEmail: ${email}\nLaboratório: ${lab}\nTelefone: ${phone}`);
-                    window.location.href = `mailto:contato@verolis.com.br?subject=${subject}&body=${body}`;
-                  }}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label htmlFor="name" className="text-sm font-medium text-foreground">Nome</label>
-                      <input
-                        id="name"
-                        name="name"
-                        required
-                        placeholder="Seu nome completo"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label htmlFor="email" className="text-sm font-medium text-foreground">Email</label>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        placeholder="seu@email.com"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label htmlFor="lab" className="text-sm font-medium text-foreground">Laboratório</label>
-                      <input
-                        id="lab"
-                        name="lab"
-                        required
-                        placeholder="Nome do laboratório"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label htmlFor="phone" className="text-sm font-medium text-foreground">Telefone</label>
-                      <input
-                        id="phone"
-                        name="phone"
-                        placeholder="(00) 00000-0000"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      />
-                    </div>
-                  </div>
-                  <Button type="submit" size="lg" className="w-full h-12 text-base shadow-lg shadow-primary/20">
-                    Solicitar Demonstração Gratuita
-                    <ChevronRight className="w-4 h-4 ml-2" />
+              <div className="flex flex-wrap gap-4 pt-2">
+                <Link to="/portal-paciente">
+                  <Button className="rounded-full px-6">
+                    Consultar Resultados
+                    <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            <div className="flex flex-wrap items-center justify-center gap-8 mt-10 text-sm text-muted-foreground">
-              <a href="mailto:contato@verolis.com.br" className="flex items-center gap-2 hover:text-foreground transition-colors">
-                <Mail className="w-4 h-4" /> contato@verolis.com.br
-              </a>
-              <a href="tel:+5511999999999" className="flex items-center gap-2 hover:text-foreground transition-colors">
-                <Phone className="w-4 h-4" /> (11) 99999-9999
-              </a>
+                </Link>
+                <Link to="/portal-medico">
+                  <Button variant="outline" className="rounded-full px-6">
+                    Portal do Médico
+                  </Button>
+                </Link>
+              </div>
             </div>
+
+            {/* Visual illustration - stylized phone/dashboard mockup */}
+            <div className="flex justify-center">
+              <div className="relative w-72 md:w-80">
+                {/* Phone frame */}
+                <div className="bg-card rounded-[2rem] border-[3px] border-foreground/10 shadow-2xl p-4 space-y-4">
+                  <div className="flex items-center gap-2 px-2 pt-2">
+                    <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+                      <Activity className="w-4 h-4 text-primary-foreground" />
+                    </div>
+                    <span className="text-xs font-bold text-foreground">VEROLIS</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">Portal do Paciente</span>
+                  </div>
+                  <div className="bg-muted/50 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-primary" />
+                      <span className="text-xs font-medium text-foreground">Hemograma Completo</span>
+                    </div>
+                    <div className="h-px bg-border" />
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-muted-foreground">Hemácias</span>
+                      <span className="font-medium text-foreground">5.2 M/µL</span>
+                    </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-muted-foreground">Hemoglobina</span>
+                      <span className="font-medium text-foreground">15.1 g/dL</span>
+                    </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-muted-foreground">Leucócitos</span>
+                      <span className="font-medium text-foreground">7.800 /µL</span>
+                    </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-muted-foreground">Plaquetas</span>
+                      <span className="font-medium text-foreground">245.000 /µL</span>
+                    </div>
+                  </div>
+                  <div className="bg-emerald-50 rounded-xl p-3 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-emerald-600" />
+                    <span className="text-[11px] text-emerald-700 font-medium">Laudo liberado e verificado</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Bottom CTA */}
+      <section className="py-16 md:py-20 bg-[hsl(205,78%,28%)]">
+        <div className="max-w-4xl mx-auto px-6 text-center space-y-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-white">
+            Acesse seus resultados agora
+          </h2>
+          <p className="text-white/70 max-w-xl mx-auto">
+            Com o número do pedido e sua data de nascimento, você consulta seus laudos de forma segura e instantânea.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 pt-2">
+            <Link to="/portal-paciente">
+              <Button size="lg" className="rounded-full px-8 h-12 text-base bg-white text-[hsl(205,78%,28%)] hover:bg-white/90">
+                Consultar Resultados
+              </Button>
+            </Link>
+            <Link to="/portal-medico">
+              <Button size="lg" variant="outline" className="rounded-full px-8 h-12 text-base border-white/40 text-white hover:bg-white/10">
+                Portal do Médico
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact / Help */}
+      <section id="contato" className="py-16 md:py-20">
+        <div className="max-w-3xl mx-auto px-6 text-center space-y-6">
+          <HelpCircle className="w-10 h-10 text-primary mx-auto" />
+          <h2 className="text-2xl font-bold text-foreground">Precisa de ajuda?</h2>
+          <p className="text-muted-foreground">
+            Entre em contato com nossa equipe de atendimento para tirar suas dúvidas.
+          </p>
+          <div className="flex flex-wrap justify-center gap-8 pt-4 text-sm">
+            <a href="mailto:contato@verolis.com.br" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <Mail className="w-4 h-4" />
+              contato@verolis.com.br
+            </a>
+            <a href="tel:+5511999999999" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <Phone className="w-4 h-4" />
+              (11) 99999-9999
+            </a>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card py-10">
+      <footer className="border-t border-border py-8">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
                 <Activity className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="font-bold text-foreground">VEROLIS</span>
-              <span className="text-xs text-muted-foreground">Sistema de Informação Laboratorial</span>
+              <span className="font-bold text-foreground text-sm">VEROLIS</span>
             </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
               <Link to="/portal-paciente" className="hover:text-foreground transition-colors">Portal do Paciente</Link>
               <Link to="/portal-medico" className="hover:text-foreground transition-colors">Portal do Médico</Link>
-              <Link to="/auth" className="hover:text-foreground transition-colors">Acesso ao Sistema</Link>
+              <Link to="/auth" className="hover:text-foreground transition-colors">Acesso Interno</Link>
             </div>
           </div>
-          <div className="mt-8 pt-6 border-t border-border text-center">
-            <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} VEROLIS — Todos os direitos reservados. Em conformidade com a LGPD (Lei nº 13.709/2018).
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground text-center mt-6">
+            © {new Date().getFullYear()} VEROLIS — Todos os direitos reservados. Em conformidade com a LGPD (Lei nº 13.709/2018).
+          </p>
         </div>
       </footer>
     </div>
