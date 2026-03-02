@@ -152,3 +152,86 @@ export function printAtendimento(patient: { name: string; cpf: string; birth_dat
   `);
   win.document.close();
 }
+
+export function printProtocoloAcesso(order: { order_number: string; created_at: string }, patient: { name: string; birth_date: string }, portalUrl: string) {
+  const win = window.open("", "_blank", "width=600,height=700");
+  if (!win) return;
+  const birthFormatted = new Date(patient.birth_date).toLocaleDateString("pt-BR");
+  const dateFormatted = new Date(order.created_at).toLocaleDateString("pt-BR");
+  const timeFormatted = new Date(order.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+  win.document.write(`
+    <html><head><title>Protocolo de Acesso - Resultados Online</title>
+    <style>
+      @media print { body { margin: 20px; } @page { margin: 15mm; } }
+      body { font-family: Arial, sans-serif; padding: 24px; max-width: 520px; margin: 0 auto; color: #222; }
+      .header { text-align: center; border-bottom: 3px solid #1a56db; padding-bottom: 16px; margin-bottom: 20px; }
+      .header h1 { font-size: 18px; margin: 0 0 4px; color: #1a56db; }
+      .header p { font-size: 12px; color: #666; margin: 0; }
+      .info-box { background: #f0f5ff; border: 1px solid #c6d9f7; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+      .info-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; }
+      .info-row .lbl { font-weight: bold; color: #555; }
+      .credentials { background: #fff; border: 2px dashed #1a56db; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+      .credentials h3 { font-size: 14px; color: #1a56db; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 1px; }
+      .credential-item { margin: 10px 0; }
+      .credential-item .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+      .credential-item .value { font-size: 20px; font-weight: bold; font-family: monospace; color: #1a56db; letter-spacing: 2px; margin-top: 2px; }
+      .credential-item .value.date { font-size: 16px; color: #333; }
+      .instructions { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 20px 0; }
+      .instructions h3 { font-size: 13px; margin: 0 0 10px; color: #333; }
+      .instructions ol { margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.8; color: #555; }
+      .instructions .url { font-family: monospace; font-weight: bold; color: #1a56db; font-size: 13px; word-break: break-all; }
+      .note { font-size: 11px; color: #999; text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
+      .cut-line { border-top: 1px dashed #ccc; margin: 24px 0; position: relative; }
+      .cut-line::before { content: "✂"; position: absolute; top: -10px; left: -5px; color: #ccc; font-size: 14px; }
+    </style></head><body>
+    <div class="header">
+      <h1>🔬 Protocolo de Acesso</h1>
+      <p>Resultados de Exames Online</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-row"><span class="lbl">Paciente:</span><span>${patient.name}</span></div>
+      <div class="info-row"><span class="lbl">Pedido:</span><span>${order.order_number}</span></div>
+      <div class="info-row"><span class="lbl">Data do Atendimento:</span><span>${dateFormatted} às ${timeFormatted}</span></div>
+    </div>
+
+    <div class="credentials">
+      <h3>🔑 Dados para Acesso</h3>
+      <div class="credential-item">
+        <div class="label">Número do Pedido</div>
+        <div class="value">${order.order_number}</div>
+      </div>
+      <div class="credential-item">
+        <div class="label">Data de Nascimento</div>
+        <div class="value date">${birthFormatted}</div>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <h3>📋 Como acessar seus resultados:</h3>
+      <ol>
+        <li>Acesse o endereço: <span class="url">${portalUrl}</span></li>
+        <li>Na aba <strong>"Resultados"</strong>, informe o <strong>Número do Pedido</strong> acima</li>
+        <li>Informe sua <strong>Data de Nascimento</strong></li>
+        <li>Clique em <strong>"Consultar Resultados"</strong></li>
+      </ol>
+    </div>
+
+    <div class="note">
+      <p>⏳ Os resultados estarão disponíveis após a liberação pelo laboratório.</p>
+      <p>🔒 Seus dados são protegidos conforme a Lei Geral de Proteção de Dados (LGPD).</p>
+      <p style="margin-top:8px;">Dúvidas? Entre em contato com o laboratório.</p>
+    </div>
+
+    <div class="cut-line"></div>
+
+    <div style="text-align:center; font-size:11px; color:#aaa;">
+      Protocolo gerado em ${new Date().toLocaleString("pt-BR")}
+    </div>
+
+    <script>window.print(); window.onafterprint = () => window.close();<\/script>
+    </body></html>
+  `);
+  win.document.close();
+}
