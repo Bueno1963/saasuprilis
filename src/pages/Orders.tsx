@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import StatusBadge from "@/components/StatusBadge";
 import { Search, Plus, X, Printer, Tag, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -22,8 +23,21 @@ const Orders = () => {
   const [createdOrder, setCreatedOrder] = useState<any>(null);
   const [editingOrder, setEditingOrder] = useState<any>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [autoPatient, setAutoPatient] = useState<any>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const location = useLocation();
+
+  // Auto-open create order dialog when coming from "Continuar Atendimento"
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.autoCreateForPatient) {
+      setAutoPatient(state.autoCreateForPatient);
+      setOpen(true);
+      // Clear the state so it doesn't re-trigger on re-render
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["orders"],
@@ -192,7 +206,7 @@ const Orders = () => {
           <h1 className="text-2xl font-bold text-foreground">Pedidos</h1>
           <p className="text-sm text-muted-foreground">Gerenciamento de pedidos de exames</p>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setCreatedOrder(null); }}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setCreatedOrder(null); setAutoPatient(null); } }}>
           <DialogTrigger asChild>
             <Button><Plus className="w-4 h-4 mr-2" />Novo Pedido</Button>
           </DialogTrigger>
@@ -223,7 +237,7 @@ const Orders = () => {
                 </Button>
               </div>
             ) : (
-              <OrderForm patients={patients} examCatalog={examCatalog} insurancePlans={insurancePlans} onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} />
+              <OrderForm patients={patients} examCatalog={examCatalog} insurancePlans={insurancePlans} onSubmit={data => createMutation.mutate(data)} loading={createMutation.isPending} initialData={autoPatient ? { patient_id: autoPatient.id, doctor_name: "", insurance: autoPatient.insurance || "Particular", exams: [], priority: "normal" as const } : undefined} />
             )}
           </DialogContent>
         </Dialog>
