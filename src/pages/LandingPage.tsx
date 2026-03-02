@@ -159,7 +159,7 @@ const LandingPage = () => {
 
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white border-b border-border/40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 h-[100px] flex items-center justify-between">
           <Link to="/landing" className="flex items-center">
             <img
               src={logoDraDielem}
