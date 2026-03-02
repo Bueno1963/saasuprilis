@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, Plus, X, Printer, Tag, Pencil, Trash2 } from "lucide-react";
+import { Search, Plus, X, Printer, Tag, Pencil, Trash2, Globe } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { orderSchema, OrderFormData } from "@/lib/validations";
-import { printEtiquetaColeta, printAtendimento } from "@/lib/print-utils";
+import { printEtiquetaColeta, printAtendimento, printProtocoloAcesso } from "@/lib/print-utils";
 
 const Orders = () => {
   const [search, setSearch] = useState("");
@@ -218,18 +218,33 @@ const Orders = () => {
                   Pedido <span className="font-medium text-foreground font-mono">{createdOrder.order_number}</span> para{" "}
                   <span className="font-medium text-foreground">{(createdOrder.patients as any)?.name}</span> criado com sucesso.
                 </p>
-                <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1" onClick={() => {
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-3">
+                    <Button variant="outline" className="flex-1" onClick={() => {
+                      const p = createdOrder.patients as any;
+                      if (p) printEtiquetaColeta({ id: createdOrder.id, name: p.name }, createdOrder.exams || []);
+                    }}>
+                      <Tag className="w-4 h-4 mr-2" />Etiqueta Coleta
+                    </Button>
+                    <Button variant="outline" className="flex-1" onClick={() => {
+                      const p = createdOrder.patients as any;
+                      if (p) printAtendimento({ id: createdOrder.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date, gender: p.gender, phone: p.phone, email: p.email, insurance: p.insurance });
+                    }}>
+                      <Printer className="w-4 h-4 mr-2" />Atendimento
+                    </Button>
+                  </div>
+                  <Button variant="outline" className="w-full" onClick={() => {
                     const p = createdOrder.patients as any;
-                    if (p) printEtiquetaColeta({ id: createdOrder.id, name: p.name }, createdOrder.exams || []);
+                    if (p) {
+                      const portalUrl = `${window.location.origin}/portal-paciente`;
+                      printProtocoloAcesso(
+                        { order_number: createdOrder.order_number, created_at: createdOrder.created_at },
+                        { name: p.name, birth_date: p.birth_date },
+                        portalUrl
+                      );
+                    }
                   }}>
-                    <Tag className="w-4 h-4 mr-2" />Imprimir Etiqueta Coleta
-                  </Button>
-                  <Button variant="outline" className="flex-1" onClick={() => {
-                    const p = createdOrder.patients as any;
-                    if (p) printAtendimento({ id: createdOrder.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date, gender: p.gender, phone: p.phone, email: p.email, insurance: p.insurance });
-                  }}>
-                    <Printer className="w-4 h-4 mr-2" />Imprimir Atendimento
+                    <Globe className="w-4 h-4 mr-2" />Protocolo de Acesso Web
                   </Button>
                 </div>
                 <Button className="w-full" onClick={() => { setCreatedOrder(null); setOpen(false); }}>
