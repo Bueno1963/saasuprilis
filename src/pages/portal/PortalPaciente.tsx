@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Activity, FileText, Shield, Search, AlertCircle, CheckCircle,
+  FileText, Shield, Search, AlertCircle, CheckCircle,
   Loader2, Calendar, Clock, CalendarPlus,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import logoDraDielem from "@/assets/logo-dra-dielem.png";
 
 interface ResultData {
   patient: { name: string; cpf_masked: string };
@@ -69,7 +70,6 @@ const PortalPaciente = () => {
     notes: "",
   });
 
-  // Time slots from 07:00 to 17:30 every 30 min
   const TIME_SLOTS = Array.from({ length: 22 }, (_, i) => {
     const h = Math.floor(i / 2) + 7;
     const m = (i % 2) * 30;
@@ -97,7 +97,6 @@ const PortalPaciente = () => {
   useEffect(() => {
     if (schedForm.date) {
       fetchOccupiedSlots(schedForm.date);
-      // Reset time when date changes
       setSchedForm((f) => ({ ...f, time: "" }));
     }
   }, [schedForm.date, fetchOccupiedSlots]);
@@ -106,16 +105,13 @@ const PortalPaciente = () => {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!orderNumber.trim() || !birthDate) return;
-
     setLoading(true);
     setError("");
     setData(null);
-
     try {
       const { data: result, error: fnError } = await supabase.functions.invoke("portal-patient-access", {
         body: { order_number: orderNumber.trim(), birth_date: birthDate },
       });
-
       if (fnError) throw fnError;
       if (result?.error) {
         setError(result.error);
@@ -133,30 +129,25 @@ const PortalPaciente = () => {
   const handleIdentify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schedCpf.trim() || !schedBirthDate) return;
-
     setSchedLoading(true);
     setSchedError("");
     setSchedPatient(null);
-
     try {
       const { data: patients, error: pErr } = await supabase
         .from("patients")
         .select("id, name, birth_date")
         .eq("cpf", schedCpf.trim())
         .limit(1);
-
       if (pErr) throw pErr;
       if (!patients || patients.length === 0) {
         setSchedError("Paciente não encontrado. Verifique o CPF informado.");
         return;
       }
-
       const patient = patients[0];
       if (patient.birth_date !== schedBirthDate) {
         setSchedError("Data de nascimento não confere. Verifique os dados.");
         return;
       }
-
       setSchedPatient({ id: patient.id, name: patient.name });
     } catch (err: any) {
       setSchedError(err?.message || "Erro ao identificar paciente.");
@@ -168,18 +159,14 @@ const PortalPaciente = () => {
   const handleSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schedPatient || !schedForm.date || !schedForm.time) return;
-
     setSchedLoading(true);
     setSchedError("");
-
     try {
-      // Fetch patient email for confirmation
       const { data: patientData } = await supabase
         .from("patients")
         .select("email")
         .eq("id", schedPatient.id)
         .single();
-
       const { error: insertErr } = await supabase.from("appointments").insert({
         patient_id: schedPatient.id,
         scheduled_date: schedForm.date,
@@ -188,13 +175,9 @@ const PortalPaciente = () => {
         notes: schedForm.notes || "",
         status: "agendado",
       });
-
       if (insertErr) throw insertErr;
-
       setSchedSuccess(true);
       toast.success("Agendamento realizado com sucesso!");
-
-      // Send confirmation email (fire-and-forget)
       if (patientData?.email) {
         supabase.functions.invoke("send-appointment-confirmation", {
           body: {
@@ -226,7 +209,6 @@ const PortalPaciente = () => {
     setSchedBirthDate("");
   };
 
-  // === Helpers ===
   const getFlagColor = (flag: string) => {
     if (flag === "high" || flag === "critical_high") return "text-red-600 bg-red-50";
     if (flag === "low" || flag === "critical_low") return "text-blue-600 bg-blue-50";
@@ -235,103 +217,220 @@ const PortalPaciente = () => {
 
   const getFlagLabel = (flag: string) => {
     const map: Record<string, string> = {
-      normal: "Normal",
-      high: "Alto",
-      low: "Baixo",
-      critical_high: "Crítico Alto",
-      critical_low: "Crítico Baixo",
+      normal: "Normal", high: "Alto", low: "Baixo",
+      critical_high: "Crítico Alto", critical_low: "Crítico Baixo",
     };
     return map[flag] || flag;
   };
 
   const today = format(new Date(), "yyyy-MM-dd");
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-            <Activity className="w-5 h-5 text-primary-foreground" />
+  // When results are loaded, show full-width results view
+  if (data) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
+        <header className="bg-[hsl(205,78%,20%)] text-white">
+          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+            <img src={logoDraDielem} alt="Logo" className="h-12 w-auto rounded bg-white p-1" />
+            <div>
+              <h1 className="text-lg font-bold tracking-tight">Portal do Paciente</h1>
+              <p className="text-xs text-white/70">Resultados de Exames</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-foreground tracking-tight">Portal do Paciente</h1>
-            <p className="text-xs text-muted-foreground">Resultados e agendamento online</p>
-          </div>
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Shield className="w-3.5 h-3.5" />
-            <span>Acesso seguro</span>
+        </header>
+        <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+          {data.lab && (
+            <div className="text-center border-b border-slate-200 pb-4">
+              <h2 className="text-lg font-bold text-foreground">{data.lab.name || "Laboratório"}</h2>
+              {data.lab.address && (
+                <p className="text-xs text-muted-foreground">
+                  {data.lab.address}{data.lab.city ? `, ${data.lab.city}` : ""}{data.lab.state ? ` - ${data.lab.state}` : ""}
+                </p>
+              )}
+              {data.lab.phone && <p className="text-xs text-muted-foreground">Tel: {data.lab.phone}</p>}
+            </div>
+          )}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Paciente:</span>
+                  <p className="font-medium">{data.patient.name}</p>
+                  <p className="text-xs text-muted-foreground">CPF: {data.patient.cpf_masked}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Pedido:</span>
+                  <p className="font-medium">{data.order.order_number}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Dr(a). {data.order.doctor_name} • {new Date(data.order.created_at).toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="flex items-center gap-2 text-base font-semibold mb-4">
+                <CheckCircle className="w-5 h-5 text-emerald-600" />
+                Resultados Liberados ({data.results.length})
+              </h3>
+              <div className="space-y-3">
+                {data.results.map((result) => (
+                  <div key={result.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50/50">
+                    <div className="space-y-0.5">
+                      <p className="font-medium text-sm">{result.exam}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Ref: {result.reference_range || "—"} {result.unit && `(${result.unit})`}
+                      </p>
+                      {result.released_at && (
+                        <p className="text-[10px] text-muted-foreground">
+                          Liberado em {new Date(result.released_at).toLocaleString("pt-BR")}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right space-y-1">
+                      <p className="font-semibold text-sm">{result.value} {result.unit}</p>
+                      <Badge variant="outline" className={cn("text-[10px]", getFlagColor(result.flag))}>
+                        {getFlagLabel(result.flag)}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <div className="text-center space-y-2 pt-4 border-t border-slate-200">
+            {data.lab && (
+              <p className="text-xs text-muted-foreground">
+                Resp. Técnico: {data.lab.technical_responsible} — CRM {data.lab.crm_responsible}
+              </p>
+            )}
+            <p className="text-[10px] text-muted-foreground">
+              Este documento é uma visualização digital. Acesso registrado para fins de auditoria (LGPD).
+            </p>
+            <Button variant="outline" size="sm" onClick={() => { setData(null); setOrderNumber(""); setBirthDate(""); }}>
+              Nova Consulta
+            </Button>
           </div>
         </div>
-      </header>
+      </div>
+    );
+  }
 
-      {/* Tab Switcher */}
-      <div className="max-w-4xl mx-auto px-4 pt-6">
-        <div className="flex gap-1 bg-muted/60 rounded-lg p-1 max-w-md mx-auto">
-          <button
-            onClick={() => setActiveTab("resultados")}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-all",
-              activeTab === "resultados"
-                ? "bg-white shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <FileText className="w-4 h-4" />
-            Resultados
-          </button>
-          <button
-            onClick={() => setActiveTab("agendamento")}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-all",
-              activeTab === "agendamento"
-                ? "bg-white shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <CalendarPlus className="w-4 h-4" />
-            Agendar Exame
-          </button>
+  return (
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Left Panel - Branding */}
+      <div className="lg:w-[45%] bg-gradient-to-br from-[hsl(205,78%,20%)] via-[hsl(205,78%,25%)] to-[hsl(205,70%,30%)] text-white relative overflow-hidden flex flex-col">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-20 left-0 w-48 h-48 bg-white/5 rounded-full -translate-x-1/2" />
+
+        <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12 flex-1">
+          {/* Logo */}
+          <div>
+            <img
+              src={logoDraDielem}
+              alt="Laboratório Dra. Dielem Feijó"
+              className="h-16 w-auto rounded-lg bg-white/95 p-2 shadow-lg"
+            />
+          </div>
+
+          {/* Welcome message */}
+          <div className="my-8 lg:my-0 space-y-6">
+            <p className="text-lg text-white/90 font-medium">
+              Prezado paciente,
+            </p>
+            <blockquote className="text-base lg:text-lg leading-relaxed text-white/80 italic border-l-2 border-white/30 pl-4">
+              "Ficamos muito felizes por escolher nosso Laboratório, trabalhamos com tecnologia de ponta para garantir a fidelidade do resultado.<br />
+              Seu diagnóstico preciso é o produto final do nosso esforço"
+            </blockquote>
+            <p className="text-xl font-semibold text-white/95 font-serif italic">
+              Dra. Dielem Feijó
+            </p>
+          </div>
+
+          {/* Footer */}
+          <p className="text-xs text-white/40">
+            © {new Date().getFullYear()} — Todos os direitos reservados
+          </p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* ===================== RESULTADOS TAB ===================== */}
-        {activeTab === "resultados" && (
-          <>
-            {!data ? (
-              <div className="max-w-md mx-auto space-y-6">
+      {/* Right Panel - Forms */}
+      <div className="lg:w-[55%] flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50">
+        {/* Tab Switcher */}
+        <div className="border-b border-slate-200 bg-white">
+          <div className="flex max-w-lg mx-auto">
+            <button
+              onClick={() => setActiveTab("resultados")}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 py-4 px-6 text-sm font-semibold border-b-2 transition-all",
+                activeTab === "resultados"
+                  ? "border-[hsl(205,78%,35%)] text-[hsl(205,78%,35%)]"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <FileText className="w-4 h-4" />
+              Resultados
+            </button>
+            <button
+              onClick={() => setActiveTab("agendamento")}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 py-4 px-6 text-sm font-semibold border-b-2 transition-all",
+                activeTab === "agendamento"
+                  ? "border-[hsl(205,78%,35%)] text-[hsl(205,78%,35%)]"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <CalendarPlus className="w-4 h-4" />
+              Agendar Exame
+            </button>
+          </div>
+        </div>
+
+        {/* Form Content */}
+        <div className="flex-1 flex items-start justify-center p-6 lg:p-10 overflow-y-auto">
+          <div className="w-full max-w-md space-y-6">
+            {/* ===================== RESULTADOS TAB ===================== */}
+            {activeTab === "resultados" && (
+              <>
                 <div className="text-center space-y-2">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                    <FileText className="w-8 h-8 text-primary" />
+                  <div className="w-14 h-14 rounded-2xl bg-[hsl(205,78%,35%)]/10 flex items-center justify-center mx-auto">
+                    <FileText className="w-7 h-7 text-[hsl(205,78%,35%)]" />
                   </div>
-                  <h2 className="text-xl font-semibold text-foreground">Consultar Resultados</h2>
+                  <h2 className="text-xl font-bold text-foreground">Consultar Resultados</h2>
                   <p className="text-sm text-muted-foreground">
                     Informe o número do pedido e sua data de nascimento para acessar seus exames.
                   </p>
                 </div>
 
-                <Card>
+                <Card className="shadow-lg border-slate-200/80">
                   <CardContent className="pt-6">
-                    <form onSubmit={handleSearch} className="space-y-4">
+                    <form onSubmit={handleSearch} className="space-y-5">
                       <div className="space-y-2">
-                        <Label htmlFor="order">Número do Pedido</Label>
+                        <Label htmlFor="order" className="text-sm font-semibold text-[hsl(205,78%,25%)]">
+                          Protocolo de atendimento
+                        </Label>
                         <Input
                           id="order"
                           placeholder="Ex: ORD-2026-001"
                           value={orderNumber}
                           onChange={(e) => setOrderNumber(e.target.value)}
                           required
+                          className="h-12 text-sm"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="birthdate">Data de Nascimento</Label>
+                        <Label htmlFor="birthdate" className="text-sm font-semibold text-[hsl(205,78%,25%)]">
+                          Data nascimento
+                        </Label>
                         <Input
                           id="birthdate"
                           type="date"
                           value={birthDate}
                           onChange={(e) => setBirthDate(e.target.value)}
                           required
+                          className="h-12 text-sm"
                         />
                       </div>
 
@@ -342,7 +441,11 @@ const PortalPaciente = () => {
                         </div>
                       )}
 
-                      <Button type="submit" className="w-full" disabled={loading}>
+                      <Button
+                        type="submit"
+                        className="w-full h-12 text-sm font-semibold bg-[hsl(205,78%,35%)] hover:bg-[hsl(205,78%,30%)] text-white rounded-lg"
+                        disabled={loading}
+                      >
                         {loading ? (
                           <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -359,7 +462,7 @@ const PortalPaciente = () => {
                   </CardContent>
                 </Card>
 
-                <div className="text-center space-y-1">
+                <div className="text-center space-y-1 pt-2">
                   <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                     <Shield className="w-3 h-3" />
                     Seus dados são protegidos conforme a LGPD
@@ -368,304 +471,234 @@ const PortalPaciente = () => {
                     Todo acesso é registrado para sua segurança
                   </p>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {data.lab && (
-                  <div className="text-center border-b border-slate-200 pb-4">
-                    <h2 className="text-lg font-bold text-foreground">{data.lab.name || "Laboratório"}</h2>
-                    {data.lab.address && (
-                      <p className="text-xs text-muted-foreground">
-                        {data.lab.address}{data.lab.city ? `, ${data.lab.city}` : ""}{data.lab.state ? ` - ${data.lab.state}` : ""}
-                      </p>
-                    )}
-                    {data.lab.phone && <p className="text-xs text-muted-foreground">Tel: {data.lab.phone}</p>}
+              </>
+            )}
+
+            {/* ===================== AGENDAMENTO TAB ===================== */}
+            {activeTab === "agendamento" && (
+              <>
+                {schedSuccess ? (
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto">
+                      <CheckCircle className="w-8 h-8 text-emerald-600" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-foreground">Agendamento Confirmado!</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Seu exame foi agendado para{" "}
+                      <strong>{schedForm.date ? format(new Date(schedForm.date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR }) : ""}</strong>{" "}
+                      às <strong>{schedForm.time}</strong>.
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Compareça ao laboratório no horário agendado com documento de identidade e pedido médico.
+                    </p>
+                    <Button variant="outline" onClick={resetSchedule}>
+                      Novo Agendamento
+                    </Button>
                   </div>
+                ) : !schedPatient ? (
+                  <>
+                    <div className="text-center space-y-2">
+                      <div className="w-14 h-14 rounded-2xl bg-[hsl(205,78%,35%)]/10 flex items-center justify-center mx-auto">
+                        <CalendarPlus className="w-7 h-7 text-[hsl(205,78%,35%)]" />
+                      </div>
+                      <h2 className="text-xl font-bold text-foreground">Agendar Exame</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Informe seu CPF e data de nascimento para se identificar.
+                      </p>
+                    </div>
+
+                    <Card className="shadow-lg border-slate-200/80">
+                      <CardContent className="pt-6">
+                        <form onSubmit={handleIdentify} className="space-y-5">
+                          <div className="space-y-2">
+                            <Label htmlFor="sched-cpf" className="text-sm font-semibold text-[hsl(205,78%,25%)]">CPF</Label>
+                            <Input
+                              id="sched-cpf"
+                              placeholder="000.000.000-00"
+                              value={schedCpf}
+                              onChange={(e) => setSchedCpf(e.target.value)}
+                              required
+                              className="h-12 text-sm"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="sched-birth" className="text-sm font-semibold text-[hsl(205,78%,25%)]">Data de Nascimento</Label>
+                            <Input
+                              id="sched-birth"
+                              type="date"
+                              value={schedBirthDate}
+                              onChange={(e) => setSchedBirthDate(e.target.value)}
+                              required
+                              className="h-12 text-sm"
+                            />
+                          </div>
+
+                          {schedError && (
+                            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                              <AlertCircle className="w-4 h-4 shrink-0" />
+                              {schedError}
+                            </div>
+                          )}
+
+                          <Button
+                            type="submit"
+                            className="w-full h-12 text-sm font-semibold bg-[hsl(205,78%,35%)] hover:bg-[hsl(205,78%,30%)] text-white rounded-lg"
+                            disabled={schedLoading}
+                          >
+                            {schedLoading ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Verificando...
+                              </>
+                            ) : (
+                              <>
+                                <Search className="w-4 h-4 mr-2" />
+                                Identificar
+                              </>
+                            )}
+                          </Button>
+                        </form>
+                      </CardContent>
+                    </Card>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-center space-y-2">
+                      <div className="w-14 h-14 rounded-2xl bg-[hsl(205,78%,35%)]/10 flex items-center justify-center mx-auto">
+                        <Calendar className="w-7 h-7 text-[hsl(205,78%,35%)]" />
+                      </div>
+                      <h2 className="text-xl font-bold text-foreground">Escolha Data e Horário</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Olá, <strong>{schedPatient.name}</strong>! Selecione quando deseja realizar seu exame.
+                      </p>
+                    </div>
+
+                    <Card className="shadow-lg border-slate-200/80">
+                      <CardContent className="pt-6">
+                        <form onSubmit={handleSchedule} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="sched-date" className="text-sm font-semibold text-[hsl(205,78%,25%)]">Data</Label>
+                            <Input
+                              id="sched-date"
+                              type="date"
+                              min={today}
+                              value={schedForm.date}
+                              onChange={(e) => setSchedForm((f) => ({ ...f, date: e.target.value }))}
+                              required
+                              className="h-12 text-sm"
+                            />
+                          </div>
+                          {schedForm.date && (
+                            <div className="space-y-2">
+                              <Label className="text-sm font-semibold text-[hsl(205,78%,25%)]">Horário disponível</Label>
+                              {slotsLoading ? (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  Verificando disponibilidade...
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-4 gap-1.5">
+                                  {TIME_SLOTS.map((slot) => {
+                                    const isOccupied = occupiedSlots.has(slot);
+                                    const isSelected = schedForm.time === slot;
+                                    return (
+                                      <button
+                                        key={slot}
+                                        type="button"
+                                        disabled={isOccupied}
+                                        onClick={() => setSchedForm((f) => ({ ...f, time: slot }))}
+                                        className={cn(
+                                          "py-2 px-1 rounded-md text-xs font-medium border transition-all",
+                                          isOccupied
+                                            ? "bg-muted text-muted-foreground/40 border-border cursor-not-allowed line-through"
+                                            : isSelected
+                                              ? "bg-[hsl(205,78%,35%)] text-white border-[hsl(205,78%,35%)] shadow-sm"
+                                              : "bg-card text-foreground border-border hover:border-[hsl(205,78%,45%)] hover:bg-[hsl(205,78%,95%)]"
+                                        )}
+                                      >
+                                        <Clock className="w-3 h-3 inline mr-0.5" />
+                                        {slot}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                              {!slotsLoading && occupiedSlots.size > 0 && (
+                                <p className="text-[11px] text-muted-foreground">
+                                  Horários riscados já estão ocupados.
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-semibold text-[hsl(205,78%,25%)]">Tipo</Label>
+                            <Select value={schedForm.type} onValueChange={(v) => setSchedForm((f) => ({ ...f, type: v }))}>
+                              <SelectTrigger className="h-12">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="exame">Exame</SelectItem>
+                                <SelectItem value="coleta">Coleta</SelectItem>
+                                <SelectItem value="retorno">Retorno</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-semibold text-[hsl(205,78%,25%)]">Observações (opcional)</Label>
+                            <Textarea
+                              value={schedForm.notes}
+                              onChange={(e) => setSchedForm((f) => ({ ...f, notes: e.target.value }))}
+                              placeholder="Informações adicionais..."
+                              rows={2}
+                            />
+                          </div>
+
+                          {schedError && (
+                            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                              <AlertCircle className="w-4 h-4 shrink-0" />
+                              {schedError}
+                            </div>
+                          )}
+
+                          <Button
+                            type="submit"
+                            className="w-full h-12 text-sm font-semibold bg-[hsl(205,78%,35%)] hover:bg-[hsl(205,78%,30%)] text-white rounded-lg"
+                            disabled={schedLoading || !schedForm.time || !schedForm.date}
+                          >
+                            {schedLoading ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Agendando...
+                              </>
+                            ) : (
+                              <>
+                                <CalendarPlus className="w-4 h-4 mr-2" />
+                                Confirmar Agendamento
+                              </>
+                            )}
+                          </Button>
+                          <Button type="button" variant="ghost" className="w-full" onClick={resetSchedule}>
+                            Voltar
+                          </Button>
+                        </form>
+                      </CardContent>
+                    </Card>
+                  </>
                 )}
 
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Paciente:</span>
-                        <p className="font-medium">{data.patient.name}</p>
-                        <p className="text-xs text-muted-foreground">CPF: {data.patient.cpf_masked}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Pedido:</span>
-                        <p className="font-medium">{data.order.order_number}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Dr(a). {data.order.doctor_name} • {new Date(data.order.created_at).toLocaleDateString("pt-BR")}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <CheckCircle className="w-5 h-5 text-emerald-600" />
-                      Resultados Liberados ({data.results.length})
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {data.results.map((result) => (
-                        <div key={result.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50/50">
-                          <div className="space-y-0.5">
-                            <p className="font-medium text-sm">{result.exam}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Ref: {result.reference_range || "—"} {result.unit && `(${result.unit})`}
-                            </p>
-                            {result.released_at && (
-                              <p className="text-[10px] text-muted-foreground">
-                                Liberado em {new Date(result.released_at).toLocaleString("pt-BR")}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right space-y-1">
-                            <p className="font-semibold text-sm">{result.value} {result.unit}</p>
-                            <Badge variant="outline" className={cn("text-[10px]", getFlagColor(result.flag))}>
-                              {getFlagLabel(result.flag)}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <div className="text-center space-y-2 pt-4 border-t border-slate-200">
-                  {data.lab && (
-                    <p className="text-xs text-muted-foreground">
-                      Resp. Técnico: {data.lab.technical_responsible} — CRM {data.lab.crm_responsible}
-                    </p>
-                  )}
-                  <p className="text-[10px] text-muted-foreground">
-                    Este documento é uma visualização digital. Acesso registrado para fins de auditoria (LGPD).
+                <div className="text-center space-y-1 pt-2">
+                  <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Seus dados são protegidos conforme a LGPD
                   </p>
-                  <Button variant="outline" size="sm" onClick={() => { setData(null); setOrderNumber(""); setBirthDate(""); }}>
-                    Nova Consulta
-                  </Button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* ===================== AGENDAMENTO TAB ===================== */}
-        {activeTab === "agendamento" && (
-          <div className="max-w-md mx-auto space-y-6">
-            {/* Success state */}
-            {schedSuccess ? (
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto">
-                  <CheckCircle className="w-8 h-8 text-emerald-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-foreground">Agendamento Confirmado!</h2>
-                <p className="text-sm text-muted-foreground">
-                  Seu exame foi agendado para{" "}
-                  <strong>{schedForm.date ? format(new Date(schedForm.date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR }) : ""}</strong>{" "}
-                  às <strong>{schedForm.time}</strong>.
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Compareça ao laboratório no horário agendado com documento de identidade e pedido médico.
-                </p>
-                <Button variant="outline" onClick={resetSchedule}>
-                  Novo Agendamento
-                </Button>
-              </div>
-            ) : !schedPatient ? (
-              /* Step 1: Identify patient */
-              <>
-                <div className="text-center space-y-2">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                    <CalendarPlus className="w-8 h-8 text-primary" />
-                  </div>
-                  <h2 className="text-xl font-semibold text-foreground">Agendar Exame</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Informe seu CPF e data de nascimento para se identificar.
+                  <p className="text-xs text-muted-foreground">
+                    Todo acesso é registrado para sua segurança
                   </p>
                 </div>
-
-                <Card>
-                  <CardContent className="pt-6">
-                    <form onSubmit={handleIdentify} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="sched-cpf">CPF</Label>
-                        <Input
-                          id="sched-cpf"
-                          placeholder="000.000.000-00"
-                          value={schedCpf}
-                          onChange={(e) => setSchedCpf(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sched-birth">Data de Nascimento</Label>
-                        <Input
-                          id="sched-birth"
-                          type="date"
-                          value={schedBirthDate}
-                          onChange={(e) => setSchedBirthDate(e.target.value)}
-                          required
-                        />
-                      </div>
-
-                      {schedError && (
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                          <AlertCircle className="w-4 h-4 shrink-0" />
-                          {schedError}
-                        </div>
-                      )}
-
-                      <Button type="submit" className="w-full" disabled={schedLoading}>
-                        {schedLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Verificando...
-                          </>
-                        ) : (
-                          <>
-                            <Search className="w-4 h-4 mr-2" />
-                            Identificar
-                          </>
-                        )}
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </>
-            ) : (
-              /* Step 2: Schedule form */
-              <>
-                <div className="text-center space-y-2">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                    <Calendar className="w-8 h-8 text-primary" />
-                  </div>
-                  <h2 className="text-xl font-semibold text-foreground">Escolha Data e Horário</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Olá, <strong>{schedPatient.name}</strong>! Selecione quando deseja realizar seu exame.
-                  </p>
-                </div>
-
-                <Card>
-                  <CardContent className="pt-6">
-                    <form onSubmit={handleSchedule} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="sched-date">Data</Label>
-                        <Input
-                          id="sched-date"
-                          type="date"
-                          min={today}
-                          value={schedForm.date}
-                          onChange={(e) => setSchedForm((f) => ({ ...f, date: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      {schedForm.date && (
-                        <div className="space-y-2">
-                          <Label>Horário disponível</Label>
-                          {slotsLoading ? (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              Verificando disponibilidade...
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-4 gap-1.5">
-                              {TIME_SLOTS.map((slot) => {
-                                const isOccupied = occupiedSlots.has(slot);
-                                const isSelected = schedForm.time === slot;
-                                return (
-                                  <button
-                                    key={slot}
-                                    type="button"
-                                    disabled={isOccupied}
-                                    onClick={() => setSchedForm((f) => ({ ...f, time: slot }))}
-                                    className={cn(
-                                      "py-2 px-1 rounded-md text-xs font-medium border transition-all",
-                                      isOccupied
-                                        ? "bg-muted text-muted-foreground/40 border-border cursor-not-allowed line-through"
-                                        : isSelected
-                                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                                          : "bg-card text-foreground border-border hover:border-primary/50 hover:bg-primary/5"
-                                    )}
-                                  >
-                                    <Clock className="w-3 h-3 inline mr-0.5" />
-                                    {slot}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                          {!slotsLoading && occupiedSlots.size > 0 && (
-                            <p className="text-[11px] text-muted-foreground">
-                              Horários riscados já estão ocupados.
-                            </p>
-                          )}
-                        </div>
-                      )}
-                      <div className="space-y-2">
-                        <Label>Tipo</Label>
-                        <Select value={schedForm.type} onValueChange={(v) => setSchedForm((f) => ({ ...f, type: v }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="exame">Exame</SelectItem>
-                            <SelectItem value="coleta">Coleta</SelectItem>
-                            <SelectItem value="retorno">Retorno</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Observações (opcional)</Label>
-                        <Textarea
-                          value={schedForm.notes}
-                          onChange={(e) => setSchedForm((f) => ({ ...f, notes: e.target.value }))}
-                          placeholder="Informações adicionais..."
-                          rows={2}
-                        />
-                      </div>
-
-                      {schedError && (
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                          <AlertCircle className="w-4 h-4 shrink-0" />
-                          {schedError}
-                        </div>
-                      )}
-
-                      <Button type="submit" className="w-full" disabled={schedLoading || !schedForm.time || !schedForm.date}>
-                        {schedLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Agendando...
-                          </>
-                        ) : (
-                          <>
-                            <CalendarPlus className="w-4 h-4 mr-2" />
-                            Confirmar Agendamento
-                          </>
-                        )}
-                      </Button>
-                      <Button type="button" variant="ghost" className="w-full" onClick={resetSchedule}>
-                        Voltar
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
               </>
             )}
-
-            <div className="text-center space-y-1">
-              <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                <Shield className="w-3 h-3" />
-                Seus dados são protegidos conforme a LGPD
-              </p>
-            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
