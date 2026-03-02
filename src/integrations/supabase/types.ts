@@ -1213,6 +1213,7 @@ export type Database = {
         Row: {
           barcode: string
           collected_at: string
+          condition: string
           created_at: string
           disposal_at: string | null
           disposal_by: string | null
@@ -1230,6 +1231,7 @@ export type Database = {
         Insert: {
           barcode: string
           collected_at?: string
+          condition?: string
           created_at?: string
           disposal_at?: string | null
           disposal_by?: string | null
@@ -1247,6 +1249,7 @@ export type Database = {
         Update: {
           barcode?: string
           collected_at?: string
+          condition?: string
           created_at?: string
           disposal_at?: string | null
           disposal_by?: string | null

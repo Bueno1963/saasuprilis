@@ -24,6 +24,13 @@ import SampleStatusStepper from "@/components/samples/SampleStatusStepper";
 const SAMPLE_TYPES = ["Sangue", "Urina", "Soro", "Plasma"] as const;
 const SECTORS = ["Hematologia", "Bioquímica", "Imunologia", "Microbiologia"] as const;
 
+const SAMPLE_CONDITIONS = [
+  { value: "de_acordo", label: "De acordo para análise", color: "text-success" },
+  { value: "hemolisada", label: "Amostra hemolisada", color: "text-warning" },
+  { value: "insuficiente", label: "Amostra Insuficiente", color: "text-critical" },
+  { value: "nao_coletou", label: "Paciente Não coletou", color: "text-destructive" },
+] as const;
+
 const STATUS_FLOW = [
   { value: "collected", label: "Coletado" },
   { value: "triaged", label: "Triado" },
@@ -104,6 +111,18 @@ const Samples = () => {
       toast.success("Status atualizado");
     },
     onError: (e: any) => toast.error(e.message || "Erro ao atualizar status"),
+  });
+
+  const updateConditionMutation = useMutation({
+    mutationFn: async ({ id, condition }: { id: string; condition: string }) => {
+      const { error } = await supabase.from("samples").update({ condition } as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["samples"] });
+      toast.success("Condição da amostra atualizada");
+    },
+    onError: (e: any) => toast.error(e.message || "Erro ao atualizar condição"),
   });
 
   // Filter by date and search
@@ -267,12 +286,13 @@ const Samples = () => {
                         </span>
                       </div>
                       <Table>
-                        <TableHeader>
+                         <TableHeader>
                           <TableRow>
                             <TableHead>Código de Barras</TableHead>
                             <TableHead>Pedido</TableHead>
                             <TableHead>Paciente</TableHead>
                             <TableHead>Material</TableHead>
+                            <TableHead>Condição</TableHead>
                             <TableHead>Progresso</TableHead>
                             <TableHead>Coleta</TableHead>
                           </TableRow>
@@ -292,6 +312,27 @@ const Samples = () => {
                               <TableCell className="font-mono text-sm">{(sample.orders as any)?.order_number}</TableCell>
                               <TableCell>{(sample.orders as any)?.patients?.name}</TableCell>
                               <TableCell className="text-sm">{sample.sample_type}</TableCell>
+                              <TableCell>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1", SAMPLE_CONDITIONS.find(c => c.value === ((sample as any).condition || "de_acordo"))?.color)}>
+                                      {SAMPLE_CONDITIONS.find(c => c.value === ((sample as any).condition || "de_acordo"))?.label || "De acordo"}
+                                      <ChevronDown className="w-3 h-3" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="start">
+                                    {SAMPLE_CONDITIONS.map(cond => (
+                                      <DropdownMenuItem
+                                        key={cond.value}
+                                        className={cn("text-xs", cond.color)}
+                                        onClick={() => updateConditionMutation.mutate({ id: sample.id, condition: cond.value })}
+                                      >
+                                        {cond.label}
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
                               <TableCell>
                                 <SampleStatusStepper
                                   status={sample.status}
