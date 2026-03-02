@@ -164,7 +164,7 @@ const LandingPage = () => {
             <img
               src={logoDraDielem}
               alt="Laboratório Dra. Dielem Feijó"
-              className="h-14 w-auto"
+              className="h-20 w-auto"
             />
           </Link>
 
