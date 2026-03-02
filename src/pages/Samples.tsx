@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, Barcode, Plus, TestTubes, Shield, ChevronDown, Calendar } from "lucide-react";
+import { Search, Barcode, Plus, TestTubes, Shield, ChevronDown, Calendar, FlaskConical, Microscope, BadgeCheck } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -18,6 +19,7 @@ import SampleTrackingTab from "@/components/samples/SampleTrackingTab";
 import NonConformityTab from "@/components/samples/NonConformityTab";
 import TemperatureTab from "@/components/samples/TemperatureTab";
 import ComplianceReportTab from "@/components/samples/ComplianceReportTab";
+import SampleStatusStepper from "@/components/samples/SampleStatusStepper";
 
 const SAMPLE_TYPES = ["Sangue", "Urina", "Soro", "Plasma"] as const;
 const SECTORS = ["Hematologia", "Bioquímica", "Imunologia", "Microbiologia"] as const;
@@ -128,8 +130,16 @@ const Samples = () => {
       if (!groups[sector]) groups[sector] = [];
       groups[sector].push(s);
     }
-    // Sort sectors alphabetically
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [filtered]);
+
+  // Status summary counts
+  const statusCounts = useMemo(() => {
+    const counts = { collected: 0, triaged: 0, processing: 0, analyzed: 0 };
+    for (const s of filtered) {
+      if (s.status in counts) counts[s.status as keyof typeof counts]++;
+    }
+    return counts;
   }, [filtered]);
 
   return (
@@ -154,6 +164,26 @@ const Samples = () => {
             <SampleForm orders={orders} onSubmit={items => createMutation.mutate(items)} loading={createMutation.isPending} />
           </DialogContent>
         </Dialog>
+      </div>
+
+      {/* Status Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: "Coletadas", count: statusCounts.collected, icon: TestTubes, color: "text-warning", bg: "bg-warning/10 border-warning/20" },
+          { label: "Triadas", count: statusCounts.triaged, icon: FlaskConical, color: "text-info", bg: "bg-info/10 border-info/20" },
+          { label: "Em Análise", count: statusCounts.processing, icon: Microscope, color: "text-phase-analytical", bg: "bg-phase-analytical/10 border-phase-analytical/20" },
+          { label: "Analisadas", count: statusCounts.analyzed, icon: BadgeCheck, color: "text-success", bg: "bg-success/10 border-success/20" },
+        ].map(card => (
+          <Card key={card.label} className={cn("border", card.bg)}>
+            <CardContent className="p-4 flex items-center gap-3">
+              <card.icon className={cn("w-8 h-8", card.color)} />
+              <div>
+                <p className="text-2xl font-bold text-foreground">{card.count}</p>
+                <p className="text-xs text-muted-foreground">{card.label}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Tabs defaultValue="amostras" className="space-y-4">
@@ -208,7 +238,7 @@ const Samples = () => {
                             <TableHead>Pedido</TableHead>
                             <TableHead>Paciente</TableHead>
                             <TableHead>Material</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>Progresso</TableHead>
                             <TableHead>Coleta</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -228,26 +258,13 @@ const Samples = () => {
                               <TableCell>{(sample.orders as any)?.patients?.name}</TableCell>
                               <TableCell className="text-sm">{sample.sample_type}</TableCell>
                               <TableCell>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <button className="inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
-                                      <StatusBadge status={sample.status} />
-                                      <ChevronDown className="w-3 h-3 text-muted-foreground" />
-                                    </button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="start">
-                                    {STATUS_FLOW.map(s => (
-                                      <DropdownMenuItem
-                                        key={s.value}
-                                        disabled={sample.status === s.value}
-                                        onClick={() => updateStatusMutation.mutate({ id: sample.id, status: s.value, previousStatus: sample.status })}
-                                        className={sample.status === s.value ? "font-semibold" : ""}
-                                      >
-                                        <StatusBadge status={s.value} />
-                                      </DropdownMenuItem>
-                                    ))}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                <SampleStatusStepper
+                                  status={sample.status}
+                                  compact
+                                  onStatusChange={(newStatus, prevStatus) =>
+                                    updateStatusMutation.mutate({ id: sample.id, status: newStatus, previousStatus: prevStatus })
+                                  }
+                                />
                               </TableCell>
                               <TableCell className="text-sm">{new Date(sample.collected_at).toLocaleString("pt-BR")}</TableCell>
                             </TableRow>
