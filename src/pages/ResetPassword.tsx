@@ -87,7 +87,7 @@ const ResetPassword = () => {
             <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
               <FlaskConical className="w-6 h-6 text-white" />
             </div>
-            <span className="text-lg font-semibold text-white tracking-tight">VEROLIS</span>
+            <span className="text-lg font-semibold text-white tracking-tight">Lab Dra. Dielem Feijó</span>
           </div>
           <div className="space-y-5 max-w-md">
             <h1 className="text-4xl font-bold text-white leading-tight">
@@ -98,7 +98,7 @@ const ResetPassword = () => {
               Defina uma nova senha para acessar o sistema. Escolha uma senha segura com pelo menos 6 caracteres.
             </p>
           </div>
-          <p className="text-white/40 text-xs">© 2026 VEROLIS — Todos os direitos reservados</p>
+          <p className="text-white/40 text-xs">© 2026 Laboratório Dra. Dielem Feijó — Todos os direitos reservados</p>
         </div>
       </div>
 
@@ -109,7 +109,7 @@ const ResetPassword = () => {
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <FlaskConical className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-semibold text-foreground">VEROLIS</span>
+            <span className="text-lg font-semibold text-foreground">Lab Dra. Dielem Feijó</span>
           </div>
 
           <div>
