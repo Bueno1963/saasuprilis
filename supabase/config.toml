@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.classify-transactions]
 verify_jwt = false
+
+[functions.portal-patient-access]
+verify_jwt = false
+
+[functions.portal-doctor-access]
+verify_jwt = false
