@@ -28,7 +28,7 @@ const ConveniosPage = () => {
     { label: "Exames", href: "/landing/exames" },
     { label: "Coletas", href: "/landing/coletas" },
     { label: "Vacinas", href: "/landing#servicos" },
-    { label: "Blog", href: "/landing#duvidas" },
+    { label: "Acesso Admin", href: "/auth" },
     { label: "Contato", href: "/landing#contato" },
   ];
 
