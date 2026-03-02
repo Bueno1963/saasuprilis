@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import heroLabImg from "@/assets/hero-lab.jpg";
+import logoDraDielem from "@/assets/logo-dra-dielem.png";
 
 const serviceCards = [
   {
@@ -159,14 +160,12 @@ const LandingPage = () => {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white border-b border-border/40 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
-          <Link to="/landing" className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-[hsl(205,78%,28%)] flex items-center justify-center">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="text-lg font-bold tracking-tight text-foreground">VEROLIS</span>
-              <span className="text-[10px] text-muted-foreground tracking-wide">Laboratório</span>
-            </div>
+          <Link to="/landing" className="flex items-center">
+            <img
+              src={logoDraDielem}
+              alt="Laboratório Dra. Dielem Feijó"
+              className="h-14 w-auto"
+            />
           </Link>
 
           <div className="hidden md:flex items-center gap-7">
