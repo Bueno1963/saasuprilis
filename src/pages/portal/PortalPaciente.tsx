@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,7 +41,10 @@ interface ResultData {
 type PortalTab = "resultados" | "agendamento";
 
 const PortalPaciente = () => {
-  const [activeTab, setActiveTab] = useState<PortalTab>("resultados");
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<PortalTab>(
+    searchParams.get("tab") === "agendamento" ? "agendamento" : "resultados"
+  );
 
   // === Results state ===
   const [orderNumber, setOrderNumber] = useState("");
