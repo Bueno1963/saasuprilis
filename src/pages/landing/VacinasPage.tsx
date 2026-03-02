@@ -186,6 +186,32 @@ const VacinasPage = () => {
         </div>
       </section>
 
+      {/* CTA Agendamento */}
+      <section className="py-16 md:py-20 bg-[hsl(205,78%,28%)]">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <Syringe className="w-10 h-10 text-white/80 mx-auto mb-5" />
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+            Agende sua vacinação
+          </h2>
+          <p className="text-white/70 text-sm md:text-base max-w-2xl mx-auto mb-8 leading-relaxed">
+            Mantenha seu calendário vacinal em dia. Agende pelo nosso portal online ou entre em contato pela nossa central de atendimento.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link to="/portal-paciente?tab=agendamento">
+              <Button size="lg" className="rounded-md px-8 h-12 text-sm font-semibold bg-white text-[hsl(205,78%,28%)] hover:bg-white/90 transition-colors">
+                Agendar Online
+              </Button>
+            </Link>
+            <a href="https://wa.me/5511999999999?text=Olá! Gostaria de agendar uma vacinação." target="_blank" rel="noopener noreferrer">
+              <Button size="lg" variant="outline" className="rounded-md px-8 h-12 text-sm font-semibold border-white/40 text-white hover:bg-white/10 transition-colors">
+                <Phone className="w-4 h-4 mr-2" />
+                WhatsApp
+              </Button>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="py-16 md:py-20 bg-muted/40">
         <div className="max-w-3xl mx-auto px-6">
