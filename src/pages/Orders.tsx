@@ -78,7 +78,7 @@ const Orders = () => {
   const { data: examCatalog = [] } = useQuery({
     queryKey: ["exam_catalog_names"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("exam_catalog").select("name, code, unit, reference_range").eq("status", "active").order("name");
+      const { data, error } = await supabase.from("exam_catalog").select("name, code, unit, reference_range, sector, material").eq("status", "active").order("name");
       if (error) throw error;
       return data;
     },
@@ -126,11 +126,34 @@ const Orders = () => {
         if (resError) console.error("Erro ao criar resultados:", resError);
       }
 
+      // Auto-create samples grouped by sector based on exam catalog
+      const sectorMaterialMap = new Map<string, string>();
+      for (const examName of form.exams) {
+        const catalog = examCatalogMap.get(examName);
+        const sector = catalog?.sector || "Bioquímica";
+        const material = catalog?.material || "Sangue";
+        if (!sectorMaterialMap.has(sector)) {
+          sectorMaterialMap.set(sector, material);
+        }
+      }
+
+      if (sectorMaterialMap.size > 0) {
+        const sampleRows = Array.from(sectorMaterialMap.entries()).map(([sector, material]) => ({
+          order_id: orderData.id,
+          sample_type: material,
+          sector,
+          barcode: "",
+        }));
+        const { error: sampleError } = await supabase.from("samples").insert(sampleRows);
+        if (sampleError) console.error("Erro ao criar amostras:", sampleError);
+      }
+
       return orderData;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["results-pending"] });
+      queryClient.invalidateQueries({ queryKey: ["samples"] });
       setCreatedOrder(data);
       toast.success("Pedido criado com sucesso!");
     },
