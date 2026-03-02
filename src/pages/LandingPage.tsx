@@ -212,7 +212,7 @@ const LandingPage = () => {
             <div className="relative">
               <img
                 src={heroLabImg}
-                alt="Equipe laboratorial VEROLIS"
+                alt="Equipe laboratorial Dra. Dielem Feijó"
                 className="rounded-2xl shadow-xl w-full h-[360px] object-cover"
               />
               <div className="absolute -bottom-4 -right-4 w-24 h-24 rounded-2xl bg-[hsl(205,78%,28%)] flex items-center justify-center shadow-lg">
@@ -223,12 +223,12 @@ const LandingPage = () => {
             {/* Text */}
             <div className="space-y-5">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-snug">
-                Laboratório de Análises Clínicas{" "}
-                <span className="text-[hsl(205,78%,45%)]">VEROLIS</span>
+                Laboratório{" "}
+                <span className="text-[hsl(205,78%,45%)]">Dra. Dielem Feijó</span>
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                O VEROLIS é um Sistema de Informação Laboratorial (LIS) na nuvem
-                que gerencia todo o fluxo do laboratório — da recepção do
+                O Laboratório Dra. Dielem Feijó é um laboratório de análises clínicas
+                que gerencia todo o fluxo — da recepção do
                 paciente à entrega do laudo. Com rastreabilidade total, controle
                 de qualidade integrado e portais dedicados para pacientes e
                 médicos.
