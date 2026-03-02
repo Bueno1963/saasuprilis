@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
-import { ShieldCheck, CheckCircle, ArrowLeft, Search, Save } from "lucide-react";
+import { ShieldCheck, CheckCircle, ArrowLeft, Search, Save, AlertTriangle } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -50,7 +50,7 @@ const ValidarExames = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("results")
-        .select("*, orders(order_number, patients(name))")
+        .select("*, orders(order_number, patients(name)), samples(condition)")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -102,6 +102,22 @@ const ValidarExames = () => {
 
   const examSectorMap = new Map(examCatalog.map(e => [e.name, e.sector]));
   const uniqueSectors = [...new Set(examCatalog.map(e => e.sector).filter(Boolean))] as string[];
+
+  // Check if a result's sample condition allows validation
+  const isSampleDeAcordo = useCallback((r: any) => {
+    const condition = (r.samples as any)?.condition;
+    return !condition || condition === "de_acordo";
+  }, []);
+
+  const getSampleConditionLabel = useCallback((r: any) => {
+    const condition = (r.samples as any)?.condition;
+    const labels: Record<string, string> = {
+      hemolisada: "Amostra hemolisada",
+      insuficiente: "Amostra Insuficiente",
+      nao_coletou: "Paciente Não coletou",
+    };
+    return labels[condition] || condition;
+  }, []);
 
   const sectorCounts = new Map<string, number>();
   for (const r of results as any[]) {
@@ -174,8 +190,11 @@ const ValidarExames = () => {
 
   const validateAllSector = useMutation({
     mutationFn: async () => {
-      const ids = filteredResults.map((r: any) => r.id);
-      if (ids.length === 0) return;
+      const ids = filteredResults.filter((r: any) => isSampleDeAcordo(r)).map((r: any) => r.id);
+      if (ids.length === 0) {
+        toast.error("Nenhuma amostra com condição adequada para validação");
+        return;
+      }
       // Save all pending edits first
       const savePromises = ids.map(id => {
         const value = editedValues[id];
@@ -341,6 +360,10 @@ const ValidarExames = () => {
       return val && val.trim() !== "";
     });
 
+    const allSamplesDeAcordo = patient.results.every((r: any) => isSampleDeAcordo(r));
+    const blockedResults = patient.results.filter((r: any) => !isSampleDeAcordo(r));
+    const canValidateAll = allFilled && allSamplesDeAcordo;
+
     return (
       <div className="p-6 space-y-6 max-w-[80%] bg-foreground/10 min-h-screen">
         <div className="flex items-center justify-between">
@@ -356,15 +379,27 @@ const ValidarExames = () => {
             </div>
           </div>
           <Button
-            onClick={() => validateMutation.mutate(patient.resultIds)}
-            disabled={validateMutation.isPending || !allFilled}
-            title={!allFilled ? "Preencha todos os resultados antes de validar" : ""}
+            onClick={() => validateMutation.mutate(patient.resultIds.filter(id => {
+              const r = patient.results.find((res: any) => res.id === id);
+              return isSampleDeAcordo(r);
+            }))}
+            disabled={validateMutation.isPending || !canValidateAll}
+            title={!allSamplesDeAcordo ? "Existem amostras com condição inadequada para validação" : !allFilled ? "Preencha todos os resultados antes de validar" : ""}
             style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
             className="text-white hover:opacity-90"
           >
             <CheckCircle className="w-4 h-4 mr-2" /> Validar Todos ({patient.results.length})
           </Button>
         </div>
+
+        {!allSamplesDeAcordo && (
+          <div className="flex items-center gap-2 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm text-warning">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>
+              {blockedResults.length} exame{blockedResults.length !== 1 ? "s" : ""} não pode{blockedResults.length !== 1 ? "m" : ""} ser validado{blockedResults.length !== 1 ? "s" : ""} — amostra com condição inadequada ({blockedResults.map((r: any) => getSampleConditionLabel(r)).filter((v, i, a) => a.indexOf(v) === i).join(", ")}).
+            </span>
+          </div>
+        )}
 
         {patient.results.map((r: any) => {
           const examId = examNameToId.get(r.exam);
@@ -427,12 +462,16 @@ const ValidarExames = () => {
                             <Button
                               size="sm"
                               onClick={() => validateMutation.mutate([r.id])}
-                              disabled={validateMutation.isPending || !isFilled}
+                              disabled={validateMutation.isPending || !isFilled || !isSampleDeAcordo(r)}
+                              title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : ""}
                               style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
                               className="text-white hover:opacity-90"
                             >
                               <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Validar
                             </Button>
+                            {!isSampleDeAcordo(r) && (
+                              <span className="text-xs text-warning flex items-center gap-1"><AlertTriangle className="w-3 h-3" />{getSampleConditionLabel(r)}</span>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -468,12 +507,16 @@ const ValidarExames = () => {
                     <Button
                       size="sm"
                       onClick={() => validateMutation.mutate([r.id])}
-                      disabled={validateMutation.isPending || !allParamsFilled}
+                      disabled={validateMutation.isPending || !allParamsFilled || !isSampleDeAcordo(r)}
+                      title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : ""}
                       style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
                       className="text-white hover:opacity-90"
                     >
                       <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Validar
                     </Button>
+                    {!isSampleDeAcordo(r) && (
+                      <span className="text-xs text-warning flex items-center gap-1"><AlertTriangle className="w-3 h-3" />{getSampleConditionLabel(r)}</span>
+                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -542,16 +585,28 @@ const ValidarExames = () => {
             </p>
           </div>
         </div>
-        {filteredResults.length > 0 && (
-          <Button
-            onClick={() => validateAllSector.mutate()}
-            disabled={validateAllSector.isPending}
-            style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
-            className="text-white hover:opacity-90"
-          >
-            <CheckCircle className="w-4 h-4 mr-2" /> Validar Todos ({filteredResults.length})
-          </Button>
-        )}
+        {filteredResults.length > 0 && (() => {
+          const validableCount = filteredResults.filter((r: any) => isSampleDeAcordo(r)).length;
+          const blockedCount = filteredResults.length - validableCount;
+          return (
+            <div className="flex items-center gap-3">
+              {blockedCount > 0 && (
+                <span className="text-xs text-warning flex items-center gap-1">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {blockedCount} bloqueado{blockedCount !== 1 ? "s" : ""}
+                </span>
+              )}
+              <Button
+                onClick={() => validateAllSector.mutate()}
+                disabled={validateAllSector.isPending || validableCount === 0}
+                style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
+                className="text-white hover:opacity-90"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" /> Validar Todos ({validableCount})
+              </Button>
+            </div>
+          );
+        })()}
       </div>
 
       {patients.length > 0 && (
