@@ -52,7 +52,7 @@ const AppSidebar = () => {
         </div>
         {!collapsed && (
           <div className="overflow-hidden">
-            <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-wide">VEROLIS</h1>
+            <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-wide">Lab Dra. Dielem Feijó</h1>
             <p className="text-[10px] text-sidebar-muted uppercase tracking-widest">LIS System</p>
           </div>
         )}

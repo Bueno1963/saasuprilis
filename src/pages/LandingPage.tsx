@@ -535,11 +535,11 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-wrap justify-center gap-8 pt-4 text-sm">
             <a
-              href="mailto:contato@verolis.com.br"
+              href="mailto:contato@labdradielem.com.br"
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <Mail className="w-4 h-4" />
-              contato@verolis.com.br
+              contato@labdradielem.com.br
             </a>
             <a
               href="tel:+5511999999999"
@@ -557,10 +557,8 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[hsl(205,78%,45%)] flex items-center justify-center">
-                <Activity className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-white text-sm">VEROLIS</span>
+              <img src={logoDraDielem} alt="Laboratório Dra. Dielem Feijó" className="h-10 w-auto" />
+              <span className="font-bold text-white text-sm">Lab Dra. Dielem Feijó</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/60">
               <Link
@@ -584,7 +582,7 @@ const LandingPage = () => {
             </div>
           </div>
           <p className="text-xs text-white/40 text-center mt-8">
-            © {new Date().getFullYear()} VEROLIS — Todos os direitos reservados.
+            © {new Date().getFullYear()} Laboratório Dra. Dielem Feijó — Todos os direitos reservados.
             Em conformidade com a LGPD (Lei nº 13.709/2018).
           </p>
         </div>

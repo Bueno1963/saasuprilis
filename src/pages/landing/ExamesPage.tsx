@@ -108,14 +108,8 @@ const ExamesPage = () => {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white border-b border-border/40 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
-          <Link to="/landing" className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-[hsl(205,78%,28%)] flex items-center justify-center">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="text-lg font-bold tracking-tight text-foreground">VEROLIS</span>
-              <span className="text-[10px] text-muted-foreground tracking-wide">Laboratório</span>
-            </div>
+          <Link to="/landing" className="flex items-center">
+            <span className="text-lg font-bold tracking-tight text-foreground">Lab Dra. Dielem Feijó</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-7">
@@ -228,10 +222,7 @@ const ExamesPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[hsl(205,78%,45%)] flex items-center justify-center">
-                <Activity className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-white text-sm">VEROLIS</span>
+              <span className="font-bold text-white text-sm">Lab Dra. Dielem Feijó</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/60">
               <Link to="/portal-paciente" className="hover:text-white transition-colors">Portal do Paciente</Link>
@@ -240,7 +231,7 @@ const ExamesPage = () => {
             </div>
           </div>
           <p className="text-xs text-white/40 text-center mt-8">
-            © {new Date().getFullYear()} VEROLIS — Todos os direitos reservados. Em conformidade com a LGPD (Lei nº 13.709/2018).
+            © {new Date().getFullYear()} Laboratório Dra. Dielem Feijó — Todos os direitos reservados. Em conformidade com a LGPD (Lei nº 13.709/2018).
           </p>
         </div>
       </footer>

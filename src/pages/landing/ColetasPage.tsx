@@ -28,7 +28,7 @@ const ColetasPage = () => {
       title: "Coleta Domiciliar",
       image: coletaDomiciliarImg,
       description:
-        "Pensando na comodidade e no conforto de seus pacientes, o Laboratório VEROLIS oferece o serviço de Coleta Domiciliar, para que você possa cuidar da sua saúde no conforto da sua casa. Contamos com uma equipe de coletores rigorosamente treinados e capacitados para atendê-lo em seu domicílio, seja realizando a coleta de sangue ou transportando os diversos tipos de amostras para exames laboratoriais.",
+        "Pensando na comodidade e no conforto de seus pacientes, o Laboratório Dra. Dielem Feijó oferece o serviço de Coleta Domiciliar, para que você possa cuidar da sua saúde no conforto da sua casa. Contamos com uma equipe de coletores rigorosamente treinados e capacitados para atendê-lo em seu domicílio, seja realizando a coleta de sangue ou transportando os diversos tipos de amostras para exames laboratoriais.",
       color: "hsl(205,78%,45%)",
     },
     {
@@ -36,7 +36,7 @@ const ColetasPage = () => {
       title: "Coleta Empresarial",
       image: coletaEmpresarialImg,
       description:
-        'Para atender às necessidades das empresas na realização de exames e garantir o cuidado com os colaboradores, o Laboratório VEROLIS oferece duas opções: uma delas é disponibilizar uma estrutura "in loco", montada especialmente para a coleta de material dos colaboradores, seguindo rigorosamente as boas práticas ocupacionais; a outra opção é realizar os exames contratados em qualquer uma de nossas unidades.',
+        'Para atender às necessidades das empresas na realização de exames e garantir o cuidado com os colaboradores, o Laboratório Dra. Dielem Feijó oferece duas opções: uma delas é disponibilizar uma estrutura "in loco", montada especialmente para a coleta de material dos colaboradores, seguindo rigorosamente as boas práticas ocupacionais; a outra opção é realizar os exames contratados em qualquer uma de nossas unidades.',
       color: "hsl(205,78%,35%)",
     },
     {
@@ -78,14 +78,8 @@ const ColetasPage = () => {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white border-b border-border/40 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
-          <Link to="/landing" className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-[hsl(205,78%,28%)] flex items-center justify-center">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="text-lg font-bold tracking-tight text-foreground">VEROLIS</span>
-              <span className="text-[10px] text-muted-foreground tracking-wide">Laboratório</span>
-            </div>
+          <Link to="/landing" className="flex items-center">
+            <span className="text-lg font-bold tracking-tight text-foreground">Lab Dra. Dielem Feijó</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-7">
@@ -194,10 +188,7 @@ const ColetasPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[hsl(205,78%,45%)] flex items-center justify-center">
-                <Activity className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-white text-sm">VEROLIS</span>
+              <span className="font-bold text-white text-sm">Lab Dra. Dielem Feijó</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/60">
               <Link to="/portal-paciente" className="hover:text-white transition-colors">Portal do Paciente</Link>
@@ -206,7 +197,7 @@ const ColetasPage = () => {
             </div>
           </div>
           <p className="text-xs text-white/40 text-center mt-8">
-            © {new Date().getFullYear()} VEROLIS — Todos os direitos reservados. Em conformidade com a LGPD (Lei nº 13.709/2018).
+            © {new Date().getFullYear()} Laboratório Dra. Dielem Feijó — Todos os direitos reservados. Em conformidade com a LGPD (Lei nº 13.709/2018).
           </p>
         </div>
       </footer>
