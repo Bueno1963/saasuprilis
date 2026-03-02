@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Search, UserPlus, Pencil, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,9 +17,8 @@ import { patientSchema, PatientFormData, formatCPF, formatPhone } from "@/lib/va
 const Patients = () => {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<"create" | "success">("create");
-  const [createdPatient, setCreatedPatient] = useState<any>(null);
   const [editingPatient, setEditingPatient] = useState<any>(null);
+  const [pendingAction, setPendingAction] = useState<"save" | "continue" | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -45,11 +44,18 @@ const Patients = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
-      setCreatedPatient(data);
-      setMode("success");
       toast.success("Paciente cadastrado com sucesso!");
+      if (pendingAction === "continue") {
+        setOpen(false);
+        navigate("/pedidos", { state: { autoCreateForPatient: data } });
+      } else {
+        setOpen(false);
+      }
+      setEditingPatient(null);
+      setPendingAction(null);
     },
     onError: (e: any) => {
+      setPendingAction(null);
       if (e.message?.includes("duplicate")) {
         toast.error("CPF já cadastrado no sistema.");
       } else {
@@ -70,45 +76,44 @@ const Patients = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
-      setCreatedPatient(data);
-      setMode("success");
       toast.success("Paciente atualizado com sucesso!");
+      if (pendingAction === "continue") {
+        setOpen(false);
+        navigate("/pedidos", { state: { autoCreateForPatient: data } });
+      } else {
+        setOpen(false);
+      }
+      setEditingPatient(null);
+      setPendingAction(null);
     },
-    onError: (e: any) => toast.error(e.message || "Erro ao atualizar paciente"),
+    onError: (e: any) => {
+      setPendingAction(null);
+      toast.error(e.message || "Erro ao atualizar paciente");
+    },
   });
 
   const handleOpenCreate = () => {
     setEditingPatient(null);
-    setCreatedPatient(null);
-    setMode("create");
     setOpen(true);
   };
 
   const handleEditPatient = (patient: any) => {
     setEditingPatient(patient);
-    setCreatedPatient(null);
-    setMode("create");
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
-    setMode("create");
     setEditingPatient(null);
-    setCreatedPatient(null);
+    setPendingAction(null);
   };
 
-  const handleContinueService = () => {
-    if (createdPatient) {
-      handleClose();
-      navigate("/pedidos", { state: { autoCreateForPatient: createdPatient } });
-    }
-  };
-
-  const handleEditFromSuccess = () => {
-    if (createdPatient) {
-      setEditingPatient(createdPatient);
-      setMode("create");
+  const handleFormAction = (data: PatientFormData, action: "save" | "continue") => {
+    setPendingAction(action);
+    if (editingPatient) {
+      updateMutation.mutate({ ...data, id: editingPatient.id });
+    } else {
+      createMutation.mutate(data);
     }
   };
 
@@ -130,51 +135,24 @@ const Patients = () => {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {mode === "success" ? "Paciente Cadastrado" : editingPatient ? "Alterar Paciente" : "Cadastrar Paciente"}
+              {editingPatient ? "Alterar Paciente" : "Cadastrar Paciente"}
             </DialogTitle>
           </DialogHeader>
-
-          {mode === "success" && createdPatient ? (
-            <div className="space-y-4">
-              <div className="rounded-md bg-muted/50 p-4 space-y-2">
-                <p className="text-sm"><span className="font-medium">Nome:</span> {createdPatient.name}</p>
-                <p className="text-sm"><span className="font-medium">CPF:</span> {createdPatient.cpf}</p>
-                <p className="text-sm"><span className="font-medium">Convênio:</span> {createdPatient.insurance || "Particular"}</p>
-              </div>
-              <div className="flex items-center gap-3 pt-2">
-                <Button variant="outline" onClick={handleClose} className="flex-1">
-                  Salvar
-                </Button>
-                <Button variant="outline" onClick={handleEditFromSuccess} className="flex-1">
-                  <Pencil className="w-4 h-4 mr-2" />Alterar
-                </Button>
-                <Button onClick={handleContinueService} className="flex-1">
-                  <ArrowRight className="w-4 h-4 mr-2" />Continuar atendimento
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <PatientForm
-              onSubmit={data => {
-                if (editingPatient) {
-                  updateMutation.mutate({ ...data, id: editingPatient.id });
-                } else {
-                  createMutation.mutate(data);
-                }
-              }}
-              loading={createMutation.isPending || updateMutation.isPending}
-              initialData={editingPatient ? {
-                name: editingPatient.name,
-                cpf: editingPatient.cpf,
-                birth_date: editingPatient.birth_date,
-                gender: editingPatient.gender as "M" | "F",
-                phone: editingPatient.phone || "",
-                email: editingPatient.email || "",
-                insurance: editingPatient.insurance || "Particular",
-              } : undefined}
-              submitLabel={editingPatient ? "Salvar Alterações" : "Cadastrar Paciente"}
-            />
-          )}
+          <PatientForm
+            onSave={(data) => handleFormAction(data, "save")}
+            onContinue={(data) => handleFormAction(data, "continue")}
+            loading={createMutation.isPending || updateMutation.isPending}
+            initialData={editingPatient ? {
+              name: editingPatient.name,
+              cpf: editingPatient.cpf,
+              birth_date: editingPatient.birth_date,
+              gender: editingPatient.gender as "M" | "F",
+              phone: editingPatient.phone || "",
+              email: editingPatient.email || "",
+              insurance: editingPatient.insurance || "Particular",
+            } : undefined}
+            isEditing={!!editingPatient}
+          />
         </DialogContent>
       </Dialog>
 
@@ -231,11 +209,12 @@ const Patients = () => {
   );
 };
 
-const PatientForm = ({ onSubmit, loading, initialData, submitLabel }: {
-  onSubmit: (data: PatientFormData) => void;
+const PatientForm = ({ onSave, onContinue, loading, initialData, isEditing }: {
+  onSave: (data: PatientFormData) => void;
+  onContinue: (data: PatientFormData) => void;
   loading: boolean;
   initialData?: PatientFormData;
-  submitLabel?: string;
+  isEditing?: boolean;
 }) => {
   const [form, setForm] = useState({
     name: initialData?.name || "",
@@ -262,8 +241,6 @@ const PatientForm = ({ onSubmit, loading, initialData, submitLabel }: {
       .select("id, name, cpf")
       .eq("cpf", cpf)
       .maybeSingle();
-    
-    // If editing, ignore the current patient
     const isCurrentPatient = initialData && data?.cpf === initialData.cpf;
     setCpfCheck({ loading: false, found: isCurrentPatient ? null : data, checked: true });
   };
@@ -281,14 +258,12 @@ const PatientForm = ({ onSubmit, loading, initialData, submitLabel }: {
     } else {
       setErrors(e => { const n = { ...e }; delete n[field]; return n; });
     }
-
     if (field === "cpf") {
       checkCpfDuplicate(form.cpf);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateAndRun = (action: (data: PatientFormData) => void) => {
     if (cpfCheck.found) {
       toast.error("CPF já cadastrado no sistema.");
       return;
@@ -297,7 +272,7 @@ const PatientForm = ({ onSubmit, loading, initialData, submitLabel }: {
     const result = patientSchema.safeParse(form);
     if (result.success) {
       setErrors({});
-      onSubmit(result.data);
+      action(result.data);
     } else {
       const fieldErrors: Record<string, string> = {};
       result.error.issues.forEach(issue => {
@@ -311,8 +286,10 @@ const PatientForm = ({ onSubmit, loading, initialData, submitLabel }: {
   const fieldError = (field: string) =>
     touched[field] && errors[field] ? <p className="text-xs text-destructive mt-1">{errors[field]}</p> : null;
 
+  const isDisabled = loading || !!cpfCheck.found;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={e => { e.preventDefault(); validateAndRun(onSave); }} className="space-y-4">
       <div className="space-y-1">
         <Label htmlFor="name">Nome Completo <span className="text-destructive">*</span></Label>
         <Input id="name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} onBlur={() => handleBlur("name")} placeholder="Maria Silva Santos" className={touched.name && errors.name ? "border-destructive" : ""} />
@@ -375,9 +352,19 @@ const PatientForm = ({ onSubmit, loading, initialData, submitLabel }: {
         </div>
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading || !!cpfCheck.found}>
-        {loading ? "Salvando..." : (submitLabel || "Cadastrar Paciente")}
-      </Button>
+      <div className="flex items-center gap-3 pt-2">
+        <Button type="submit" variant="outline" className="flex-1" disabled={isDisabled}>
+          {loading ? "Salvando..." : "Salvar"}
+        </Button>
+        {isEditing && (
+          <Button type="button" variant="outline" className="flex-1" disabled={isDisabled} onClick={() => validateAndRun(onSave)}>
+            <Pencil className="w-4 h-4 mr-2" />Alterar
+          </Button>
+        )}
+        <Button type="button" className="flex-1" disabled={isDisabled} onClick={() => validateAndRun(onContinue)}>
+          <ArrowRight className="w-4 h-4 mr-2" />Continuar atendimento
+        </Button>
+      </div>
     </form>
   );
 };
