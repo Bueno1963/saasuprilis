@@ -39,6 +39,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import PortalPaciente from "./pages/portal/PortalPaciente";
 import PortalMedico from "./pages/portal/PortalMedico";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -135,6 +136,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/portal-paciente" element={<PortalPaciente />} />
             <Route path="/portal-medico" element={<PortalMedico />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/*" element={<ProtectedRoutes />} />
           </Routes>
         </AuthProvider>
