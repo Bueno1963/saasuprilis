@@ -17,6 +17,8 @@ import {
   Stethoscope,
   FlaskConical,
   Building2,
+  Menu,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -93,6 +95,19 @@ const faqItems = [
 
 const LandingPage = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { label: "Home", href: "#" },
+    { label: "Institucional", href: "#sobre", hasDropdown: true },
+    { label: "Unidades", href: "#sobre" },
+    { label: "Convênios", href: "#servicos" },
+    { label: "Exames", href: "#servicos" },
+    { label: "Coletas", href: "#servicos" },
+    { label: "Vacinas", href: "#servicos" },
+    { label: "Blog", href: "#duvidas" },
+    { label: "Contato", href: "#contato" },
+  ];
 
   return (
     <div className="min-h-screen bg-background font-sans">
@@ -155,43 +170,59 @@ const LandingPage = () => {
           </Link>
 
           <div className="hidden md:flex items-center gap-7">
-            <a href="#" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
-              Home
-            </a>
-            <a href="#sobre" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors flex items-center gap-1">
-              Institucional
-              <ChevronDown className="w-3.5 h-3.5" />
-            </a>
-            <a href="#sobre" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
-              Unidades
-            </a>
-            <a href="#servicos" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
-              Convênios
-            </a>
-            <a href="#servicos" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
-              Exames
-            </a>
-            <a href="#servicos" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
-              Coletas
-            </a>
-            <a href="#servicos" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
-              Vacinas
-            </a>
-            <a href="#duvidas" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
-              Blog
-            </a>
-            <a href="#contato" className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors">
-              Contato
-            </a>
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors flex items-center gap-1"
+              >
+                {link.label}
+                {link.hasDropdown && <ChevronDown className="w-3.5 h-3.5" />}
+              </a>
+            ))}
           </div>
 
-          {/* Mobile CTA */}
-          <div className="flex md:hidden items-center gap-2">
-            <Link to="/portal-paciente">
-              <Button size="sm" className="rounded-full px-4 text-xs">
-                Resultados
-              </Button>
-            </Link>
+          {/* Mobile hamburger */}
+          <button
+            className="flex md:hidden items-center justify-center w-10 h-10 rounded-lg hover:bg-muted transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Menu"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Mobile menu drawer */}
+        <div
+          className={cn(
+            "md:hidden overflow-hidden transition-all duration-300 bg-white border-t border-border/40",
+            mobileMenuOpen ? "max-h-[600px]" : "max-h-0"
+          )}
+        >
+          <div className="px-6 py-4 space-y-1">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between py-3 text-sm font-medium text-foreground hover:text-[hsl(205,78%,45%)] transition-colors border-b border-border/30 last:border-0"
+              >
+                {link.label}
+                {link.hasDropdown && <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+              </a>
+            ))}
+            <div className="flex flex-col gap-2 pt-4">
+              <Link to="/portal-paciente" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full rounded h-10 text-sm font-semibold bg-[hsl(205,78%,25%)] hover:bg-[hsl(205,78%,30%)] text-white">
+                  Resultados de Exames
+                </Button>
+              </Link>
+              <Link to="/portal-paciente" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full rounded h-10 text-sm font-semibold bg-[hsl(205,78%,45%)] hover:bg-[hsl(205,78%,50%)] text-white">
+                  Agende seu Exame
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
