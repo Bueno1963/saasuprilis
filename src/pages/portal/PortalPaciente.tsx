@@ -327,12 +327,16 @@ const PortalPaciente = () => {
 
         <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12 flex-1">
           {/* Logo */}
-          <div>
+          <div className="flex items-center gap-3">
             <img
               src={logoDraDielem}
               alt="Laboratório Dra. Dielem Feijó"
               className="h-16 w-auto rounded-lg bg-white/95 p-2 shadow-lg"
             />
+            <div>
+              <h1 className="text-lg font-bold tracking-tight">Laboratório Dra. Dielem</h1>
+              <p className="text-xs text-white/60">Sistema de Gestão Laboratorial</p>
+            </div>
           </div>
 
           {/* Welcome message */}
