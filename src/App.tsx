@@ -37,6 +37,8 @@ import ImportarExtratoPage from "./pages/financeiro/ImportarExtratoPage";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import PortalPaciente from "./pages/portal/PortalPaciente";
+import PortalMedico from "./pages/portal/PortalMedico";
 
 const queryClient = new QueryClient();
 
@@ -131,6 +133,8 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<AuthRoute />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/portal-paciente" element={<PortalPaciente />} />
+            <Route path="/portal-medico" element={<PortalMedico />} />
             <Route path="/*" element={<ProtectedRoutes />} />
           </Routes>
         </AuthProvider>

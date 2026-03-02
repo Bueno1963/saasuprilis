@@ -749,6 +749,63 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_access_logs: {
+        Row: {
+          access_ip: string | null
+          access_method: string
+          accessed_at: string
+          created_at: string
+          data_returned: Json | null
+          doctor_name: string | null
+          id: string
+          order_id: string | null
+          patient_id: string | null
+          portal_type: string
+          user_agent: string | null
+        }
+        Insert: {
+          access_ip?: string | null
+          access_method?: string
+          accessed_at?: string
+          created_at?: string
+          data_returned?: Json | null
+          doctor_name?: string | null
+          id?: string
+          order_id?: string | null
+          patient_id?: string | null
+          portal_type?: string
+          user_agent?: string | null
+        }
+        Update: {
+          access_ip?: string | null
+          access_method?: string
+          accessed_at?: string
+          created_at?: string
+          data_returned?: Json | null
+          doctor_name?: string | null
+          id?: string
+          order_id?: string | null
+          patient_id?: string | null
+          portal_type?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_access_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_access_logs_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
