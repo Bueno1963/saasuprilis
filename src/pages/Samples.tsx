@@ -1,12 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, Barcode, Plus, TestTubes, Shield, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { Search, Barcode, Plus, TestTubes, Shield, ChevronDown, Calendar } from "lucide-react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -31,6 +31,7 @@ const STATUS_FLOW = [
 
 const Samples = () => {
   const [search, setSearch] = useState("");
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -79,7 +80,6 @@ const Samples = () => {
       const { error } = await supabase.from("samples").update({ status }).eq("id", id);
       if (error) throw error;
 
-      // Log tracking event for RDC 978 compliance
       let performerName = "";
       if (user?.id) {
         const { data: profile } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).single();
@@ -103,10 +103,34 @@ const Samples = () => {
     onError: (e: any) => toast.error(e.message || "Erro ao atualizar status"),
   });
 
-  const filtered = samples.filter(s => {
-    const patientName = (s.orders as any)?.patients?.name || "";
-    return patientName.toLowerCase().includes(search.toLowerCase()) || s.barcode.includes(search);
-  });
+  // Filter by date and search
+  const filteredByDate = useMemo(() => {
+    return samples.filter(s => {
+      const sampleDate = new Date(s.collected_at).toISOString().split("T")[0];
+      return sampleDate === selectedDate;
+    });
+  }, [samples, selectedDate]);
+
+  const filtered = useMemo(() => {
+    if (!search) return filteredByDate;
+    const q = search.toLowerCase();
+    return filteredByDate.filter(s => {
+      const patientName = (s.orders as any)?.patients?.name || "";
+      return patientName.toLowerCase().includes(q) || s.barcode.includes(search);
+    });
+  }, [filteredByDate, search]);
+
+  // Group by sector
+  const groupedBySector = useMemo(() => {
+    const groups: Record<string, typeof filtered> = {};
+    for (const s of filtered) {
+      const sector = s.sector || "Sem Setor";
+      if (!groups[sector]) groups[sector] = [];
+      groups[sector].push(s);
+    }
+    // Sort sectors alphabetically
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [filtered]);
 
   return (
     <div className="p-6 space-y-6">
@@ -144,72 +168,95 @@ const Samples = () => {
         <TabsContent value="amostras">
           <Card>
             <CardHeader className="pb-3">
-              <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Buscar por código de barras ou paciente..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input placeholder="Buscar por código de barras ou paciente..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <Input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} className="w-40" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {filtered.length} amostra{filtered.length !== 1 ? "s" : ""} em {new Date(selectedDate + "T12:00:00").toLocaleDateString("pt-BR")}
+                </p>
               </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <p className="text-center py-8 text-muted-foreground">Carregando...</p>
               ) : filtered.length === 0 ? (
-                <p className="text-center py-8 text-muted-foreground">Nenhuma amostra encontrada</p>
+                <div className="text-center py-12 text-muted-foreground">
+                  <TestTubes className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                  <p>Nenhuma amostra encontrada para {new Date(selectedDate + "T12:00:00").toLocaleDateString("pt-BR")}</p>
+                </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Código de Barras</TableHead>
-                      <TableHead>Pedido</TableHead>
-                      <TableHead>Paciente</TableHead>
-                      <TableHead>Material</TableHead>
-                      <TableHead>Setor</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Coleta</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filtered.map(sample => (
-                      <TableRow key={sample.id} className={(sample as any).is_rejected ? "bg-destructive/5" : ""}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Barcode className="w-4 h-4 text-muted-foreground" />
-                            <span className="font-mono text-sm">{sample.barcode}</span>
-                            {(sample as any).is_rejected && (
-                              <span className="text-xs text-destructive font-medium">REJEITADA</span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">{(sample.orders as any)?.order_number}</TableCell>
-                        <TableCell>{(sample.orders as any)?.patients?.name}</TableCell>
-                        <TableCell className="text-sm">{sample.sample_type}</TableCell>
-                        <TableCell className="text-sm">{sample.sector}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
-                                <StatusBadge status={sample.status} />
-                                <ChevronDown className="w-3 h-3 text-muted-foreground" />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start">
-                              {STATUS_FLOW.map(s => (
-                                <DropdownMenuItem
-                                  key={s.value}
-                                  disabled={sample.status === s.value}
-                                  onClick={() => updateStatusMutation.mutate({ id: sample.id, status: s.value, previousStatus: sample.status })}
-                                  className={sample.status === s.value ? "font-semibold" : ""}
-                                >
-                                  <StatusBadge status={s.value} />
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                        <TableCell className="text-sm">{new Date(sample.collected_at).toLocaleString("pt-BR")}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <div className="space-y-6">
+                  {groupedBySector.map(([sector, sectorSamples]) => (
+                    <div key={sector}>
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b">
+                        <TestTubes className="w-4 h-4 text-primary" />
+                        <h3 className="font-semibold text-sm text-foreground">{sector}</h3>
+                        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                          {sectorSamples.length}
+                        </span>
+                      </div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Código de Barras</TableHead>
+                            <TableHead>Pedido</TableHead>
+                            <TableHead>Paciente</TableHead>
+                            <TableHead>Material</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Coleta</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {sectorSamples.map(sample => (
+                            <TableRow key={sample.id} className={(sample as any).is_rejected ? "bg-destructive/5" : ""}>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Barcode className="w-4 h-4 text-muted-foreground" />
+                                  <span className="font-mono text-sm">{sample.barcode}</span>
+                                  {(sample as any).is_rejected && (
+                                    <span className="text-xs text-destructive font-medium">REJEITADA</span>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell className="font-mono text-sm">{(sample.orders as any)?.order_number}</TableCell>
+                              <TableCell>{(sample.orders as any)?.patients?.name}</TableCell>
+                              <TableCell className="text-sm">{sample.sample_type}</TableCell>
+                              <TableCell>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button className="inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
+                                      <StatusBadge status={sample.status} />
+                                      <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="start">
+                                    {STATUS_FLOW.map(s => (
+                                      <DropdownMenuItem
+                                        key={s.value}
+                                        disabled={sample.status === s.value}
+                                        onClick={() => updateStatusMutation.mutate({ id: sample.id, status: s.value, previousStatus: sample.status })}
+                                        className={sample.status === s.value ? "font-semibold" : ""}
+                                      >
+                                        <StatusBadge status={s.value} />
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                              <TableCell className="text-sm">{new Date(sample.collected_at).toLocaleString("pt-BR")}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ))}
+                </div>
               )}
             </CardContent>
           </Card>
