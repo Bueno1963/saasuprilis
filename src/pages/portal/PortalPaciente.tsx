@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +43,7 @@ type PortalTab = "resultados" | "agendamento";
 
 const PortalPaciente = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<PortalTab>(
     searchParams.get("tab") === "agendamento" ? "agendamento" : "resultados"
   );
@@ -52,7 +53,7 @@ const PortalPaciente = () => {
   const [birthDate, setBirthDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [data, setData] = useState<ResultData | null>(null);
+  const [data, setData] = useState<any>(null);
 
   // === Scheduling state ===
   const [schedCpf, setSchedCpf] = useState("");
@@ -116,7 +117,9 @@ const PortalPaciente = () => {
       if (result?.error) {
         setError(result.error);
       } else {
-        setData(result);
+        // Store data and navigate to results page
+        sessionStorage.setItem("portal-results", JSON.stringify(result));
+        navigate("/portal-resultados");
       }
     } catch (err: any) {
       setError(err?.message || "Erro ao consultar resultados. Tente novamente.");
@@ -209,113 +212,8 @@ const PortalPaciente = () => {
     setSchedBirthDate("");
   };
 
-  const getFlagColor = (flag: string) => {
-    if (flag === "high" || flag === "critical_high") return "text-red-600 bg-red-50";
-    if (flag === "low" || flag === "critical_low") return "text-blue-600 bg-blue-50";
-    return "text-emerald-700 bg-emerald-50";
-  };
-
-  const getFlagLabel = (flag: string) => {
-    const map: Record<string, string> = {
-      normal: "Normal", high: "Alto", low: "Baixo",
-      critical_high: "Crítico Alto", critical_low: "Crítico Baixo",
-    };
-    return map[flag] || flag;
-  };
-
   const today = format(new Date(), "yyyy-MM-dd");
 
-  // When results are loaded, show full-width results view
-  if (data) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-        <header className="bg-[hsl(205,78%,20%)] text-white">
-          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-            <img src={logoDraDielem} alt="Logo" className="h-12 w-auto rounded bg-white p-1" />
-            <div>
-              <h1 className="text-lg font-bold tracking-tight">Portal do Paciente</h1>
-              <p className="text-xs text-white/70">Resultados de Exames</p>
-            </div>
-          </div>
-        </header>
-        <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-          {data.lab && (
-            <div className="text-center border-b border-slate-200 pb-4">
-              <h2 className="text-lg font-bold text-foreground">{data.lab.name || "Laboratório"}</h2>
-              {data.lab.address && (
-                <p className="text-xs text-muted-foreground">
-                  {data.lab.address}{data.lab.city ? `, ${data.lab.city}` : ""}{data.lab.state ? ` - ${data.lab.state}` : ""}
-                </p>
-              )}
-              {data.lab.phone && <p className="text-xs text-muted-foreground">Tel: {data.lab.phone}</p>}
-            </div>
-          )}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Paciente:</span>
-                  <p className="font-medium">{data.patient.name}</p>
-                  <p className="text-xs text-muted-foreground">CPF: {data.patient.cpf_masked}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Pedido:</span>
-                  <p className="font-medium">{data.order.order_number}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Dr(a). {data.order.doctor_name} • {new Date(data.order.created_at).toLocaleDateString("pt-BR")}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="flex items-center gap-2 text-base font-semibold mb-4">
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-                Resultados Liberados ({data.results.length})
-              </h3>
-              <div className="space-y-3">
-                {data.results.map((result) => (
-                  <div key={result.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50/50">
-                    <div className="space-y-0.5">
-                      <p className="font-medium text-sm">{result.exam}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Ref: {result.reference_range || "—"} {result.unit && `(${result.unit})`}
-                      </p>
-                      {result.released_at && (
-                        <p className="text-[10px] text-muted-foreground">
-                          Liberado em {new Date(result.released_at).toLocaleString("pt-BR")}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right space-y-1">
-                      <p className="font-semibold text-sm">{result.value} {result.unit}</p>
-                      <Badge variant="outline" className={cn("text-[10px]", getFlagColor(result.flag))}>
-                        {getFlagLabel(result.flag)}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <div className="text-center space-y-2 pt-4 border-t border-slate-200">
-            {data.lab && (
-              <p className="text-xs text-muted-foreground">
-                Resp. Técnico: {data.lab.technical_responsible} — CRM {data.lab.crm_responsible}
-              </p>
-            )}
-            <p className="text-[10px] text-muted-foreground">
-              Este documento é uma visualização digital. Acesso registrado para fins de auditoria (LGPD).
-            </p>
-            <Button variant="outline" size="sm" onClick={() => { setData(null); setOrderNumber(""); setBirthDate(""); }}>
-              Nova Consulta
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
