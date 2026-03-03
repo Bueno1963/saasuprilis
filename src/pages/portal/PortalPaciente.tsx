@@ -318,388 +318,367 @@ const PortalPaciente = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Left Panel - Branding */}
-      <div className="lg:w-1/2 bg-gradient-to-br from-[hsl(205,78%,20%)] via-[hsl(205,78%,25%)] to-[hsl(205,70%,30%)] text-white relative overflow-hidden flex flex-col">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-20 left-0 w-48 h-48 bg-white/5 rounded-full -translate-x-1/2" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="flex w-full max-w-[860px] min-h-[480px] rounded-2xl overflow-hidden shadow-2xl border border-border/40">
+        {/* Left Panel - Branding */}
+        <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
+          {/* Gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] via-[hsl(205,70%,35%)] to-[hsl(var(--accent))]" />
+          {/* Subtle pattern overlay */}
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: `radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)`,
+            backgroundSize: '40px 40px'
+          }} />
 
-        <div className="relative z-10 flex flex-col h-full p-8 lg:p-12">
-          {/* Logo - top right area */}
-          <div className="flex items-center gap-3 justify-end">
-            <img
-              src={logoDraDielem}
-              alt="Laboratório Dra. Dielem Feijó"
-              className="h-11 w-auto rounded-lg bg-white/95 p-1.5 shadow-lg"
-            />
-            <div>
-              <h1 className="text-sm font-bold tracking-tight">Laboratório Dra. Dielem</h1>
-              <p className="text-[10px] text-white/60">Sistema de Gestão Laboratorial</p>
+          <div className="relative z-10 flex flex-col justify-between p-7 w-full">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <img
+                src={logoDraDielem}
+                alt="Laboratório Dra. Dielem Feijó"
+                className="h-9 w-auto rounded-lg bg-white/95 p-1 shadow-lg"
+              />
+            </div>
+
+            {/* Main content */}
+            <div className="space-y-3 max-w-sm">
+              <h1 className="text-2xl font-bold text-white leading-tight">
+                Portal do{" "}
+                <span className="text-[hsl(170,80%,70%)]">Paciente</span>
+              </h1>
+              <p className="text-white/75 text-xs leading-relaxed">
+                Acesse seus resultados de exames e agende seus atendimentos de forma rápida e segura. 
+                Trabalhamos com tecnologia de ponta para garantir a fidelidade dos seus resultados.
+              </p>
+              <p className="text-sm font-semibold text-white/90 font-serif italic">
+                — Dra. Dielem Feijó
+              </p>
+            </div>
+
+            {/* Footer */}
+            <p className="text-white/40 text-[10px]">© {new Date().getFullYear()} — Todos os direitos reservados</p>
+          </div>
+        </div>
+
+        {/* Right Panel - Form */}
+        <div className="flex-1 flex flex-col bg-card">
+          {/* Tab Switcher */}
+          <div className="border-b border-border/60">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab("resultados")}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-3 px-4 text-xs font-semibold border-b-2 transition-all",
+                  activeTab === "resultados"
+                    ? "border-accent text-accent"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <FileText className="w-4 h-4" />
+                Resultados
+              </button>
+              <button
+                onClick={() => setActiveTab("agendamento")}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-3 px-4 text-xs font-semibold border-b-2 transition-all",
+                  activeTab === "agendamento"
+                    ? "border-accent text-accent"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <CalendarPlus className="w-4 h-4" />
+                Agendar Exame
+              </button>
             </div>
           </div>
 
-          {/* Welcome message - centered vertically */}
-          <div className="flex-1 flex flex-col justify-center space-y-5 max-w-md">
-            <p className="text-base text-white/90 font-medium">
-              Prezado paciente,
-            </p>
-            <blockquote className="text-sm leading-relaxed text-white/80 italic border-l-2 border-white/30 pl-4">
-              "Ficamos muito Felizes por escolher nosso Laboratório, trabalhamos com tecnologia de ponta para garantir a fidelidade do resultado. Seu diagnóstico preciso é o produto final do nosso esforço"
-            </blockquote>
-            <p className="text-base font-semibold text-white/95 font-serif italic">
-              Dra. Dielem Feijó
-            </p>
-          </div>
+          {/* Form Content */}
+          <div className="flex-1 flex items-center justify-center p-5 sm:p-8 overflow-y-auto">
+            <div className="w-full max-w-sm space-y-5">
+              {/* Mobile logo */}
+              <div className="lg:hidden flex items-center gap-3 justify-center mb-2">
+                <img src={logoDraDielem} alt="Logo" className="h-9 w-auto rounded-lg" />
+              </div>
 
-          {/* Footer */}
-          <p className="text-xs text-white/40">
-            © {new Date().getFullYear()} — Todos os direitos reservados
-          </p>
-        </div>
-      </div>
-
-      {/* Right Panel - Forms */}
-      <div className="lg:w-1/2 flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50">
-        {/* Tab Switcher */}
-        <div className="border-b border-slate-200 bg-white">
-          <div className="flex max-w-lg mx-auto">
-            <button
-              onClick={() => setActiveTab("resultados")}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-3.5 px-6 text-sm font-semibold border-b-2 transition-all",
-                activeTab === "resultados"
-                  ? "border-[hsl(205,78%,35%)] text-[hsl(205,78%,35%)]"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <FileText className="w-4 h-4" />
-              Resultados
-            </button>
-            <button
-              onClick={() => setActiveTab("agendamento")}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-3.5 px-6 text-sm font-semibold border-b-2 transition-all",
-                activeTab === "agendamento"
-                  ? "border-[hsl(205,78%,35%)] text-[hsl(205,78%,35%)]"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <CalendarPlus className="w-4 h-4" />
-              Agendar Exame
-            </button>
-          </div>
-        </div>
-
-        {/* Form Content */}
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-10 overflow-y-auto">
-          <div className="w-full max-w-md space-y-5">
-            {/* ===================== RESULTADOS TAB ===================== */}
-            {activeTab === "resultados" && (
-              <>
-                <div className="text-center space-y-2">
-                  <div className="w-12 h-12 rounded-xl bg-[hsl(205,78%,35%)]/10 flex items-center justify-center mx-auto">
-                    <FileText className="w-6 h-6 text-[hsl(205,78%,35%)]" />
+              {/* ===================== RESULTADOS TAB ===================== */}
+              {activeTab === "resultados" && (
+                <>
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground">Consultar Resultados</h2>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Informe o protocolo e data de nascimento
+                    </p>
                   </div>
-                  <h2 className="text-xl font-bold text-foreground">Consultar Resultados</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Informe o número do pedido e sua data de nascimento para acessar seus exames.
-                  </p>
-                </div>
 
-                <Card className="shadow-lg border-slate-200/80">
-                  <CardContent className="pt-6">
-                    <form onSubmit={handleSearch} className="space-y-5">
-                      <div className="space-y-2">
-                        <Label htmlFor="order" className="text-sm font-semibold text-[hsl(205,78%,25%)]">
-                          Protocolo de atendimento
-                        </Label>
+                  <form onSubmit={handleSearch} className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="order">Protocolo de atendimento</Label>
+                      <div className="relative">
+                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="order"
                           placeholder="Ex: ORD-2026-001"
                           value={orderNumber}
                           onChange={(e) => setOrderNumber(e.target.value)}
                           required
-                          className="h-12 text-sm"
+                          className="pl-10 h-11 border-border/60 focus:border-accent"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="birthdate" className="text-sm font-semibold text-[hsl(205,78%,25%)]">
-                          Data nascimento
-                        </Label>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="birthdate">Data de nascimento</Label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="birthdate"
                           type="date"
                           value={birthDate}
                           onChange={(e) => setBirthDate(e.target.value)}
                           required
-                          className="h-12 text-sm"
+                          className="pl-10 h-11 border-border/60 focus:border-accent"
                         />
                       </div>
-
-                      {error && (
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                          <AlertCircle className="w-4 h-4 shrink-0" />
-                          {error}
-                        </div>
-                      )}
-
-                      <Button
-                        type="submit"
-                        className="w-full h-12 text-sm font-semibold bg-[hsl(205,78%,35%)] hover:bg-[hsl(205,78%,30%)] text-white rounded-lg"
-                        disabled={loading}
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Consultando...
-                          </>
-                        ) : (
-                          <>
-                            <Search className="w-4 h-4 mr-2" />
-                            Consultar Resultados
-                          </>
-                        )}
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-
-                <div className="text-center space-y-1 pt-2">
-                  <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                    <Shield className="w-3 h-3" />
-                    Seus dados são protegidos conforme a LGPD
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Todo acesso é registrado para sua segurança
-                  </p>
-                </div>
-              </>
-            )}
-
-            {/* ===================== AGENDAMENTO TAB ===================== */}
-            {activeTab === "agendamento" && (
-              <>
-                {schedSuccess ? (
-                  <div className="text-center space-y-4">
-                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto">
-                      <CheckCircle className="w-8 h-8 text-emerald-600" />
                     </div>
-                    <h2 className="text-xl font-semibold text-foreground">Agendamento Confirmado!</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Seu exame foi agendado para{" "}
-                      <strong>{schedForm.date ? format(new Date(schedForm.date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR }) : ""}</strong>{" "}
-                      às <strong>{schedForm.time}</strong>.
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Compareça ao laboratório no horário agendado com documento de identidade e pedido médico.
-                    </p>
-                    <Button variant="outline" onClick={resetSchedule}>
-                      Novo Agendamento
-                    </Button>
-                  </div>
-                ) : !schedPatient ? (
-                  <>
-                    <div className="text-center space-y-2">
-                      <div className="w-14 h-14 rounded-2xl bg-[hsl(205,78%,35%)]/10 flex items-center justify-center mx-auto">
-                        <CalendarPlus className="w-7 h-7 text-[hsl(205,78%,35%)]" />
+
+                    {error && (
+                      <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        {error}
                       </div>
-                      <h2 className="text-xl font-bold text-foreground">Agendar Exame</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Informe seu CPF e data de nascimento para se identificar.
-                      </p>
-                    </div>
+                    )}
 
-                    <Card className="shadow-lg border-slate-200/80">
-                      <CardContent className="pt-6">
-                        <form onSubmit={handleIdentify} className="space-y-5">
-                          <div className="space-y-2">
-                            <Label htmlFor="sched-cpf" className="text-sm font-semibold text-[hsl(205,78%,25%)]">CPF</Label>
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Consultando...
+                        </>
+                      ) : (
+                        <>
+                          Consultar Resultados
+                          <Search className="h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  </form>
+
+                  <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Dados protegidos conforme a LGPD
+                  </p>
+                </>
+              )}
+
+              {/* ===================== AGENDAMENTO TAB ===================== */}
+              {activeTab === "agendamento" && (
+                <>
+                  {schedSuccess ? (
+                    <div className="text-center space-y-4">
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto">
+                        <CheckCircle className="w-7 h-7 text-emerald-600" />
+                      </div>
+                      <h2 className="text-xl font-semibold text-foreground">Agendamento Confirmado!</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Seu exame foi agendado para{" "}
+                        <strong>{schedForm.date ? format(new Date(schedForm.date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR }) : ""}</strong>{" "}
+                        às <strong>{schedForm.time}</strong>.
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Compareça com documento de identidade e pedido médico.
+                      </p>
+                      <Button variant="outline" onClick={resetSchedule}>
+                        Novo Agendamento
+                      </Button>
+                    </div>
+                  ) : !schedPatient ? (
+                    <>
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground">Agendar Exame</h2>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Informe seu CPF e data de nascimento
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleIdentify} className="space-y-5">
+                        <div className="space-y-2">
+                          <Label htmlFor="sched-cpf">CPF</Label>
+                          <div className="relative">
+                            <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                               id="sched-cpf"
                               placeholder="000.000.000-00"
                               value={schedCpf}
                               onChange={(e) => setSchedCpf(e.target.value)}
                               required
-                              className="h-12 text-sm"
+                              className="pl-10 h-11 border-border/60 focus:border-accent"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="sched-birth" className="text-sm font-semibold text-[hsl(205,78%,25%)]">Data de Nascimento</Label>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sched-birth">Data de Nascimento</Label>
+                          <div className="relative">
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                               id="sched-birth"
                               type="date"
                               value={schedBirthDate}
                               onChange={(e) => setSchedBirthDate(e.target.value)}
                               required
-                              className="h-12 text-sm"
+                              className="pl-10 h-11 border-border/60 focus:border-accent"
                             />
                           </div>
+                        </div>
 
-                          {schedError && (
-                            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                              <AlertCircle className="w-4 h-4 shrink-0" />
-                              {schedError}
-                            </div>
+                        {schedError && (
+                          <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            {schedError}
+                          </div>
+                        )}
+
+                        <Button
+                          type="submit"
+                          disabled={schedLoading}
+                          className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
+                        >
+                          {schedLoading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Verificando...
+                            </>
+                          ) : (
+                            <>
+                              Identificar
+                              <Search className="h-4 w-4" />
+                            </>
                           )}
-
-                          <Button
-                            type="submit"
-                            className="w-full h-12 text-sm font-semibold bg-[hsl(205,78%,35%)] hover:bg-[hsl(205,78%,30%)] text-white rounded-lg"
-                            disabled={schedLoading}
-                          >
-                            {schedLoading ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Verificando...
-                              </>
-                            ) : (
-                              <>
-                                <Search className="w-4 h-4 mr-2" />
-                                Identificar
-                              </>
-                            )}
-                          </Button>
-                        </form>
-                      </CardContent>
-                    </Card>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-center space-y-2">
-                      <div className="w-14 h-14 rounded-2xl bg-[hsl(205,78%,35%)]/10 flex items-center justify-center mx-auto">
-                        <Calendar className="w-7 h-7 text-[hsl(205,78%,35%)]" />
+                        </Button>
+                      </form>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground">Escolha Data e Horário</h2>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Olá, <strong>{schedPatient.name}</strong>!
+                        </p>
                       </div>
-                      <h2 className="text-xl font-bold text-foreground">Escolha Data e Horário</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Olá, <strong>{schedPatient.name}</strong>! Selecione quando deseja realizar seu exame.
-                      </p>
-                    </div>
 
-                    <Card className="shadow-lg border-slate-200/80">
-                      <CardContent className="pt-6">
-                        <form onSubmit={handleSchedule} className="space-y-4">
+                      <form onSubmit={handleSchedule} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="sched-date">Data</Label>
+                          <Input
+                            id="sched-date"
+                            type="date"
+                            min={today}
+                            value={schedForm.date}
+                            onChange={(e) => setSchedForm((f) => ({ ...f, date: e.target.value }))}
+                            required
+                            className="h-11 border-border/60 focus:border-accent"
+                          />
+                        </div>
+                        {schedForm.date && (
                           <div className="space-y-2">
-                            <Label htmlFor="sched-date" className="text-sm font-semibold text-[hsl(205,78%,25%)]">Data</Label>
-                            <Input
-                              id="sched-date"
-                              type="date"
-                              min={today}
-                              value={schedForm.date}
-                              onChange={(e) => setSchedForm((f) => ({ ...f, date: e.target.value }))}
-                              required
-                              className="h-12 text-sm"
-                            />
-                          </div>
-                          {schedForm.date && (
-                            <div className="space-y-2">
-                              <Label className="text-sm font-semibold text-[hsl(205,78%,25%)]">Horário disponível</Label>
-                              {slotsLoading ? (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                  Verificando disponibilidade...
-                                </div>
-                              ) : (
-                                <div className="grid grid-cols-4 gap-1.5">
-                                  {TIME_SLOTS.map((slot) => {
-                                    const isOccupied = occupiedSlots.has(slot);
-                                    const isSelected = schedForm.time === slot;
-                                    return (
-                                      <button
-                                        key={slot}
-                                        type="button"
-                                        disabled={isOccupied}
-                                        onClick={() => setSchedForm((f) => ({ ...f, time: slot }))}
-                                        className={cn(
-                                          "py-2 px-1 rounded-md text-xs font-medium border transition-all",
-                                          isOccupied
-                                            ? "bg-muted text-muted-foreground/40 border-border cursor-not-allowed line-through"
-                                            : isSelected
-                                              ? "bg-[hsl(205,78%,35%)] text-white border-[hsl(205,78%,35%)] shadow-sm"
-                                              : "bg-card text-foreground border-border hover:border-[hsl(205,78%,45%)] hover:bg-[hsl(205,78%,95%)]"
-                                        )}
-                                      >
-                                        <Clock className="w-3 h-3 inline mr-0.5" />
-                                        {slot}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                              {!slotsLoading && occupiedSlots.size > 0 && (
-                                <p className="text-[11px] text-muted-foreground">
-                                  Horários riscados já estão ocupados.
-                                </p>
-                              )}
-                            </div>
-                          )}
-                          <div className="space-y-2">
-                            <Label className="text-sm font-semibold text-[hsl(205,78%,25%)]">Tipo</Label>
-                            <Select value={schedForm.type} onValueChange={(v) => setSchedForm((f) => ({ ...f, type: v }))}>
-                              <SelectTrigger className="h-12">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="exame">Exame</SelectItem>
-                                <SelectItem value="coleta">Coleta</SelectItem>
-                                <SelectItem value="retorno">Retorno</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-sm font-semibold text-[hsl(205,78%,25%)]">Observações (opcional)</Label>
-                            <Textarea
-                              value={schedForm.notes}
-                              onChange={(e) => setSchedForm((f) => ({ ...f, notes: e.target.value }))}
-                              placeholder="Informações adicionais..."
-                              rows={2}
-                            />
-                          </div>
-
-                          {schedError && (
-                            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                              <AlertCircle className="w-4 h-4 shrink-0" />
-                              {schedError}
-                            </div>
-                          )}
-
-                          <Button
-                            type="submit"
-                            className="w-full h-12 text-sm font-semibold bg-[hsl(205,78%,35%)] hover:bg-[hsl(205,78%,30%)] text-white rounded-lg"
-                            disabled={schedLoading || !schedForm.time || !schedForm.date}
-                          >
-                            {schedLoading ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Agendando...
-                              </>
+                            <Label>Horário disponível</Label>
+                            {slotsLoading ? (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Verificando...
+                              </div>
                             ) : (
-                              <>
-                                <CalendarPlus className="w-4 h-4 mr-2" />
-                                Confirmar Agendamento
-                              </>
+                              <div className="grid grid-cols-4 gap-1.5">
+                                {TIME_SLOTS.map((slot) => {
+                                  const isOccupied = occupiedSlots.has(slot);
+                                  const isSelected = schedForm.time === slot;
+                                  return (
+                                    <button
+                                      key={slot}
+                                      type="button"
+                                      disabled={isOccupied}
+                                      onClick={() => setSchedForm((f) => ({ ...f, time: slot }))}
+                                      className={cn(
+                                        "py-2 px-1 rounded-md text-xs font-medium border transition-all",
+                                        isOccupied
+                                          ? "bg-muted text-muted-foreground/40 border-border cursor-not-allowed line-through"
+                                          : isSelected
+                                            ? "bg-accent text-accent-foreground border-accent shadow-sm"
+                                            : "bg-card text-foreground border-border hover:border-accent/40 hover:bg-muted/50"
+                                      )}
+                                    >
+                                      <Clock className="w-3 h-3 inline mr-0.5" />
+                                      {slot}
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             )}
-                          </Button>
-                          <Button type="button" variant="ghost" className="w-full" onClick={resetSchedule}>
-                            Voltar
-                          </Button>
-                        </form>
-                      </CardContent>
-                    </Card>
-                  </>
-                )}
+                          </div>
+                        )}
+                        <div className="space-y-2">
+                          <Label>Tipo</Label>
+                          <Select value={schedForm.type} onValueChange={(v) => setSchedForm((f) => ({ ...f, type: v }))}>
+                            <SelectTrigger className="h-11">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="exame">Exame</SelectItem>
+                              <SelectItem value="coleta">Coleta</SelectItem>
+                              <SelectItem value="retorno">Retorno</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Observações (opcional)</Label>
+                          <Textarea
+                            value={schedForm.notes}
+                            onChange={(e) => setSchedForm((f) => ({ ...f, notes: e.target.value }))}
+                            placeholder="Informações adicionais..."
+                            rows={2}
+                          />
+                        </div>
 
-                <div className="text-center space-y-1 pt-2">
-                  <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                        {schedError && (
+                          <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            {schedError}
+                          </div>
+                        )}
+
+                        <Button
+                          type="submit"
+                          className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
+                          disabled={schedLoading || !schedForm.time || !schedForm.date}
+                        >
+                          {schedLoading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Agendando...
+                            </>
+                          ) : (
+                            <>
+                              Confirmar Agendamento
+                              <CalendarPlus className="h-4 w-4" />
+                            </>
+                          )}
+                        </Button>
+                        <Button type="button" variant="ghost" className="w-full" onClick={resetSchedule}>
+                          Voltar
+                        </Button>
+                      </form>
+                    </>
+                  )}
+
+                  <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1">
                     <Shield className="w-3 h-3" />
-                    Seus dados são protegidos conforme a LGPD
+                    Dados protegidos conforme a LGPD
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    Todo acesso é registrado para sua segurança
-                  </p>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
