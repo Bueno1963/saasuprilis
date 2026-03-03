@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Activity, Stethoscope, Shield, Search, AlertCircle, CheckCircle, Loader2, User, FileText } from "lucide-react";
+import { Stethoscope, Shield, Search, AlertCircle, CheckCircle, Loader2, User, FileText, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import logoDraDielem from "@/assets/logo-dra-dielem.png";
 
 interface OrderResult {
   order_number: string;
@@ -75,160 +76,205 @@ const PortalMedico = () => {
     return map[flag] || flag;
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-teal-50/20 to-slate-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center">
-            <Stethoscope className="w-5 h-5 text-white" />
+  // Results view - full width
+  if (data) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-teal-50/20 to-slate-50">
+        <header className="bg-[hsl(205,78%,20%)] text-white">
+          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+            <img src={logoDraDielem} alt="Logo" className="h-12 w-auto rounded bg-white p-1" />
+            <div>
+              <h1 className="text-lg font-bold tracking-tight">Portal do Médico</h1>
+              <p className="text-xs text-white/70">Resultados dos seus pacientes</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-foreground tracking-tight">Portal do Médico</h1>
-            <p className="text-xs text-muted-foreground">Resultados dos seus pacientes em tempo real</p>
-          </div>
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Shield className="w-3.5 h-3.5" />
-            <span>Acesso auditado</span>
+        </header>
+        <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
+                  <User className="w-6 h-6 text-accent" />
+                </div>
+                <div>
+                  <p className="font-semibold">{data.doctor_name}</p>
+                  <p className="text-sm text-muted-foreground">CRM: {data.crm}</p>
+                </div>
+                <Badge variant="outline" className="ml-auto text-emerald-700 bg-emerald-50 border-emerald-200">
+                  {data.orders.length} pedido(s)
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Accordion type="multiple" className="space-y-2">
+            {data.orders.map((order, idx) => (
+              <AccordionItem key={idx} value={`order-${idx}`} className="border rounded-lg bg-white px-1">
+                <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                  <div className="flex items-center gap-3 text-left">
+                    <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <div>
+                      <p className="font-medium text-sm">{order.order_number}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {order.patient_name} • {new Date(order.created_at).toLocaleDateString("pt-BR")} • {order.results.length} exame(s)
+                      </p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4">
+                  <div className="space-y-2">
+                    {order.results.map((result) => (
+                      <div key={result.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+                        <div className="space-y-0.5">
+                          <p className="font-medium text-sm">{result.exam}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Ref: {result.reference_range || "—"} {result.unit && `(${result.unit})`}
+                          </p>
+                        </div>
+                        <div className="text-right space-y-1">
+                          <p className="font-semibold text-sm">{result.value} {result.unit}</p>
+                          <Badge variant="outline" className={cn("text-[10px]", getFlagColor(result.flag))}>
+                            {getFlagLabel(result.flag)}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+
+          <div className="text-center space-y-2 pt-4 border-t border-border">
+            <p className="text-[10px] text-muted-foreground">
+              Acesso registrado para fins de auditoria e compliance LGPD.
+            </p>
+            <Button variant="outline" size="sm" onClick={() => { setData(null); setCrm(""); setDoctorName(""); }}>
+              Nova Consulta
+            </Button>
           </div>
         </div>
-      </header>
+      </div>
+    );
+  }
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        {!data ? (
-          <div className="max-w-md mx-auto space-y-6">
-            <div className="text-center space-y-2">
-              <div className="w-16 h-16 rounded-2xl bg-teal-100 flex items-center justify-center mx-auto">
-                <Stethoscope className="w-8 h-8 text-teal-700" />
-              </div>
-              <h2 className="text-xl font-semibold text-foreground">Acessar Resultados</h2>
-              <p className="text-sm text-muted-foreground">
-                Informe seu CRM e nome para consultar resultados dos seus pacientes.
+  // Login view - matches Auth page style
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="flex w-full max-w-[860px] min-h-[480px] rounded-2xl overflow-hidden shadow-2xl border border-border/40">
+        {/* Left Panel - Branding */}
+        <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] via-[hsl(205,70%,35%)] to-[hsl(var(--accent))]" />
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: `radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)`,
+            backgroundSize: '40px 40px'
+          }} />
+
+          <div className="relative z-10 flex flex-col justify-between p-7 w-full">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <img
+                src={logoDraDielem}
+                alt="Laboratório Dra. Dielem Feijó"
+                className="h-9 w-auto rounded-lg bg-white/95 p-1 shadow-lg"
+              />
+            </div>
+
+            {/* Main content */}
+            <div className="space-y-3 max-w-sm">
+              <h1 className="text-2xl font-bold text-white leading-tight">
+                Portal do{" "}
+                <span className="text-[hsl(170,80%,70%)]">Médico</span>
+              </h1>
+              <p className="text-white/75 text-xs leading-relaxed">
+                Acesse os resultados laboratoriais dos seus pacientes em tempo real. 
+                Todos os exames liberados ficam disponíveis para consulta imediata, 
+                com total segurança e conformidade com a LGPD.
               </p>
             </div>
 
-            <Card>
-              <CardContent className="pt-6">
-                <form onSubmit={handleSearch} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="crm">CRM</Label>
-                    <Input
-                      id="crm"
-                      placeholder="Ex: 12345-SP"
-                      value={crm}
-                      onChange={(e) => setCrm(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nome do Médico</Label>
-                    <Input
-                      id="name"
-                      placeholder="Conforme cadastrado nos pedidos"
-                      value={doctorName}
-                      onChange={(e) => setDoctorName(e.target.value)}
-                      required
-                    />
-                  </div>
+            {/* Footer */}
+            <p className="text-white/40 text-[10px]">© {new Date().getFullYear()} — Todos os direitos reservados</p>
+          </div>
+        </div>
 
-                  {error && (
-                    <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                      <AlertCircle className="w-4 h-4 shrink-0" />
-                      {error}
-                    </div>
-                  )}
+        {/* Right Panel - Form */}
+        <div className="flex-1 flex items-center justify-center p-5 sm:p-8 bg-card">
+          <div className="w-full max-w-sm space-y-5">
+            {/* Mobile logo */}
+            <div className="lg:hidden flex items-center gap-3 justify-center mb-2">
+              <img src={logoDraDielem} alt="Logo" className="h-9 w-auto rounded-lg" />
+            </div>
 
-                  <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Consultando...
-                      </>
-                    ) : (
-                      <>
-                        <Search className="w-4 h-4 mr-2" />
-                        Consultar Resultados
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Acessar Resultados</h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Informe seu CRM e nome para consultar
+              </p>
+            </div>
 
-            <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
+            <form onSubmit={handleSearch} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="crm">CRM</Label>
+                <div className="relative">
+                  <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="crm"
+                    placeholder="Ex: 12345-SP"
+                    value={crm}
+                    onChange={(e) => setCrm(e.target.value)}
+                    required
+                    className="pl-10 h-11 border-border/60 focus:border-accent"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome do Médico</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    placeholder="Conforme cadastrado nos pedidos"
+                    value={doctorName}
+                    onChange={(e) => setDoctorName(e.target.value)}
+                    required
+                    className="pl-10 h-11 border-border/60 focus:border-accent"
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Consultando...
+                  </>
+                ) : (
+                  <>
+                    Consultar Resultados
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1">
               <Shield className="w-3 h-3" />
               Acesso registrado conforme LGPD
             </p>
           </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Doctor info */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center">
-                    <User className="w-6 h-6 text-teal-700" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">{data.doctor_name}</p>
-                    <p className="text-sm text-muted-foreground">CRM: {data.crm}</p>
-                  </div>
-                  <Badge variant="outline" className="ml-auto text-emerald-700 bg-emerald-50 border-emerald-200">
-                    {data.orders.length} pedido(s) com resultados
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Orders accordion */}
-            <Accordion type="multiple" className="space-y-2">
-              {data.orders.map((order, idx) => (
-                <AccordionItem key={idx} value={`order-${idx}`} className="border rounded-lg bg-white px-1">
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                    <div className="flex items-center gap-3 text-left">
-                      <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{order.order_number}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {order.patient_name} • {new Date(order.created_at).toLocaleDateString("pt-BR")} • {order.results.length} exame(s)
-                        </p>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    <div className="space-y-2">
-                      {order.results.map((result) => (
-                        <div key={result.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50/50">
-                          <div className="space-y-0.5">
-                            <p className="font-medium text-sm">{result.exam}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Ref: {result.reference_range || "—"} {result.unit && `(${result.unit})`}
-                            </p>
-                          </div>
-                          <div className="text-right space-y-1">
-                            <p className="font-semibold text-sm">{result.value} {result.unit}</p>
-                            <Badge variant="outline" className={cn("text-[10px]", getFlagColor(result.flag))}>
-                              {getFlagLabel(result.flag)}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-
-            <div className="text-center space-y-2 pt-4 border-t border-slate-200">
-              <p className="text-[10px] text-muted-foreground">
-                Acesso registrado para fins de auditoria e compliance LGPD.
-              </p>
-              <Button variant="outline" size="sm" onClick={() => { setData(null); setCrm(""); setDoctorName(""); }}>
-                Nova Consulta
-              </Button>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
