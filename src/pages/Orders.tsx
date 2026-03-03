@@ -88,6 +88,10 @@ const Orders = () => {
     },
   });
 
+  // Build exam name -> sector map for label printing
+  const examSectorMap: Record<string, string> = {};
+  examCatalog.forEach((e) => { if (e.sector) examSectorMap[e.name] = e.sector; });
+
   const { data: insurancePlans = [] } = useQuery({
     queryKey: ["insurance_plans_active"],
     queryFn: async () => {
@@ -282,7 +286,7 @@ const Orders = () => {
                   <div className="flex gap-3">
                     <Button variant="outline" className="flex-1" onClick={() => {
                       const p = createdOrder.patients as any;
-                      if (p) printEtiquetaColeta({ id: createdOrder.id, name: p.name }, createdOrder.exams || []);
+                      if (p) printEtiquetaColeta({ id: createdOrder.id, name: p.name }, createdOrder.exams || [], examSectorMap);
                     }}>
                       <Tag className="w-4 h-4 mr-2" />Etiqueta Coleta
                     </Button>
@@ -367,7 +371,7 @@ const Orders = () => {
                          <DropdownMenuContent align="end">
                            <DropdownMenuItem onClick={() => {
                              const p = (order.patients as any);
-                             printEtiquetaColeta({ id: order.order_number || order.id, name: p?.name || "" }, order.exams || []);
+                             printEtiquetaColeta({ id: order.order_number || order.id, name: p?.name || "" }, order.exams || [], examSectorMap);
                            }}>
                              <Tag className="w-4 h-4 mr-2" />Imprimir Etiqueta
                            </DropdownMenuItem>
