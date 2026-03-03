@@ -112,14 +112,18 @@ export function printEtiquetaColeta(patient: { name: string; id: string }, exams
 
   const labelsHtml = sectors.map(([sector, sectorExams], idx) => `
     <div class="label" ${idx > 0 ? 'style="page-break-before: always;"' : ''}>
-      <div class="sector-badge">${sector}</div>
-      <div class="name">${patient.name}</div>
+      <div class="header-row">
+        <div class="left">
+          <span class="name">${patient.name}</span>
+          <span class="order-id">${barcodeText}</span>
+        </div>
+        <div class="sector-badge">${sector}</div>
+      </div>
       <div class="exams"><strong>Exames:</strong> ${sectorExams.join(", ")}</div>
-      <div class="datetime">${now}</div>
       <div class="barcode-area">
         ${barcodeSVG}
-        <div class="barcode-text">${barcodeText}</div>
       </div>
+      <div class="datetime">${now}</div>
     </div>
   `).join("\n");
 
@@ -127,14 +131,17 @@ export function printEtiquetaColeta(patient: { name: string; id: string }, exams
     <html><head><title>Etiqueta Coleta</title>
     <style>
       @media print { @page { margin: 2mm; } body { margin: 0; } }
-      body { font-family: Arial, sans-serif; padding: 6px; width: 320px; }
-      .label { border: 1px dashed #aaa; padding: 8px; margin-bottom: 10px; }
-      .sector-badge { display: inline-block; background: #1a1a2e; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 4px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-      .name { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
-      .exams { font-size: 10px; color: #333; margin-bottom: 4px; word-break: break-word; }
-      .datetime { font-size: 10px; color: #555; margin-bottom: 6px; }
-      .barcode-area { text-align: center; margin-top: 4px; }
-      .barcode-text { font-family: monospace; font-size: 10px; letter-spacing: 1px; color: #333; margin-top: 2px; }
+      body { font-family: Arial, sans-serif; padding: 6px; width: 360px; }
+      .label { border: 1px dashed #ccc; padding: 10px 12px; margin-bottom: 10px; }
+      .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+      .left { display: flex; align-items: baseline; gap: 8px; }
+      .name { font-weight: bold; font-size: 14px; color: #000; }
+      .order-id { font-size: 11px; color: #555; font-family: monospace; }
+      .sector-badge { display: inline-block; background: #1a1a2e; color: #fff; font-size: 10px; font-weight: bold; padding: 3px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+      .exams { font-size: 11px; color: #333; margin-bottom: 6px; word-break: break-word; }
+      .barcode-area { text-align: center; margin: 6px 0 4px; }
+      .barcode-area svg { width: 100%; max-width: 300px; height: 55px; }
+      .datetime { font-size: 11px; color: #333; text-align: right; font-family: monospace; }
     </style></head><body>
     ${labelsHtml}
     <script>window.print(); window.onafterprint = () => window.close();<\/script>
