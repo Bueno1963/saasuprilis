@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer, PenTool, Undo2, AlertTriangle } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
@@ -350,30 +351,22 @@ const LiberarExames = () => {
             {sectors.map(sector => {
               const count = sectorCounts.get(sector.name) || 0;
               return (
-                <button
+                <Card
                   key={sector.name}
+                  className="cursor-pointer hover:shadow-lg transition-all min-h-[120px] flex flex-col items-center justify-center"
                   onClick={() => setSelectedSector(sector.name)}
-                  className="group relative flex flex-col items-center justify-center rounded-xl p-6 min-h-[120px] transition-all duration-200
-                    bg-gradient-to-b from-[hsl(210,95%,48%)] via-[hsl(215,90%,40%)] to-[hsl(220,85%,32%)]
-                    shadow-[0_4px_12px_hsl(220,85%,25%/0.35),inset_0_1px_1px_hsl(210,100%,75%/0.5)]
-                    hover:shadow-[0_6px_20px_hsl(220,85%,25%/0.5),inset_0_1px_1px_hsl(210,100%,75%/0.5)]
-                    hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_2px_6px_hsl(220,85%,25%/0.3)]
-                    border border-[hsl(210,70%,35%/0.4)]
-                    overflow-hidden"
                 >
-                  <div className="absolute inset-x-0 top-0 h-[45%] rounded-t-xl bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
-                  <span className="relative text-white font-bold text-base tracking-wide text-center drop-shadow-sm">
-                    {sector.name}
-                  </span>
-                  {count > 0 && (
-                    <span className="relative mt-2 inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-bold border border-white/20">
-                      {count}
+                  <CardContent className="pt-6 flex flex-col items-center gap-2">
+                    <span className="font-bold text-base text-foreground text-center">
+                      {sector.name}
                     </span>
-                  )}
-                  {count === 0 && (
-                    <span className="relative mt-2 text-white/60 text-xs">Nenhum pendente</span>
-                  )}
-                </button>
+                    {count > 0 ? (
+                      <Badge className="text-sm">{count}</Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Nenhum pendente</span>
+                    )}
+                  </CardContent>
+                </Card>
               );
             })}
           </div>

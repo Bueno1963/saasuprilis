@@ -191,7 +191,7 @@ const PlanoContasPage = () => {
         </div>
         <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); else setDialogOpen(true); }}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1" style={{ backgroundColor: "#244294" }}>
+            <Button size="sm" className="gap-1">
               <Plus className="h-4 w-4" /> Nova Conta
             </Button>
           </DialogTrigger>
@@ -237,7 +237,7 @@ const PlanoContasPage = () => {
                 <input type="checkbox" id="is_group" checked={form.is_group} onChange={(e) => setForm((f: any) => ({ ...f, is_group: e.target.checked }))} className="rounded" />
                 <Label htmlFor="is_group" className="text-sm">É um grupo (pode ter sub-contas)</Label>
               </div>
-              <Button type="submit" className="w-full" disabled={saveMutation.isPending} style={{ backgroundColor: "#244294" }}>
+              <Button type="submit" className="w-full" disabled={saveMutation.isPending}>
                 {saveMutation.isPending ? "Salvando..." : editingAccount ? "Salvar" : "Criar"}
               </Button>
             </form>

@@ -207,7 +207,7 @@ const RecepcaoPage = () => {
           <div className="flex items-center gap-2">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="gap-1.5" style={{ backgroundColor: "#244294" }} disabled={isLimitReached}>
+                <Button size="sm" className="gap-1.5" disabled={isLimitReached}>
                   <Plus className="h-4 w-4" /> Agendar
                 </Button>
               </DialogTrigger>
@@ -285,7 +285,6 @@ const RecepcaoPage = () => {
                     type="submit"
                     className="w-full"
                     disabled={createMutation.isPending}
-                    style={{ backgroundColor: "#244294" }}
                   >
                     {createMutation.isPending ? "Salvando..." : "Confirmar"}
                   </Button>

@@ -433,7 +433,6 @@ const ImportarExtratoPage = () => {
             <Button
               onClick={() => importMutation.mutate()}
               disabled={importMutation.isPending || selectedCount === 0}
-              style={{ backgroundColor: "#244294" }}
               className="gap-1"
             >
               {importMutation.isPending ? (

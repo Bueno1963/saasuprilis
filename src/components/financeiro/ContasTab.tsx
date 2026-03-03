@@ -132,7 +132,7 @@ const ContasTab = ({ type }: ReceivablesTabProps) => {
         <h2 className="text-lg font-semibold text-foreground">{isReceivable ? "Contas a Receber" : "Contas a Pagar"}</h2>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1" style={{ backgroundColor: "#244294" }}>
+            <Button size="sm" className="gap-1">
               <Plus className="h-4 w-4" /> Nova Conta
             </Button>
           </DialogTrigger>
@@ -192,7 +192,7 @@ const ContasTab = ({ type }: ReceivablesTabProps) => {
                 <Label>Observações</Label>
                 <Textarea value={form.notes} onChange={(e) => setForm((f: any) => ({ ...f, notes: e.target.value }))} rows={2} />
               </div>
-              <Button type="submit" className="w-full" disabled={createMutation.isPending} style={{ backgroundColor: "#244294" }}>
+              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
                 {createMutation.isPending ? "Salvando..." : "Criar"}
               </Button>
             </form>

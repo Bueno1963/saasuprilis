@@ -249,7 +249,7 @@ const AgendamentoPage = () => {
           </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2" style={{ backgroundColor: "#244294", borderColor: "#244294" }} disabled={isLimitReached}>
+            <Button className="gap-2" disabled={isLimitReached}>
               <Plus className="h-4 w-4" /> Novo Agendamento
             </Button>
           </DialogTrigger>
@@ -343,7 +343,6 @@ const AgendamentoPage = () => {
                 type="submit"
                 className="w-full"
                 disabled={createMutation.isPending}
-                style={{ backgroundColor: "#244294", borderColor: "#244294" }}
               >
                 {createMutation.isPending ? "Salvando..." : "Confirmar Agendamento"}
               </Button>
