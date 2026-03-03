@@ -91,7 +91,7 @@ const FaturamentoTab = () => {
         <h2 className="text-lg font-semibold text-foreground">Lotes de Faturamento</h2>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1" style={{ backgroundColor: "#244294" }}>
+            <Button size="sm" className="gap-1">
               <Plus className="h-4 w-4" /> Novo Lote
             </Button>
           </DialogTrigger>
@@ -115,7 +115,7 @@ const FaturamentoTab = () => {
                 <Label>Observações</Label>
                 <Textarea value={form.notes} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
               </div>
-              <Button type="submit" className="w-full" disabled={createMutation.isPending} style={{ backgroundColor: "#244294" }}>
+              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
                 {createMutation.isPending ? "Criando..." : "Criar Lote"}
               </Button>
             </form>
