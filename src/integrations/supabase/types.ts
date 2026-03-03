@@ -631,7 +631,9 @@ export type Database = {
       }
       patients: {
         Row: {
+          address: string | null
           birth_date: string
+          city: string | null
           cpf: string
           created_at: string
           created_by: string | null
@@ -641,10 +643,14 @@ export type Database = {
           insurance: string | null
           name: string
           phone: string | null
+          state: string | null
           updated_at: string
+          zip_code: string | null
         }
         Insert: {
+          address?: string | null
           birth_date: string
+          city?: string | null
           cpf: string
           created_at?: string
           created_by?: string | null
@@ -654,10 +660,14 @@ export type Database = {
           insurance?: string | null
           name: string
           phone?: string | null
+          state?: string | null
           updated_at?: string
+          zip_code?: string | null
         }
         Update: {
+          address?: string | null
           birth_date?: string
+          city?: string | null
           cpf?: string
           created_at?: string
           created_by?: string | null
@@ -667,7 +677,9 @@ export type Database = {
           insurance?: string | null
           name?: string
           phone?: string | null
+          state?: string | null
           updated_at?: string
+          zip_code?: string | null
         }
         Relationships: []
       }
