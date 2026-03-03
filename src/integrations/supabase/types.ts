@@ -531,6 +531,7 @@ export type Database = {
           city: string | null
           cnpj: string
           crm_responsible: string
+          daily_appointment_limit: number | null
           email: string | null
           id: string
           logo_url: string | null
@@ -547,6 +548,7 @@ export type Database = {
           city?: string | null
           cnpj?: string
           crm_responsible?: string
+          daily_appointment_limit?: number | null
           email?: string | null
           id?: string
           logo_url?: string | null
@@ -563,6 +565,7 @@ export type Database = {
           city?: string | null
           cnpj?: string
           crm_responsible?: string
+          daily_appointment_limit?: number | null
           email?: string | null
           id?: string
           logo_url?: string | null

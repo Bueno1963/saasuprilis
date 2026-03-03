@@ -68,6 +68,17 @@ const AgendamentoPage = () => {
     notes: "",
   });
 
+  // Fetch daily limit from lab_settings
+  const { data: labSettings } = useQuery({
+    queryKey: ["lab_settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lab_settings").select("daily_appointment_limit").limit(1).single();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const dailyLimit = labSettings?.daily_appointment_limit ?? 0;
+
   // Fetch patients for the select
   const { data: patients = [] } = useQuery({
     queryKey: ["patients_list"],
@@ -103,6 +114,13 @@ const AgendamentoPage = () => {
       ),
     [appointments, selectedDate]
   );
+
+  // Active appointments (exclude cancelled) for limit check
+  const activeDayCount = useMemo(
+    () => dayAppointments.filter((a: any) => a.status !== "cancelado").length,
+    [dayAppointments]
+  );
+  const isLimitReached = dailyLimit > 0 && activeDayCount >= dailyLimit;
 
   // Filtered by search
   const filteredAppointments = useMemo(() => {
@@ -231,7 +249,7 @@ const AgendamentoPage = () => {
           </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2" style={{ backgroundColor: "#244294", borderColor: "#244294" }}>
+            <Button className="gap-2" style={{ backgroundColor: "#244294", borderColor: "#244294" }} disabled={isLimitReached}>
               <Plus className="h-4 w-4" /> Novo Agendamento
             </Button>
           </DialogTrigger>
@@ -244,6 +262,10 @@ const AgendamentoPage = () => {
                 e.preventDefault();
                 if (!form.patient_id) {
                   toast.error("Selecione um paciente");
+                  return;
+                }
+                if (isLimitReached) {
+                  toast.error(`Limite diário de ${dailyLimit} atendimentos atingido para esta data.`);
                   return;
                 }
                 createMutation.mutate();
@@ -371,8 +393,13 @@ const AgendamentoPage = () => {
                 onChange={(e) => setSearch(e.target.value)}
                 className="max-w-xs"
               />
-              <span className="text-sm text-muted-foreground ml-auto">
+              <span className="text-sm text-muted-foreground ml-auto flex items-center gap-2">
                 {filteredAppointments.length} agendamento(s)
+                {dailyLimit > 0 && (
+                  <Badge variant={isLimitReached ? "destructive" : "outline"} className="text-[10px]">
+                    {activeDayCount}/{dailyLimit}
+                  </Badge>
+                )}
               </span>
             </div>
 

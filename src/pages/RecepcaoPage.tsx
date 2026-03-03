@@ -67,6 +67,16 @@ const RecepcaoPage = () => {
     },
   });
 
+  const { data: labSettings } = useQuery({
+    queryKey: ["lab_settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lab_settings").select("daily_appointment_limit").limit(1).single();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const dailyLimit = labSettings?.daily_appointment_limit ?? 0;
+
   const { data: appointments = [] } = useQuery({
     queryKey: ["appointments"],
     queryFn: async () => {
@@ -89,6 +99,12 @@ const RecepcaoPage = () => {
     () => todayAppointments.filter((a: any) => a.status === "agendado").length,
     [todayAppointments]
   );
+
+  const todayActiveCount = useMemo(
+    () => todayAppointments.filter((a: any) => a.status !== "cancelado").length,
+    [todayAppointments]
+  );
+  const isLimitReached = dailyLimit > 0 && todayActiveCount >= dailyLimit;
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -195,7 +211,7 @@ const RecepcaoPage = () => {
           <div className="flex items-center gap-2">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="gap-1.5" style={{ backgroundColor: "#244294" }}>
+                <Button size="sm" className="gap-1.5" style={{ backgroundColor: "#244294" }} disabled={isLimitReached}>
                   <Plus className="h-4 w-4" /> Agendar
                 </Button>
               </DialogTrigger>
@@ -203,11 +219,20 @@ const RecepcaoPage = () => {
                 <DialogHeader>
                   <DialogTitle>Novo Agendamento — Hoje</DialogTitle>
                 </DialogHeader>
+                {isLimitReached && (
+                  <div className="rounded-md bg-destructive/10 border border-destructive/30 p-3 text-sm text-destructive">
+                    Limite diário de {dailyLimit} atendimentos atingido.
+                  </div>
+                )}
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (!form.patient_id) {
                       toast.error("Selecione um paciente");
+                      return;
+                    }
+                    if (isLimitReached) {
+                      toast.error(`Limite diário de ${dailyLimit} atendimentos atingido.`);
                       return;
                     }
                     createMutation.mutate();
