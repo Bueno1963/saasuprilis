@@ -6,35 +6,43 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 12%;
+    --background: 220 15% 88%;
+    --foreground: 220 20% 20%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 12%;
+    --card: 220 15% 88%;
+    --card-foreground: 220 20% 20%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 12%;
+    --popover: 220 14% 90%;
+    --popover-foreground: 220 20% 20%;
 
-    --primary: 205 78% 28%;
+    --primary: 40 92% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 195 60% 94%;
-    --secondary-foreground: 205 78% 28%;
+    --secondary: 220 12% 82%;
+    --secondary-foreground: 220 20% 25%;
 
-    --muted: 210 15% 94%;
-    --muted-foreground: 215 12% 50%;
+    --muted: 220 12% 82%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 170 55% 40%;
+    --accent: 40 85% 52%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 88%;
-    --input: 214 20% 88%;
-    --ring: 205 78% 28%;
+    --border: 220 12% 82%;
+    --input: 220 14% 84%;
+    --ring: 40 92% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Neumorphic shadows */
+    --neu-light: 0 0% 100%;
+    --neu-dark: 220 15% 75%;
+    --neu-shadow: 6px 6px 12px hsl(220 15% 75%), -6px -6px 12px hsl(0 0% 100%);
+    --neu-shadow-sm: 3px 3px 6px hsl(220 15% 75%), -3px -3px 6px hsl(0 0% 100%);
+    --neu-shadow-inset: inset 3px 3px 6px hsl(220 15% 75%), inset -3px -3px 6px hsl(0 0% 100%);
+    --neu-shadow-pressed: inset 2px 2px 5px hsl(220 15% 75%), inset -2px -2px 5px hsl(0 0% 100%);
 
     /* LIS Custom tokens */
     --success: 152 60% 40%;
@@ -51,46 +59,52 @@
     --phase-analytical: 205 78% 45%;
     --phase-post: 152 60% 40%;
 
-    /* Sidebar */
+    /* Sidebar - keep dark */
     --sidebar-background: 213 49% 16%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 200 70% 55%;
+    --sidebar-primary: 40 92% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 213 45% 22%;
     --sidebar-accent-foreground: 210 20% 95%;
     --sidebar-border: 213 40% 20%;
-    --sidebar-ring: 200 70% 55%;
+    --sidebar-ring: 40 92% 55%;
     --sidebar-muted: 213 20% 50%;
   }
 
   .dark {
-    --background: 215 25% 8%;
-    --foreground: 210 15% 92%;
-    --card: 215 25% 12%;
-    --card-foreground: 210 15% 92%;
-    --popover: 215 25% 12%;
-    --popover-foreground: 210 15% 92%;
-    --primary: 195 80% 55%;
-    --primary-foreground: 215 25% 8%;
-    --secondary: 215 20% 18%;
-    --secondary-foreground: 210 15% 90%;
-    --muted: 215 20% 18%;
-    --muted-foreground: 215 12% 55%;
-    --accent: 170 55% 45%;
+    --background: 220 20% 14%;
+    --foreground: 220 10% 85%;
+    --card: 220 20% 14%;
+    --card-foreground: 220 10% 85%;
+    --popover: 220 20% 16%;
+    --popover-foreground: 220 10% 85%;
+    --primary: 40 85% 55%;
+    --primary-foreground: 220 20% 10%;
+    --secondary: 220 18% 20%;
+    --secondary-foreground: 220 10% 80%;
+    --muted: 220 18% 20%;
+    --muted-foreground: 220 10% 50%;
+    --accent: 40 80% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 215 20% 20%;
-    --input: 215 20% 20%;
-    --ring: 195 80% 55%;
+    --border: 220 18% 22%;
+    --input: 220 18% 22%;
+    --ring: 40 85% 55%;
+
+    --neu-shadow: 6px 6px 12px hsl(220 20% 8%), -6px -6px 12px hsl(220 18% 20%);
+    --neu-shadow-sm: 3px 3px 6px hsl(220 20% 8%), -3px -3px 6px hsl(220 18% 20%);
+    --neu-shadow-inset: inset 3px 3px 6px hsl(220 20% 8%), inset -3px -3px 6px hsl(220 18% 20%);
+    --neu-shadow-pressed: inset 2px 2px 5px hsl(220 20% 8%), inset -2px -2px 5px hsl(220 18% 20%);
+
     --sidebar-background: 213 49% 16%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 200 70% 55%;
+    --sidebar-primary: 40 85% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 213 45% 22%;
     --sidebar-accent-foreground: 210 20% 95%;
     --sidebar-border: 213 40% 20%;
-    --sidebar-ring: 200 70% 55%;
+    --sidebar-ring: 40 85% 55%;
   }
 }
 
@@ -112,5 +126,21 @@
 @layer utilities {
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  }
+
+  .neu-flat {
+    box-shadow: var(--neu-shadow);
+  }
+
+  .neu-flat-sm {
+    box-shadow: var(--neu-shadow-sm);
+  }
+
+  .neu-pressed {
+    box-shadow: var(--neu-shadow-pressed);
+  }
+
+  .neu-inset {
+    box-shadow: var(--neu-shadow-inset);
   }
 }
