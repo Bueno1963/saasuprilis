@@ -381,6 +381,38 @@ const AgendamentoPage = () => {
               <CalendarDays className="inline h-4 w-4 mr-1" />
               {format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
             </div>
+            {/* Capacity indicator */}
+            <div className={cn(
+              "mt-3 rounded-lg p-3 text-center",
+              isLimitReached ? "bg-destructive/10 border border-destructive/30" : "neu-inset"
+            )}>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Atendimentos do dia</p>
+              <p className={cn(
+                "text-2xl font-bold",
+                isLimitReached ? "text-destructive" : "text-foreground"
+              )}>
+                {activeDayCount}
+                {dailyLimit > 0 && <span className="text-base font-normal text-muted-foreground">/{dailyLimit}</span>}
+              </p>
+              {dailyLimit > 0 && (
+                <>
+                  <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        isLimitReached ? "bg-destructive" : "bg-primary"
+                      )}
+                      style={{ width: `${Math.min((activeDayCount / dailyLimit) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {isLimitReached
+                      ? "Limite atingido"
+                      : `${dailyLimit - activeDayCount} vaga(s) restante(s)`}
+                  </p>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Appointments list */}
