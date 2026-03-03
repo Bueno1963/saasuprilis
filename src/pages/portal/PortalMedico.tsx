@@ -79,12 +79,12 @@ const PortalMedico = () => {
   // Results view - full width
   if (data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-teal-50/20 to-slate-50">
-        <header className="bg-[hsl(205,78%,20%)] text-white">
-          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+      <div className="min-h-screen bg-background">
+        <header className="neu-flat rounded-none">
+          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4" style={{ background: 'hsl(var(--sidebar-background))' }}>
             <img src={logoDraDielem} alt="Logo" className="h-12 w-auto rounded bg-white p-1" />
             <div>
-              <h1 className="text-lg font-bold tracking-tight">Portal do Médico</h1>
+              <h1 className="text-lg font-bold tracking-tight text-white">Portal do Médico</h1>
               <p className="text-xs text-white/70">Resultados dos seus pacientes</p>
             </div>
           </div>
@@ -93,14 +93,14 @@ const PortalMedico = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                  <User className="w-6 h-6 text-accent" />
+                <div className="w-12 h-12 rounded-full neu-inset flex items-center justify-center">
+                  <User className="w-6 h-6 text-primary" />
                 </div>
                 <div>
                   <p className="font-semibold">{data.doctor_name}</p>
                   <p className="text-sm text-muted-foreground">CRM: {data.crm}</p>
                 </div>
-                <Badge variant="outline" className="ml-auto text-emerald-700 bg-emerald-50 border-emerald-200">
+                <Badge variant="outline" className="ml-auto">
                   {data.orders.length} pedido(s)
                 </Badge>
               </div>
@@ -109,7 +109,7 @@ const PortalMedico = () => {
 
           <Accordion type="multiple" className="space-y-2">
             {data.orders.map((order, idx) => (
-              <AccordionItem key={idx} value={`order-${idx}`} className="border rounded-lg bg-white px-1">
+              <AccordionItem key={idx} value={`order-${idx}`} className="border-0 rounded-xl neu-flat-sm px-1 mb-2">
                 <AccordionTrigger className="px-4 py-3 hover:no-underline">
                   <div className="flex items-center gap-3 text-left">
                     <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -124,7 +124,7 @@ const PortalMedico = () => {
                 <AccordionContent className="px-4 pb-4">
                   <div className="space-y-2">
                     {order.results.map((result) => (
-                      <div key={result.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+                      <div key={result.id} className="flex items-center justify-between p-3 rounded-xl neu-inset">
                         <div className="space-y-0.5">
                           <p className="font-medium text-sm">{result.exam}</p>
                           <p className="text-xs text-muted-foreground">
@@ -161,10 +161,10 @@ const PortalMedico = () => {
   // Login view - matches Auth page style
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="flex w-full max-w-[860px] min-h-[480px] rounded-2xl overflow-hidden shadow-2xl border border-border/40">
+      <div className="flex w-full max-w-[860px] min-h-[480px] rounded-2xl overflow-hidden neu-flat">
         {/* Left Panel - Branding */}
         <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] via-[hsl(205,70%,35%)] to-[hsl(var(--accent))]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--sidebar-background))] via-[hsl(213,45%,22%)] to-[hsl(213,49%,12%)]" />
           <div className="absolute inset-0 opacity-10" style={{
             backgroundImage: `radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)`,
             backgroundSize: '40px 40px'
@@ -184,7 +184,7 @@ const PortalMedico = () => {
             <div className="space-y-3 max-w-sm">
               <h1 className="text-2xl font-bold text-white leading-tight">
                 Portal do{" "}
-                <span className="text-[hsl(170,80%,70%)]">Médico</span>
+                <span className="text-primary">Médico</span>
               </h1>
               <p className="text-white/75 text-xs leading-relaxed">
                 Acesse os resultados laboratoriais dos seus pacientes em tempo real. 
@@ -199,7 +199,7 @@ const PortalMedico = () => {
         </div>
 
         {/* Right Panel - Form */}
-        <div className="flex-1 flex items-center justify-center p-5 sm:p-8 bg-card">
+        <div className="flex-1 flex items-center justify-center p-5 sm:p-8 bg-background">
           <div className="w-full max-w-sm space-y-5">
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center gap-3 justify-center mb-2">
@@ -253,7 +253,7 @@ const PortalMedico = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
+                className="w-full h-12 text-base font-medium gap-2 rounded-xl transition-all"
               >
                 {loading ? (
                   <>
