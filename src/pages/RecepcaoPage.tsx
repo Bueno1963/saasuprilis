@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { UserPlus, Calendar, FileCheck, Clock, User, Plus, ChevronRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { isSameDay, parseISO, format } from "date-fns";
@@ -173,26 +174,21 @@ const RecepcaoPage = () => {
       {/* Quick-access buttons */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl mx-auto">
         {sections.map(({ key, title, subtitle, icon: Icon, href }) => (
-          <button
+          <Card
             key={key}
+            className="cursor-pointer hover:shadow-lg transition-shadow"
             onClick={() => navigate(href)}
-            className="group relative rounded-2xl px-6 py-8 text-center transition-all duration-200
-              bg-gradient-to-b from-[hsl(210,95%,48%)] via-[hsl(215,90%,40%)] to-[hsl(220,85%,32%)]
-              shadow-[0_4px_12px_hsl(220,85%,25%/0.35),inset_0_1px_1px_hsl(210,100%,75%/0.5)]
-              hover:shadow-[0_6px_20px_hsl(220,85%,25%/0.5),inset_0_1px_1px_hsl(210,100%,75%/0.5)]
-              hover:translate-y-[-2px] active:translate-y-[1px] active:shadow-[0_2px_6px_hsl(220,85%,25%/0.3)]
-              border border-[hsl(210,70%,35%/0.4)]
-              overflow-hidden min-h-[100px]"
           >
-            <div className="absolute inset-x-0 top-0 h-[45%] rounded-t-2xl bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
-            <div className="relative z-10 flex flex-col items-center gap-1.5">
-              <Icon className="h-6 w-6 text-white/80" />
-              <span className="block text-sm font-bold text-white drop-shadow-sm">{title}</span>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-base font-medium">{title}</CardTitle>
+              <Icon className="w-5 h-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
               {subtitle && (
-                <span className="block text-[11px] text-white/60 italic">{subtitle}</span>
+                <p className="text-xs text-muted-foreground">{subtitle}</p>
               )}
-            </div>
-          </button>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
