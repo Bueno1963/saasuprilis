@@ -200,8 +200,13 @@ const RecepcaoPage = () => {
               <Calendar className="h-5 w-5 text-primary" />
               Agenda de Hoje
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground flex items-center gap-2">
               {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })} — {todayAppointments.length} agendamento(s)
+              {dailyLimit > 0 && (
+                <Badge variant={isLimitReached ? "destructive" : "outline"} className="text-[10px]">
+                  {todayActiveCount}/{dailyLimit} vagas
+                </Badge>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-2">
