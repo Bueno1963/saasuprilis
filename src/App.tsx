@@ -39,6 +39,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import PortalPaciente from "./pages/portal/PortalPaciente";
 import PortalMedico from "./pages/portal/PortalMedico";
+import PortalResultados from "./pages/portal/PortalResultados";
 import LandingPage from "./pages/LandingPage";
 import ColetasPage from "./pages/landing/ColetasPage";
 import ExamesPage from "./pages/landing/ExamesPage";
@@ -140,6 +141,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/portal-paciente" element={<PortalPaciente />} />
             <Route path="/portal-medico" element={<PortalMedico />} />
+            <Route path="/portal-resultados" element={<PortalResultados />} />
             <Route path="/landing" element={<LandingPage />} />
             <Route path="/landing/coletas" element={<ColetasPage />} />
             <Route path="/landing/exames" element={<ExamesPage />} />
