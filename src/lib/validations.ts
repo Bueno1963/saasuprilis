@@ -39,6 +39,10 @@ export const patientSchema = z.object({
     .optional()
     .refine((val) => !val || z.string().email().safeParse(val).success, "Email inválido"),
   insurance: z.string().max(100).default("Particular"),
+  address: z.string().max(200).optional().default(""),
+  city: z.string().max(100).optional().default(""),
+  state: z.string().max(2).optional().default(""),
+  zip_code: z.string().max(10).optional().default(""),
 });
 
 export type PatientFormData = z.infer<typeof patientSchema>;
@@ -67,4 +71,10 @@ export function formatPhone(value: string): string {
   if (digits.length <= 2) return digits.length ? `(${digits}` : "";
   if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+export function formatCEP(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }

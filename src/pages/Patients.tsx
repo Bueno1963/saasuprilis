@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { patientSchema, PatientFormData, formatCPF, formatPhone } from "@/lib/validations";
+import { patientSchema, PatientFormData, formatCPF, formatPhone, formatCEP } from "@/lib/validations";
 
 const Patients = () => {
   const [search, setSearch] = useState("");
@@ -38,6 +38,7 @@ const Patients = () => {
       const { data, error } = await supabase.from("patients").insert([{
         name: form.name, cpf: form.cpf, birth_date: form.birth_date, gender: form.gender,
         phone: form.phone || "", email: form.email || "", insurance: form.insurance || "Particular",
+        address: form.address || "", city: form.city || "", state: form.state || "", zip_code: form.zip_code || "",
         created_by: user?.id,
       }]).select().single();
       if (error) throw error;
@@ -71,6 +72,7 @@ const Patients = () => {
       const { data, error } = await supabase.from("patients").update({
         name: rest.name, cpf: rest.cpf, birth_date: rest.birth_date, gender: rest.gender,
         phone: rest.phone || "", email: rest.email || "", insurance: rest.insurance || "Particular",
+        address: rest.address || "", city: rest.city || "", state: rest.state || "", zip_code: rest.zip_code || "",
       }).eq("id", id).select().single();
       if (error) throw error;
       return data;
@@ -169,6 +171,10 @@ const Patients = () => {
               phone: editingPatient.phone || "",
               email: editingPatient.email || "",
               insurance: editingPatient.insurance || "Particular",
+              address: editingPatient.address || "",
+              city: editingPatient.city || "",
+              state: editingPatient.state || "",
+              zip_code: editingPatient.zip_code || "",
             } : undefined}
             isEditing={!!editingPatient}
           />
@@ -269,6 +275,10 @@ const PatientForm = ({ onSave, onContinue, loading, initialData, isEditing }: {
     phone: initialData?.phone || "",
     email: initialData?.email || "",
     insurance: initialData?.insurance || "Particular",
+    address: initialData?.address || "",
+    city: initialData?.city || "",
+    state: initialData?.state || "",
+    zip_code: initialData?.zip_code || "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -394,6 +404,26 @@ const PatientForm = ({ onSave, onContinue, loading, initialData, isEditing }: {
           <Label htmlFor="email">Email</Label>
           <Input id="email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} onBlur={() => handleBlur("email")} placeholder="paciente@email.com" className={touched.email && errors.email ? "border-destructive" : ""} />
           {fieldError("email")}
+        </div>
+      </div>
+
+      {/* Endereço */}
+      <div className="space-y-1">
+        <Label htmlFor="address">Endereço</Label>
+        <Input id="address" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="Rua, número, complemento" />
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-1">
+          <Label htmlFor="city">Cidade</Label>
+          <Input id="city" value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} placeholder="Cidade" />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="state">UF</Label>
+          <Input id="state" value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value.toUpperCase().slice(0, 2) }))} placeholder="UF" maxLength={2} />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="zip_code">CEP</Label>
+          <Input id="zip_code" value={form.zip_code} onChange={e => setForm(f => ({ ...f, zip_code: formatCEP(e.target.value) }))} placeholder="00000-000" maxLength={9} />
         </div>
       </div>
 
