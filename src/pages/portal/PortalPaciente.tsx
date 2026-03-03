@@ -217,11 +217,11 @@ const PortalPaciente = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="flex w-full max-w-[860px] min-h-[480px] rounded-2xl overflow-hidden shadow-2xl border border-border/40">
+      <div className="flex w-full max-w-[860px] min-h-[480px] rounded-2xl overflow-hidden neu-flat">
         {/* Left Panel - Branding */}
         <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
           {/* Gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] via-[hsl(205,70%,35%)] to-[hsl(var(--accent))]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--sidebar-background))] via-[hsl(213,45%,22%)] to-[hsl(213,49%,12%)]" />
           {/* Subtle pattern overlay */}
           <div className="absolute inset-0 opacity-10" style={{
             backgroundImage: `radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)`,
@@ -242,7 +242,7 @@ const PortalPaciente = () => {
             <div className="space-y-3 max-w-sm">
               <h1 className="text-2xl font-bold text-white leading-tight">
                 Portal do{" "}
-                <span className="text-[hsl(170,80%,70%)]">Paciente</span>
+                <span className="text-primary">Paciente</span>
               </h1>
               <p className="text-white/75 text-xs leading-relaxed">
                 Acesse seus resultados de exames e agende seus atendimentos de forma rápida e segura. 
@@ -259,7 +259,7 @@ const PortalPaciente = () => {
         </div>
 
         {/* Right Panel - Form */}
-        <div className="flex-1 flex flex-col bg-card">
+        <div className="flex-1 flex flex-col bg-background">
           {/* Tab Switcher */}
           <div className="border-b border-border/60">
             <div className="flex">
@@ -348,7 +348,7 @@ const PortalPaciente = () => {
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
+                      className="w-full h-12 text-base font-medium gap-2 rounded-xl transition-all"
                     >
                       {loading ? (
                         <>
@@ -441,7 +441,7 @@ const PortalPaciente = () => {
                         <Button
                           type="submit"
                           disabled={schedLoading}
-                          className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
+                          className="w-full h-12 text-base font-medium gap-2 rounded-xl transition-all"
                         >
                           {schedLoading ? (
                             <>
@@ -500,11 +500,11 @@ const PortalPaciente = () => {
                                       onClick={() => setSchedForm((f) => ({ ...f, time: slot }))}
                                       className={cn(
                                         "py-2 px-1 rounded-md text-xs font-medium border transition-all",
-                                        isOccupied
+                                      isOccupied
                                           ? "bg-muted text-muted-foreground/40 border-border cursor-not-allowed line-through"
                                           : isSelected
-                                            ? "bg-accent text-accent-foreground border-accent shadow-sm"
-                                            : "bg-card text-foreground border-border hover:border-accent/40 hover:bg-muted/50"
+                                            ? "bg-primary text-primary-foreground border-primary neu-flat-sm"
+                                            : "bg-background text-foreground border-border hover:border-primary/40 neu-flat-sm"
                                       )}
                                     >
                                       <Clock className="w-3 h-3 inline mr-0.5" />
@@ -548,7 +548,7 @@ const PortalPaciente = () => {
 
                         <Button
                           type="submit"
-                          className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
+                          className="w-full h-12 text-base font-medium gap-2 rounded-xl transition-all"
                           disabled={schedLoading || !schedForm.time || !schedForm.date}
                         >
                           {schedLoading ? (
