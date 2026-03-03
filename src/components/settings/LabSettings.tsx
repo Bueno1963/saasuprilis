@@ -15,6 +15,7 @@ interface Props { onBack: () => void; }
 interface LabForm {
   name: string; cnpj: string; technical_responsible: string; crm_responsible: string;
   phone: string; email: string; address: string; city: string; state: string; zip_code: string;
+  daily_appointment_limit: number;
 }
 
 const LabSettings = ({ onBack }: Props) => {
@@ -73,6 +74,16 @@ const LabSettings = ({ onBack }: Props) => {
             <div className="space-y-1"><Label>Cidade</Label><Input {...register("city")} /></div>
             <div className="space-y-1"><Label>Estado</Label><Input {...register("state")} /></div>
             <div className="space-y-1"><Label>CEP</Label><Input {...register("zip_code")} /></div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-base">Agendamento</CardTitle></CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label>Limite de atendimentos por dia</Label>
+              <Input type="number" min={0} {...register("daily_appointment_limit", { valueAsNumber: true })} />
+              <p className="text-xs text-muted-foreground">0 = sem limite</p>
+            </div>
           </CardContent>
         </Card>
         <Button type="submit" disabled={mutation.isPending}><Save className="h-4 w-4 mr-2" />Salvar</Button>
