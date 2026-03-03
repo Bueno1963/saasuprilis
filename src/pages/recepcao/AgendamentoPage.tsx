@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, isSameDay, parseISO, startOfDay } from "date-fns";
@@ -121,6 +121,28 @@ const AgendamentoPage = () => {
     [dayAppointments]
   );
   const isLimitReached = dailyLimit > 0 && activeDayCount >= dailyLimit;
+  const remaining = dailyLimit > 0 ? dailyLimit - activeDayCount : Infinity;
+
+  // Alert when only 2 slots remain
+  const alertedRef = useRef<string>("");
+  useEffect(() => {
+    if (dailyLimit <= 0) return;
+    const key = `${format(selectedDate, "yyyy-MM-dd")}-${remaining}`;
+    if (alertedRef.current === key) return;
+    if (remaining === 2 || remaining === 1) {
+      alertedRef.current = key;
+      toast.warning(
+        `⚠️ Atenção: apenas ${remaining} vaga(s) restante(s)!`,
+        { description: `Limite diário: ${dailyLimit} atendimentos para ${format(selectedDate, "dd/MM/yyyy")}.`, duration: 6000 }
+      );
+    } else if (remaining <= 0) {
+      alertedRef.current = key;
+      toast.error(
+        "🚫 Limite diário atingido!",
+        { description: `Todas as ${dailyLimit} vagas para ${format(selectedDate, "dd/MM/yyyy")} foram preenchidas.`, duration: 8000 }
+      );
+    }
+  }, [remaining, dailyLimit, selectedDate]);
 
   // Filtered by search
   const filteredAppointments = useMemo(() => {
