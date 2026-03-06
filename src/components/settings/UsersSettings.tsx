@@ -137,7 +137,7 @@ const UsersSettings = ({ onBack }: Props) => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead><TableHead>Cargo</TableHead><TableHead>Setor</TableHead>
-                    <TableHead>CRM</TableHead><TableHead>Papel</TableHead>
+                    <TableHead>CRM</TableHead><TableHead>Perfil de Acesso</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
