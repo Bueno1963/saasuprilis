@@ -135,6 +135,18 @@ const LiberarExames = () => {
     },
   });
 
+  const { data: allRefRanges = [] } = useQuery({
+    queryKey: ["param-reference-ranges-liberar"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("parameter_reference_ranges" as any)
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
   // Fetch analyst profiles
   const analystIds = [...new Set(results.filter(r => r.analyst_id).map(r => r.analyst_id!))];
   const { data: profiles = [] } = useQuery({
