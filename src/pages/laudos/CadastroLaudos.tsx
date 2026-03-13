@@ -305,7 +305,7 @@ const CadastroLaudos = () => {
                             <div key={param.id} className={`flex items-center gap-3 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
                               <span className="flex-[2] flex items-baseline overflow-hidden">
                                 <span className="font-medium text-foreground whitespace-nowrap">{param.name}</span>
-                                <span className="flex-1 border-b border-dotted border-muted-foreground mx-1 mb-0.5" />
+                                <span className="flex-1 mx-1 mb-0.5 overflow-hidden whitespace-nowrap text-muted-foreground tracking-[0.15em] leading-none select-none" style={{ fontSize: '10px' }}>{'·'.repeat(200)}</span>
                               </span>
                               <div className="w-24">
                                 <Input className="h-7 text-xs text-center font-bold border-dashed" placeholder="___" />
