@@ -551,6 +551,18 @@ const LiberarExames = () => {
               </Button>
             );
 
+            const historyButton = (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => generatePdfWithHistory(r)}
+                disabled={isPending}
+              >
+                <History className="w-3.5 h-3.5 mr-1" />
+                Histórico
+              </Button>
+            );
+
             const nextButton = (
               <Button
                 size="sm"
