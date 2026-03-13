@@ -636,6 +636,54 @@ export type Database = {
         }
         Relationships: []
       }
+      maintenance_schedule: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          equipment_name: string | null
+          id: string
+          maintenance_type: string
+          notes: string | null
+          recurrence: string | null
+          responsible: string | null
+          scheduled_date: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          equipment_name?: string | null
+          id?: string
+          maintenance_type?: string
+          notes?: string | null
+          recurrence?: string | null
+          responsible?: string | null
+          scheduled_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          equipment_name?: string | null
+          id?: string
+          maintenance_type?: string
+          notes?: string | null
+          recurrence?: string | null
+          responsible?: string | null
+          scheduled_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
