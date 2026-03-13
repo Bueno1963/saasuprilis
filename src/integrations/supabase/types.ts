@@ -183,6 +183,63 @@ export type Database = {
           },
         ]
       }
+      certificates: {
+        Row: {
+          category: string
+          certificate_number: string | null
+          created_at: string
+          created_by: string | null
+          expiry_date: string | null
+          file_name: string | null
+          file_url: string | null
+          id: string
+          issue_date: string | null
+          issuer: string | null
+          notes: string | null
+          related_employee: string | null
+          related_equipment: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          certificate_number?: string | null
+          created_at?: string
+          created_by?: string | null
+          expiry_date?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          issue_date?: string | null
+          issuer?: string | null
+          notes?: string | null
+          related_employee?: string | null
+          related_equipment?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          certificate_number?: string | null
+          created_at?: string
+          created_by?: string | null
+          expiry_date?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          issue_date?: string | null
+          issuer?: string | null
+          notes?: string | null
+          related_employee?: string | null
+          related_equipment?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       chart_of_accounts: {
         Row: {
           code: string
