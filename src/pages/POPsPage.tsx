@@ -238,6 +238,9 @@ const POPsPage = () => {
                             <Button variant="ghost" size="sm" className="h-8 gap-1" onClick={() => { setEditingPop(pop); setFormOpen(true); }}>
                               <Edit2 className="h-3.5 w-3.5" /> Editar
                             </Button>
+                            <Button variant="ghost" size="sm" className="h-8 gap-1" onClick={() => generatePopPdf(pop)}>
+                              <Download className="h-3.5 w-3.5" /> PDF
+                            </Button>
                             <Button variant="ghost" size="sm" className="h-8 gap-1 text-destructive hover:text-destructive" onClick={() => deleteMutation.mutate(pop.id)}>
                               <Trash2 className="h-3.5 w-3.5" /> Excluir
                             </Button>
