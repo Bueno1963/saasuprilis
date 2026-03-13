@@ -259,7 +259,7 @@ const LiberarExames = () => {
       analystCrm: analyst?.crm || undefined,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
-  }, [profileMap, examNameToId, examParamsByExamId]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges]);
 
   // Generate PDF with history for a result
   const generatePdfWithHistory = useCallback(async (r: any) => {
