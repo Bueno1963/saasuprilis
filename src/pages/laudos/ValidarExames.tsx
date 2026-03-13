@@ -595,7 +595,8 @@ const ValidarExames = () => {
                                 {(() => {
                                   const refRange = param.reference_range || "";
                                   const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
-                                  const isObsMultiSelect = param.name === "Observações" && (sectionName === "ERITROGRAMA" || sectionName === "LEUCOGRAMA");
+                                   const isObsMultiSelect = param.name === "Observações" && (sectionName === "ERITROGRAMA" || sectionName === "LEUCOGRAMA");
+                                   const isObsFreeText = param.name === "Observações" && sectionName === "SEDIMENTOSCOPIA";
 
                                   // Multi-select for Observações in ERITROGRAMA/LEUCOGRAMA
                                   if (isObsMultiSelect) {
@@ -652,7 +653,20 @@ const ValidarExames = () => {
                                         </PopoverContent>
                                       </Popover>
                                     );
-                                  }
+                                   }
+
+                                   // Free-text Observações for SEDIMENTOSCOPIA
+                                   if (isObsFreeText) {
+                                     return (
+                                       <Input
+                                         value={val}
+                                         onChange={e => setParamValue(r.id, param.name, e.target.value, r)}
+                                         onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
+                                         placeholder="Observações..."
+                                         className="max-w-[320px] text-sm"
+                                       />
+                                     );
+                                   }
 
                                   const options = (!isDiffParam && refRange.includes("|")) ? refRange.split("|").map(o => o.trim()).filter(Boolean) : [];
                                   if (options.length >= 2) {
