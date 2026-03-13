@@ -13,6 +13,12 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
+// Parameters whose values must sum to 100%
+const DIFFERENTIAL_COUNT_PARAMS = [
+  "Basófilos", "Eosinófilos", "Mielócitos", "Metamielócitos",
+  "Bastões", "Segmentados", "Linfócitos típicos", "Linfócitos atípicos", "Monócitos",
+];
+
 interface ExamParam {
   id: string;
   exam_id: string;
@@ -348,7 +354,14 @@ const ValidarExames = () => {
       const params = examId ? examParamsByExamId.get(examId) : undefined;
       if (params && params.length > 0) {
         const vals = getParamValues(r);
-        return params.every(p => vals[p.name] && vals[p.name].trim() !== "");
+        const paramsFilled = params.every(p => vals[p.name] && vals[p.name].trim() !== "");
+        // Also check differential count sum = 100%
+        const diffPs = params.filter(p => DIFFERENTIAL_COUNT_PARAMS.includes(p.name));
+        if (diffPs.length > 0) {
+          const sum = diffPs.reduce((s, p) => s + (parseFloat(vals[p.name] || "0") || 0), 0);
+          if (Math.abs(sum - 100) >= 0.01) return false;
+        }
+        return paramsFilled;
       }
       const val = editedValues[r.id] ?? r.value;
       return val && val.trim() !== "";
@@ -487,6 +500,19 @@ const ValidarExames = () => {
 
           const allParamsFilled = params!.every(p => paramValues[p.name]?.trim());
 
+          // Check if this exam has differential count params that must sum to 100%
+          const diffParams = params!.filter(p => DIFFERENTIAL_COUNT_PARAMS.includes(p.name));
+          const hasDiffCount = diffParams.length > 0;
+          let diffSum = 0;
+          let diffSumValid = true;
+          if (hasDiffCount) {
+            diffSum = diffParams.reduce((sum, p) => {
+              const v = parseFloat(paramValues[p.name] || "0");
+              return sum + (isNaN(v) ? 0 : v);
+            }, 0);
+            diffSumValid = Math.abs(diffSum - 100) < 0.01;
+          }
+
           return (
             <Card key={r.id}>
               <CardHeader className="pb-2">
@@ -501,8 +527,8 @@ const ValidarExames = () => {
                     <Button
                       size="sm"
                       onClick={() => validateMutation.mutate([r.id])}
-                      disabled={validateMutation.isPending || !allParamsFilled || !isSampleDeAcordo(r)}
-                      title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : ""}
+                      disabled={validateMutation.isPending || !allParamsFilled || !isSampleDeAcordo(r) || (hasDiffCount && !diffSumValid)}
+                      title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : (hasDiffCount && !diffSumValid) ? "A contagem diferencial deve somar 100%" : ""}
                       style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
                       className="text-white hover:opacity-90"
                     >
@@ -574,6 +600,32 @@ const ValidarExames = () => {
                             </TableRow>
                           );
                         })}
+                        {/* Show sum row if this section contains differential count params */}
+                        {sectionParams.some(p => DIFFERENTIAL_COUNT_PARAMS.includes(p.name)) && (
+                          <TableRow className={cn("border-t-2", diffSumValid ? "bg-emerald-50 dark:bg-emerald-950/30" : "bg-destructive/10")}>
+                            <TableCell className="font-bold text-sm">
+                              Total
+                            </TableCell>
+                            <TableCell>
+                              <span className={cn(
+                                "font-mono font-bold text-sm px-2 py-0.5 rounded",
+                                diffSumValid ? "text-emerald-700 dark:text-emerald-400" : "text-destructive"
+                              )}>
+                                {diffSum.toFixed(1)}%
+                              </span>
+                              {!diffSumValid && (
+                                <span className="ml-2 text-xs text-destructive flex items-center gap-1 inline-flex">
+                                  <AlertTriangle className="w-3 h-3" /> Deve somar 100%
+                                </span>
+                              )}
+                              {diffSumValid && (
+                                <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400">✓</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">%</TableCell>
+                            <TableCell />
+                          </TableRow>
+                        )}
                       </>
                     ))}
                   </TableBody>
