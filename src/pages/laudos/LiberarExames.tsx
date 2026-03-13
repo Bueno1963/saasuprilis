@@ -345,7 +345,7 @@ const LiberarExames = () => {
     } else {
       toast.success(`PDF gerado com ${historyEntries.length} resultado(s) anterior(es)`);
     }
-  }, [profileMap, examNameToId, examParamsByExamId]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges]);
 
   const releaseMutation = useMutation({
     mutationFn: async (id: string) => {
