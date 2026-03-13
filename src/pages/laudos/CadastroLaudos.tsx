@@ -277,11 +277,11 @@ const CadastroLaudos = () => {
 
                   <div className="font-mono text-sm">
                     {/* Column headers */}
-                    <div className="flex items-center gap-2 pb-2 border-b border-border mb-2">
-                      <span className="flex-1 font-bold text-foreground">Parâmetro</span>
-                      <span className="w-28 font-bold text-foreground text-center">Resultado</span>
-                      <span className="w-16 font-bold text-foreground text-center">Unidade</span>
-                      <span className="w-44 font-bold text-foreground text-center">Referências</span>
+                    <div className="flex items-center gap-3 pb-2 border-b border-border mb-2">
+                      <span className="flex-[2] font-bold text-foreground">Parâmetro</span>
+                      <span className="w-24 font-bold text-foreground text-center">Resultado</span>
+                      <span className="w-12 font-bold text-foreground text-center">Unidade</span>
+                      <span className="w-36 font-bold text-foreground text-center">Referências</span>
                       <span className="w-16 print:hidden" />
                     </div>
 
