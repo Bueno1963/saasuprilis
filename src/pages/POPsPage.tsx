@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import POPFormDialog from "@/components/pops/POPFormDialog";
 import POPViewDialog from "@/components/pops/POPViewDialog";
+import { generatePopPdf } from "@/lib/generate-pop-pdf";
 
 const CATEGORIES = [
   { value: "pre_analitica", label: "Fase Pré-Analítica", description: "Coleta, transporte, recepção e triagem de amostras" },
