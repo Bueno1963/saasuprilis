@@ -6,12 +6,29 @@ import StatusBadge from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShieldCheck, CheckCircle, ArrowLeft, Search, Save, AlertTriangle } from "lucide-react";
-import { useState, useCallback, useMemo } from "react";
+import { ShieldCheck, CheckCircle, ArrowLeft, Search, Save, AlertTriangle, ChevronDown, X } from "lucide-react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+// Morphology options for Observações (ERITROGRAMA)
+const ERITROGRAMA_OBS_OPTIONS = [
+  "Microcitose",
+  "Macrocitose",
+  "Hipocromia",
+  "Hipercromia",
+  "Dacriócitos",
+  "Esquizócitos",
+  "Drepanócitos",
+  "Codócitos (Hemácias em alvo)",
+  "Esferócitos",
+  "Pontilhado basófilo",
+  "Corpos de Howell-Jolly",
+];
 
 // Parameters whose values must sum to 100%
 const DIFFERENTIAL_COUNT_PARAMS = [
