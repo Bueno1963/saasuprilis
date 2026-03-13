@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ShieldCheck, CheckCircle, ArrowLeft, Search, Save, AlertTriangle } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -538,16 +539,38 @@ const ValidarExames = () => {
                             <TableRow key={param.id} className={cn(!val.trim() && "bg-muted/20")}>
                               <TableCell className="font-medium text-sm">{param.name}</TableCell>
                               <TableCell>
-                                <Input
-                                  value={val}
-                                  onChange={e => setParamValue(r.id, param.name, e.target.value, r)}
-                                  onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
-                                  placeholder="..."
-                                  className={cn("max-w-[160px] font-mono text-sm", !val.trim() && "border-destructive/50")}
-                                />
+                                {(() => {
+                                  const refRange = param.reference_range || "";
+                                  const options = refRange.includes("|") ? refRange.split("|").map(o => o.trim()).filter(Boolean) : [];
+                                  if (options.length >= 2) {
+                                    return (
+                                      <Select value={val || undefined} onValueChange={v => { setParamValue(r.id, param.name, v, r); }}>
+                                        <SelectTrigger className={cn("max-w-[200px] text-sm", !val.trim() && "border-destructive/50")}>
+                                          <SelectValue placeholder="Selecione..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {options.map(opt => (
+                                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    );
+                                  }
+                                  return (
+                                    <Input
+                                      value={val}
+                                      onChange={e => setParamValue(r.id, param.name, e.target.value, r)}
+                                      onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
+                                      placeholder="..."
+                                      className={cn("max-w-[160px] font-mono text-sm", !val.trim() && "border-destructive/50")}
+                                    />
+                                  );
+                                })()}
                               </TableCell>
                               <TableCell className="text-sm text-muted-foreground">{param.unit || ""}</TableCell>
-                              <TableCell className="text-xs text-muted-foreground">{param.reference_range || ""}</TableCell>
+                              <TableCell className="text-xs text-muted-foreground">
+                                {(param.reference_range || "").includes("|") ? "" : param.reference_range || ""}
+                              </TableCell>
                             </TableRow>
                           );
                         })}
