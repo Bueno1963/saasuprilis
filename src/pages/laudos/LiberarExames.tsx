@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer, PenTool, Undo2, AlertTriangle } from "lucide-react";
+import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer, PenTool, Undo2, AlertTriangle, History } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
