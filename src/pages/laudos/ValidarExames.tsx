@@ -520,8 +520,8 @@ const ValidarExames = () => {
                     <Button
                       size="sm"
                       onClick={() => validateMutation.mutate([r.id])}
-                      disabled={validateMutation.isPending || !allParamsFilled || !isSampleDeAcordo(r)}
-                      title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : ""}
+                      disabled={validateMutation.isPending || !allParamsFilled || !isSampleDeAcordo(r) || (hasDiffCount && !diffSumValid)}
+                      title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : (hasDiffCount && !diffSumValid) ? "A contagem diferencial deve somar 100%" : ""}
                       style={{ backgroundColor: "#258E94", borderColor: "#258E94" }}
                       className="text-white hover:opacity-90"
                     >
