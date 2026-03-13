@@ -91,6 +91,18 @@ const Laudos = () => {
     },
   });
 
+  const { data: allRefRanges = [] } = useQuery({
+    queryKey: ["param-reference-ranges-laudos"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("parameter_reference_ranges" as any)
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
   const examNameToId = new Map(examCatalogFull.map(e => [e.name, e.id]));
   const examParamsByExamId = useMemo(() => {
     const map = new Map<string, ExamParam[]>();
