@@ -567,7 +567,8 @@ const ValidarExames = () => {
                               <TableCell>
                                 {(() => {
                                   const refRange = param.reference_range || "";
-                                  const options = refRange.includes("|") ? refRange.split("|").map(o => o.trim()).filter(Boolean) : [];
+                                  const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
+                                  const options = (!isDiffParam && refRange.includes("|")) ? refRange.split("|").map(o => o.trim()).filter(Boolean) : [];
                                   if (options.length >= 2) {
                                     return (
                                       <Select value={val || undefined} onValueChange={v => { setParamValue(r.id, param.name, v, r); }}>
