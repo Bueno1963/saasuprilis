@@ -116,6 +116,7 @@ const ProtectedRoutes = () => {
         <Route path="/financeiro/balancete" element={<DynamicGuard route="/financeiro"><BalancetePage /></DynamicGuard>} />
         <Route path="/financeiro/importar-extrato" element={<DynamicGuard route="/financeiro"><ImportarExtratoPage /></DynamicGuard>} />
         <Route path="/recepcao" element={<DynamicGuard route="/recepcao"><RecepcaoPage /></DynamicGuard>} />
+        <Route path="/pops" element={<DynamicGuard route="/pops"><POPsPage /></DynamicGuard>} />
         <Route path="/recepcao/agendamento" element={<DynamicGuard route="/recepcao"><AgendamentoPage /></DynamicGuard>} />
       </Route>
       <Route path="*" element={<NotFound />} />
