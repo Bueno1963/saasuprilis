@@ -8,7 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { FlaskConical, Printer, Plus, Pencil, Trash2, Save, ChevronDown, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { FlaskConical, Printer, Plus, Pencil, Trash2, Save, ChevronDown, ChevronRight, ListTree } from "lucide-react";
 import { toast } from "sonner";
 
 // --- Types ---
