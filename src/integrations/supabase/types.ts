@@ -436,6 +436,41 @@ export type Database = {
           },
         ]
       }
+      insurance_plan_exams: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          insurance_plan_id: string
+          price: number
+          procedure_code: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          insurance_plan_id: string
+          price?: number
+          procedure_code: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          insurance_plan_id?: string
+          price?: number
+          procedure_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_plan_exams_insurance_plan_id_fkey"
+            columns: ["insurance_plan_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insurance_plans: {
         Row: {
           billing_type: string | null
