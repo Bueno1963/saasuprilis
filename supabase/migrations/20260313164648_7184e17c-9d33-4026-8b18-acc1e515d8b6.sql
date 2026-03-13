@@ -1,0 +1,1 @@
+UPDATE exam_parameters SET reference_range = 'Escherichia coli (E. coli) | Klebsiella pneumoniae | Proteus mirabilis | Enterococcus faecalis | Staphylococcus saprophyticus | Pseudomonas aeruginosa' WHERE id = '0856b3ff-3691-40d0-a12c-044fcfd9da26';
