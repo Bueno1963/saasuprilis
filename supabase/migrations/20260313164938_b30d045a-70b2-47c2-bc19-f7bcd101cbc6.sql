@@ -1,0 +1,1 @@
+UPDATE exam_parameters SET reference_range = 'Sensível (S) | Intermediário (I) | Resistente (R)' WHERE exam_id = (SELECT id FROM exam_catalog WHERE code = 'UCT') AND section = 'ANTIBIOGRAMA';
