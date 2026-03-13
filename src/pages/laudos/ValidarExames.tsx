@@ -593,6 +593,32 @@ const ValidarExames = () => {
                             </TableRow>
                           );
                         })}
+                        {/* Show sum row if this section contains differential count params */}
+                        {sectionParams.some(p => DIFFERENTIAL_COUNT_PARAMS.includes(p.name)) && (
+                          <TableRow className={cn("border-t-2", diffSumValid ? "bg-emerald-50 dark:bg-emerald-950/30" : "bg-destructive/10")}>
+                            <TableCell className="font-bold text-sm">
+                              Total
+                            </TableCell>
+                            <TableCell>
+                              <span className={cn(
+                                "font-mono font-bold text-sm px-2 py-0.5 rounded",
+                                diffSumValid ? "text-emerald-700 dark:text-emerald-400" : "text-destructive"
+                              )}>
+                                {diffSum.toFixed(1)}%
+                              </span>
+                              {!diffSumValid && (
+                                <span className="ml-2 text-xs text-destructive flex items-center gap-1 inline-flex">
+                                  <AlertTriangle className="w-3 h-3" /> Deve somar 100%
+                                </span>
+                              )}
+                              {diffSumValid && (
+                                <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400">✓</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">%</TableCell>
+                            <TableCell />
+                          </TableRow>
+                        )}
                       </>
                     ))}
                   </TableBody>
