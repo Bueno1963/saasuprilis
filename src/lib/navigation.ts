@@ -85,6 +85,7 @@ export const navItems: NavItem[] = [
     allowedRoles: ["admin", "tecnico"],
     children: [
       { title: "Arquivo de Certificados", href: "/pops/certificados", icon: Award },
+      { title: "Calendário Manutenções", href: "/pops/manutencoes", icon: CalendarClock },
     ],
   },
   { title: "Configurações", href: "/configuracoes", icon: Settings, allowedRoles: ["admin"] },
