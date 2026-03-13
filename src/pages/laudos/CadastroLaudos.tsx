@@ -403,7 +403,10 @@ const CadastroLaudos = () => {
                               </Button>
                             </div>
                           )}
-                          {items.map((param: any, idx: number) => (
+                          {items.map((param: any, idx: number) => {
+                            const refRanges = getParamRefRanges(param.id);
+                            const hasAgeRefs = refRanges.length > 0;
+                            return (
                             <div key={param.id} className={`flex items-center gap-1.5 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
                               <span className="flex-[2] flex items-baseline overflow-hidden">
                                 <span className="font-medium text-foreground whitespace-nowrap">{param.name}</span>
@@ -413,8 +416,17 @@ const CadastroLaudos = () => {
                                 <Input className="h-7 text-xs text-center font-bold border-dashed" placeholder="___" />
                               </div>
                               <span className="w-12 text-center text-muted-foreground text-xs">{param.unit || "—"}</span>
-                              <span className="w-36 text-center text-muted-foreground text-xs">{param.reference_range || "—"}</span>
-                              <div className="w-16 flex justify-center gap-0.5 print:hidden opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="w-36 text-center text-muted-foreground text-xs">
+                                {hasAgeRefs ? (
+                                  <Badge variant="secondary" className="text-[10px] cursor-pointer" onClick={() => openRefRangeDialog(param.id, param.name)}>
+                                    {refRanges.length} faixa(s) etária(s)
+                                  </Badge>
+                                ) : (param.reference_range || "—")}
+                              </span>
+                              <div className="w-20 flex justify-center gap-0.5 print:hidden opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openRefRangeDialog(param.id, param.name)} title="Referências por faixa etária">
+                                  <ListTree className="w-3 h-3" />
+                                </Button>
                                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditParam(param)}>
                                   <Pencil className="w-3 h-3" />
                                 </Button>
@@ -423,7 +435,8 @@ const CadastroLaudos = () => {
                                 </Button>
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       ))
                     )}
