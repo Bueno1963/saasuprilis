@@ -354,7 +354,14 @@ const ValidarExames = () => {
       const params = examId ? examParamsByExamId.get(examId) : undefined;
       if (params && params.length > 0) {
         const vals = getParamValues(r);
-        return params.every(p => vals[p.name] && vals[p.name].trim() !== "");
+        const paramsFilled = params.every(p => vals[p.name] && vals[p.name].trim() !== "");
+        // Also check differential count sum = 100%
+        const diffPs = params.filter(p => DIFFERENTIAL_COUNT_PARAMS.includes(p.name));
+        if (diffPs.length > 0) {
+          const sum = diffPs.reduce((s, p) => s + (parseFloat(vals[p.name] || "0") || 0), 0);
+          if (Math.abs(sum - 100) >= 0.01) return false;
+        }
+        return paramsFilled;
       }
       const val = editedValues[r.id] ?? r.value;
       return val && val.trim() !== "";
