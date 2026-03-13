@@ -76,5 +76,6 @@ export const navItems: NavItem[] = [
       { title: "Balancete", href: "/financeiro/balancete", icon: Scale },
     ],
   },
+  { title: "POPs", href: "/pops", icon: FileText, allowedRoles: ["admin", "tecnico"] },
   { title: "Configurações", href: "/configuracoes", icon: Settings, allowedRoles: ["admin"] },
 ];
