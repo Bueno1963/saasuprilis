@@ -22,6 +22,7 @@ import {
   Upload,
   FileText,
   Award,
+  CalendarClock,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
