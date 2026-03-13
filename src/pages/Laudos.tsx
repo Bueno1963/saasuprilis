@@ -10,6 +10,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { resolveReferenceRange } from "@/lib/age-reference-utils";
 import { toast } from "sonner";
 
 interface ExamParam {
@@ -90,6 +91,18 @@ const Laudos = () => {
     },
   });
 
+  const { data: allRefRanges = [] } = useQuery({
+    queryKey: ["param-reference-ranges-laudos"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("parameter_reference_ranges" as any)
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
   const examNameToId = new Map(examCatalogFull.map(e => [e.name, e.id]));
   const examParamsByExamId = useMemo(() => {
     const map = new Map<string, ExamParam[]>();
@@ -163,7 +176,7 @@ const Laudos = () => {
         name: p.name,
         value: paramValues[p.name] || "—",
         unit: p.unit || "",
-        referenceRange: p.reference_range || "",
+        referenceRange: resolveReferenceRange(p.id, p.reference_range || "", patient?.birth_date || null, patient?.gender || "", allRefRanges),
       }));
     }
 

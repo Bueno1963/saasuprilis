@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { resolveReferenceRange } from "@/lib/age-reference-utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface ExamParam {
@@ -134,6 +135,18 @@ const LiberarExames = () => {
     },
   });
 
+  const { data: allRefRanges = [] } = useQuery({
+    queryKey: ["param-reference-ranges-liberar"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("parameter_reference_ranges" as any)
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
   // Fetch analyst profiles
   const analystIds = [...new Set(results.filter(r => r.analyst_id).map(r => r.analyst_id!))];
   const { data: profiles = [] } = useQuery({
@@ -219,7 +232,7 @@ const LiberarExames = () => {
         name: p.name,
         value: paramValues[p.name] || "—",
         unit: p.unit || "",
-        referenceRange: p.reference_range || "",
+        referenceRange: resolveReferenceRange(p.id, p.reference_range || "", patient?.birth_date || null, patient?.gender || "", allRefRanges),
       }));
     }
 
@@ -246,7 +259,7 @@ const LiberarExames = () => {
       analystCrm: analyst?.crm || undefined,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
-  }, [profileMap, examNameToId, examParamsByExamId]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges]);
 
   // Generate PDF with history for a result
   const generatePdfWithHistory = useCallback(async (r: any) => {
@@ -298,7 +311,7 @@ const LiberarExames = () => {
         name: p.name,
         value: paramValues[p.name] || "—",
         unit: p.unit || "",
-        referenceRange: p.reference_range || "",
+        referenceRange: resolveReferenceRange(p.id, p.reference_range || "", patient?.birth_date || null, patient?.gender || "", allRefRanges),
       }));
     }
 
@@ -332,7 +345,7 @@ const LiberarExames = () => {
     } else {
       toast.success(`PDF gerado com ${historyEntries.length} resultado(s) anterior(es)`);
     }
-  }, [profileMap, examNameToId, examParamsByExamId]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges]);
 
   const releaseMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -677,14 +690,18 @@ const LiberarExames = () => {
                               </TableCell>
                             </TableRow>
                           )}
-                          {sectionParams.map(param => (
+                          {sectionParams.map(param => {
+                            const patient = (r as any).orders?.patients;
+                            const resolvedRef = resolveReferenceRange(param.id, param.reference_range || "", patient?.birth_date || null, patient?.gender || "", allRefRanges);
+                            return (
                             <TableRow key={param.id}>
                               <TableCell className="font-medium text-sm">{param.name}</TableCell>
-                              <TableCell className={cn("font-mono font-semibold text-sm", isOutOfRange(paramValues[param.name] || "", param.reference_range) && "text-destructive")}>{paramValues[param.name] || "—"}</TableCell>
+                              <TableCell className={cn("font-mono font-semibold text-sm", isOutOfRange(paramValues[param.name] || "", resolvedRef) && "text-destructive")}>{paramValues[param.name] || "—"}</TableCell>
                               <TableCell className="text-sm text-muted-foreground">{param.unit || ""}</TableCell>
-                              <TableCell className="text-xs text-muted-foreground">{param.reference_range || ""}</TableCell>
+                              <TableCell className="text-xs text-muted-foreground">{resolvedRef}</TableCell>
                             </TableRow>
-                          ))}
+                            );
+                          })}
                         </>
                       ))}
                     </TableBody>
