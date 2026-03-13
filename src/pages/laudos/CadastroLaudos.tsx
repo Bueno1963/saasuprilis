@@ -22,12 +22,23 @@ interface ExamForm {
 interface ParamForm {
   section: string; name: string; unit: string; reference_range: string; sort_order: number;
 }
+interface RefRangeForm {
+  age_group: string; gender: string; reference_value: string; sort_order: number;
+}
+
+const AGE_GROUPS = [
+  "RN (cordão)", "1 a 3 dias", "1 semana", "2 semanas", "1 mês", "2 meses",
+  "3 a 6 meses", "6 meses a 2 anos", "2 a 6 anos", "6 a 12 anos",
+  "12 a 18 anos", "Adulto", "> 16 anos",
+];
+const GENDERS = ["Ambos", "Masculino", "Feminino"];
 
 const emptyExamForm: ExamForm = {
   code: "", name: "", material: "Sangue", method: "", unit: "",
   reference_range: "", equipment: "", turnaround_hours: 24, price: 0,
 };
 const emptyParamForm: ParamForm = { section: "", name: "", unit: "", reference_range: "", sort_order: 0 };
+const emptyRefRangeForm: RefRangeForm = { age_group: "", gender: "Ambos", reference_value: "", sort_order: 0 };
 
 const EditableSelect = ({ value, onChange, options, placeholder }: {
   value: string; onChange: (v: string) => void; options: string[]; placeholder?: string;
