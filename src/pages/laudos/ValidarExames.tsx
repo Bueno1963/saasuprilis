@@ -30,6 +30,16 @@ const ERITROGRAMA_OBS_OPTIONS = [
   "Corpos de Howell-Jolly",
 ];
 
+// Morphology options for Observações (LEUCOGRAMA)
+const LEUCOGRAMA_OBS_OPTIONS = [
+  "Presença de células jovens",
+  "Granulações tóxicas/Vacuolização",
+  "Hipersegmentação",
+  "Linfócitos Reativos ou Atípicos",
+  "Presença de Blastos",
+  "Eosinofilia",
+];
+
 // Parameters whose values must sum to 100%
 const DIFFERENTIAL_COUNT_PARAMS = [
   "Basófilos", "Eosinófilos", "Mielócitos", "Metamielócitos",
@@ -614,7 +624,7 @@ const ValidarExames = () => {
                                         </PopoverTrigger>
                                         <PopoverContent className="w-[320px] p-2" align="start">
                                           <div className="space-y-1 max-h-[280px] overflow-y-auto">
-                                            {ERITROGRAMA_OBS_OPTIONS.map(opt => (
+                                            {(sectionName === "LEUCOGRAMA" ? LEUCOGRAMA_OBS_OPTIONS : ERITROGRAMA_OBS_OPTIONS).map(opt => (
                                               <label
                                                 key={opt}
                                                 className="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer text-sm"
