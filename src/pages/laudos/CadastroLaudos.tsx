@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FlaskConical, Printer, Plus, Pencil, Trash2, Save, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,6 +26,41 @@ const emptyExamForm: ExamForm = {
   reference_range: "", equipment: "", turnaround_hours: 24, price: 0,
 };
 const emptyParamForm: ParamForm = { section: "", name: "", unit: "", reference_range: "", sort_order: 0 };
+
+const EditableSelect = ({ value, onChange, options, placeholder }: {
+  value: string; onChange: (v: string) => void; options: string[]; placeholder?: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  const filtered = options.filter((o) => o.toLowerCase().includes(value.toLowerCase()));
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div className="relative">
+          <Input
+            value={value}
+            onChange={(e) => { onChange(e.target.value); if (!open) setOpen(true); }}
+            onFocus={() => setOpen(true)}
+            placeholder={placeholder}
+            className="pr-8"
+          />
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-1 max-h-48 overflow-y-auto" align="start" sideOffset={4}
+        onOpenAutoFocus={(e) => e.preventDefault()}>
+        {filtered.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-2">Nenhuma opção</p>
+        ) : filtered.map((opt) => (
+          <button key={opt} type="button"
+            className="w-full text-left text-sm px-2 py-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors"
+            onClick={() => { onChange(opt); setOpen(false); }}>
+            {opt}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const CadastroLaudos = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
@@ -403,7 +439,23 @@ const CadastroLaudos = () => {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Valor de Referência</Label>
-                <Input value={paramForm.reference_range} onChange={(e) => setP("reference_range", e.target.value)} placeholder="4.00 a 5.20" />
+                <EditableSelect
+                  value={paramForm.reference_range}
+                  onChange={(v) => setP("reference_range", v)}
+                  options={[
+                    "Negativo",
+                    "Positivo",
+                    "Normal",
+                    "Reagente",
+                    "Não Reagente",
+                    "Límpido",
+                    "Turvo",
+                    "Amarelo citrino",
+                    "Ausente",
+                    "Presente",
+                  ]}
+                  placeholder="Selecionar ou digitar..."
+                />
               </div>
             </div>
             <div className="space-y-1">
