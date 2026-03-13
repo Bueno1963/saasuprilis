@@ -1,7 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { FileText, CheckCircle2, Clock, Edit2, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FileText, Download } from "lucide-react";
+import { generatePopPdf } from "@/lib/generate-pop-pdf";
 
 interface POPViewDialogProps {
   open: boolean;
@@ -37,17 +39,23 @@ const POPViewDialog = ({ open, onOpenChange, pop, categories }: POPViewDialogPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center gap-3">
-            <FileText className="h-6 w-6 text-primary" />
-            <div>
-              <DialogTitle className="text-lg">{pop.title}</DialogTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs font-mono text-muted-foreground">{pop.code}</span>
-                <span className="text-xs text-muted-foreground">• v{pop.version}</span>
-                <Badge variant={statusCfg.variant} className="text-[10px]">{statusCfg.label}</Badge>
-                <Badge variant="outline" className="text-[10px]">{catLabel}</Badge>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <FileText className="h-6 w-6 text-primary" />
+              <div>
+                <DialogTitle className="text-lg">{pop.title}</DialogTitle>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs font-mono text-muted-foreground">{pop.code}</span>
+                  <span className="text-xs text-muted-foreground">• v{pop.version}</span>
+                  <Badge variant={statusCfg.variant} className="text-[10px]">{statusCfg.label}</Badge>
+                  <Badge variant="outline" className="text-[10px]">{catLabel}</Badge>
+                </div>
               </div>
             </div>
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => generatePopPdf(pop)}>
+              <Download className="h-4 w-4" />
+              Exportar PDF
+            </Button>
           </div>
         </DialogHeader>
 
