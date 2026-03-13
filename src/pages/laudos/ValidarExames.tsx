@@ -493,6 +493,19 @@ const ValidarExames = () => {
 
           const allParamsFilled = params!.every(p => paramValues[p.name]?.trim());
 
+          // Check if this exam has differential count params that must sum to 100%
+          const diffParams = params!.filter(p => DIFFERENTIAL_COUNT_PARAMS.includes(p.name));
+          const hasDiffCount = diffParams.length > 0;
+          let diffSum = 0;
+          let diffSumValid = true;
+          if (hasDiffCount) {
+            diffSum = diffParams.reduce((sum, p) => {
+              const v = parseFloat(paramValues[p.name] || "0");
+              return sum + (isNaN(v) ? 0 : v);
+            }, 0);
+            diffSumValid = Math.abs(diffSum - 100) < 0.01;
+          }
+
           return (
             <Card key={r.id}>
               <CardHeader className="pb-2">
