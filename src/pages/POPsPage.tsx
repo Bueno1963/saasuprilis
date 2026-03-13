@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Plus, Search, Filter, Eye, Edit2, Trash2, CheckCircle2, Clock, AlertTriangle, BookOpen } from "lucide-react";
+import { FileText, Plus, Search, Filter, Eye, Edit2, Trash2, CheckCircle2, Clock, AlertTriangle, BookOpen, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import POPFormDialog from "@/components/pops/POPFormDialog";
 import POPViewDialog from "@/components/pops/POPViewDialog";
+import { generatePopPdf } from "@/lib/generate-pop-pdf";
 
 const CATEGORIES = [
   { value: "pre_analitica", label: "Fase Pré-Analítica", description: "Coleta, transporte, recepção e triagem de amostras" },
@@ -236,6 +237,9 @@ const POPsPage = () => {
                             </Button>
                             <Button variant="ghost" size="sm" className="h-8 gap-1" onClick={() => { setEditingPop(pop); setFormOpen(true); }}>
                               <Edit2 className="h-3.5 w-3.5" /> Editar
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 gap-1" onClick={() => generatePopPdf(pop)}>
+                              <Download className="h-3.5 w-3.5" /> PDF
                             </Button>
                             <Button variant="ghost" size="sm" className="h-8 gap-1 text-destructive hover:text-destructive" onClick={() => deleteMutation.mutate(pop.id)}>
                               <Trash2 className="h-3.5 w-3.5" /> Excluir
