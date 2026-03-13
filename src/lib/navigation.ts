@@ -20,6 +20,7 @@ import {
   BookOpen,
   Scale,
   Upload,
+  FileText,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
