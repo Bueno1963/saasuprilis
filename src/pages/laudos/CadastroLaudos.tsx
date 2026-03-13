@@ -113,6 +113,20 @@ const CadastroLaudos = () => {
     },
   });
 
+  const { data: allRefRanges = [] } = useQuery({
+    queryKey: ["param-reference-ranges"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("parameter_reference_ranges" as any)
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const getParamRefRanges = (paramId: string) => allRefRanges.filter((r: any) => r.parameter_id === paramId);
+
   // --- Mutations ---
   const saveExamMutation = useMutation({
     mutationFn: async (payload: ExamForm & { sector: string; id?: string }) => {
