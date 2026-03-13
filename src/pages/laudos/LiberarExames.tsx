@@ -690,14 +690,18 @@ const LiberarExames = () => {
                               </TableCell>
                             </TableRow>
                           )}
-                          {sectionParams.map(param => (
+                          {sectionParams.map(param => {
+                            const patient = (r as any).orders?.patients;
+                            const resolvedRef = resolveReferenceRange(param.id, param.reference_range || "", patient?.birth_date || null, patient?.gender || "", allRefRanges);
+                            return (
                             <TableRow key={param.id}>
                               <TableCell className="font-medium text-sm">{param.name}</TableCell>
-                              <TableCell className={cn("font-mono font-semibold text-sm", isOutOfRange(paramValues[param.name] || "", param.reference_range) && "text-destructive")}>{paramValues[param.name] || "—"}</TableCell>
+                              <TableCell className={cn("font-mono font-semibold text-sm", isOutOfRange(paramValues[param.name] || "", resolvedRef) && "text-destructive")}>{paramValues[param.name] || "—"}</TableCell>
                               <TableCell className="text-sm text-muted-foreground">{param.unit || ""}</TableCell>
-                              <TableCell className="text-xs text-muted-foreground">{param.reference_range || ""}</TableCell>
+                              <TableCell className="text-xs text-muted-foreground">{resolvedRef}</TableCell>
                             </TableRow>
-                          ))}
+                            );
+                          })}
                         </>
                       ))}
                     </TableBody>
