@@ -6,12 +6,29 @@ import StatusBadge from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShieldCheck, CheckCircle, ArrowLeft, Search, Save, AlertTriangle } from "lucide-react";
-import { useState, useCallback, useMemo } from "react";
+import { ShieldCheck, CheckCircle, ArrowLeft, Search, Save, AlertTriangle, ChevronDown, X } from "lucide-react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+// Morphology options for Observações (ERITROGRAMA)
+const ERITROGRAMA_OBS_OPTIONS = [
+  "Microcitose",
+  "Macrocitose",
+  "Hipocromia",
+  "Hipercromia",
+  "Dacriócitos",
+  "Esquizócitos",
+  "Drepanócitos",
+  "Codócitos (Hemácias em alvo)",
+  "Esferócitos",
+  "Pontilhado basófilo",
+  "Corpos de Howell-Jolly",
+];
 
 // Parameters whose values must sum to 100%
 const DIFFERENTIAL_COUNT_PARAMS = [
@@ -568,6 +585,65 @@ const ValidarExames = () => {
                                 {(() => {
                                   const refRange = param.reference_range || "";
                                   const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
+                                  const isEritroObs = param.name === "Observações" && sectionName === "ERITROGRAMA";
+
+                                  // Multi-select for Observações in ERITROGRAMA
+                                  if (isEritroObs) {
+                                    const selectedItems = val ? val.split(", ").filter(Boolean) : [];
+                                    const toggleItem = (item: string) => {
+                                      const newItems = selectedItems.includes(item)
+                                        ? selectedItems.filter(i => i !== item)
+                                        : [...selectedItems, item];
+                                      setParamValue(r.id, param.name, newItems.join(", "), r);
+                                    };
+                                    return (
+                                      <Popover>
+                                        <PopoverTrigger asChild>
+                                          <Button
+                                            variant="outline"
+                                            className={cn(
+                                              "max-w-[320px] w-full justify-between text-sm font-normal h-auto min-h-[2.5rem] py-1.5",
+                                              !val.trim() && "text-muted-foreground"
+                                            )}
+                                          >
+                                            <span className="truncate text-left flex-1">
+                                              {selectedItems.length > 0 ? `${selectedItems.length} selecionado(s)` : "Selecione..."}
+                                            </span>
+                                            <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+                                          </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[320px] p-2" align="start">
+                                          <div className="space-y-1 max-h-[280px] overflow-y-auto">
+                                            {ERITROGRAMA_OBS_OPTIONS.map(opt => (
+                                              <label
+                                                key={opt}
+                                                className="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer text-sm"
+                                              >
+                                                <Checkbox
+                                                  checked={selectedItems.includes(opt)}
+                                                  onCheckedChange={() => toggleItem(opt)}
+                                                />
+                                                {opt}
+                                              </label>
+                                            ))}
+                                          </div>
+                                          {selectedItems.length > 0 && (
+                                            <div className="border-t mt-2 pt-2">
+                                              <div className="flex flex-wrap gap-1">
+                                                {selectedItems.map(item => (
+                                                  <Badge key={item} variant="secondary" className="text-xs gap-1">
+                                                    {item}
+                                                    <X className="h-3 w-3 cursor-pointer" onClick={() => toggleItem(item)} />
+                                                  </Badge>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+                                        </PopoverContent>
+                                      </Popover>
+                                    );
+                                  }
+
                                   const options = (!isDiffParam && refRange.includes("|")) ? refRange.split("|").map(o => o.trim()).filter(Boolean) : [];
                                   if (options.length >= 2) {
                                     return (
