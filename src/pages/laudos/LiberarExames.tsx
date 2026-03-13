@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer, PenTool, Undo2, AlertTriangle } from "lucide-react";
+import { Unlock, CheckCircle, ArrowLeft, Search, ArrowRight, Printer, PenTool, Undo2, AlertTriangle, History } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -248,6 +248,92 @@ const LiberarExames = () => {
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
   }, [profileMap, examNameToId, examParamsByExamId]);
 
+  // Generate PDF with history for a result
+  const generatePdfWithHistory = useCallback(async (r: any) => {
+    const order = r.orders as any;
+    const patient = order?.patients;
+    const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
+    const patientId = order?.patient_id || r.order_id; // fallback
+
+    // Fetch patient_id from the order
+    let actualPatientId: string | null = null;
+    if (patient) {
+      const { data: orderData } = await supabase.from("orders").select("patient_id").eq("id", r.order_id).single();
+      actualPatientId = orderData?.patient_id || null;
+    }
+
+    // Fetch previous released results for this patient's same exam
+    let historyEntries: { exam: string; date: string; value: string; unit: string; flag: string }[] = [];
+    if (actualPatientId) {
+      const { data: prevResults } = await supabase
+        .from("results")
+        .select("exam, value, unit, flag, released_at, order_id, orders!inner(patient_id)")
+        .eq("orders.patient_id", actualPatientId)
+        .eq("exam", r.exam)
+        .eq("status", "released")
+        .neq("id", r.id)
+        .order("released_at", { ascending: false })
+        .limit(20);
+
+      if (prevResults && prevResults.length > 0) {
+        historyEntries = prevResults.map((pr: any) => ({
+          exam: pr.exam,
+          date: pr.released_at ? new Date(pr.released_at).toLocaleDateString("pt-BR") : "—",
+          value: pr.value,
+          unit: pr.unit || "",
+          flag: pr.flag || "normal",
+        }));
+      }
+    }
+
+    const examId = examNameToId.get(r.exam);
+    const params = examId ? examParamsByExamId.get(examId) : undefined;
+    const hasParams = params && params.length > 0;
+
+    let expandedParams: any[] | undefined;
+    if (hasParams) {
+      const paramValues = getParamValues(r);
+      expandedParams = params!.map(p => ({
+        section: p.section || "",
+        name: p.name,
+        value: paramValues[p.name] || "—",
+        unit: p.unit || "",
+        referenceRange: p.reference_range || "",
+      }));
+    }
+
+    const now = new Date().toISOString();
+    const doc = generateLaudoPDF({
+      orderNumber: order?.order_number || "",
+      patientName: patient?.name || "",
+      patientCpf: formatCpf(patient?.cpf || ""),
+      patientBirthDate: patient?.birth_date ? new Date(patient.birth_date).toLocaleDateString("pt-BR") : "—",
+      patientGender: patient?.gender || "",
+      doctorName: order?.doctor_name || "",
+      insurance: order?.insurance || "Particular",
+      collectedAt: new Date(now).toLocaleDateString("pt-BR"),
+      releasedAt: new Date(now).toLocaleString("pt-BR"),
+      results: [{
+        exam: r.exam,
+        value: hasParams ? "" : r.value,
+        unit: hasParams ? "" : r.unit,
+        referenceRange: hasParams ? "" : r.reference_range,
+        flag: r.flag,
+        parameters: expandedParams,
+      }],
+      analystName: analyst?.full_name || "Analista",
+      analystCrm: analyst?.crm || undefined,
+      history: historyEntries.length > 0 ? historyEntries : undefined,
+    });
+    doc.save(`Laudo_Historico_${order?.order_number || "exame"}_${r.exam}.pdf`);
+    
+    if (historyEntries.length === 0) {
+      toast.info("Nenhum resultado anterior encontrado para este exame/paciente");
+    } else {
+      toast.success(`PDF gerado com ${historyEntries.length} resultado(s) anterior(es)`);
+    }
+  }, [profileMap, examNameToId, examParamsByExamId]);
+
   const releaseMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("results").update({
@@ -465,6 +551,18 @@ const LiberarExames = () => {
               </Button>
             );
 
+            const historyButton = (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => generatePdfWithHistory(r)}
+                disabled={isPending}
+              >
+                <History className="w-3.5 h-3.5 mr-1" />
+                Histórico
+              </Button>
+            );
+
             const nextButton = (
               <Button
                 size="sm"
@@ -512,7 +610,8 @@ const LiberarExames = () => {
                               <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending || !isSampleDeAcordo(r)} title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : ""}>
                                 <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                               </Button>
-                              {printButton}
+                               {printButton}
+                               {historyButton}
                               {isSampleDeAcordo(r) && nextButton}
                             </div>
                           </TableCell>
@@ -553,7 +652,8 @@ const LiberarExames = () => {
                       <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending || !isSampleDeAcordo(r)} title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : ""}>
                         <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                       </Button>
-                      {printButton}
+                       {printButton}
+                       {historyButton}
                       {isSampleDeAcordo(r) && nextButton}
                     </div>
                   </div>
