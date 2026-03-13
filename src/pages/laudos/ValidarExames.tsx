@@ -582,12 +582,31 @@ const ValidarExames = () => {
                                       </Select>
                                     );
                                   }
+                                  const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
                                   return (
                                     <Input
                                       value={val}
-                                      onChange={e => setParamValue(r.id, param.name, e.target.value, r)}
+                                      type={isDiffParam ? "number" : "text"}
+                                      min={isDiffParam ? 0 : undefined}
+                                      max={isDiffParam ? 100 : undefined}
+                                      step={isDiffParam ? "0.1" : undefined}
+                                      onChange={e => {
+                                        if (isDiffParam) {
+                                          const raw = e.target.value;
+                                          if (raw === "") {
+                                            setParamValue(r.id, param.name, "", r);
+                                            return;
+                                          }
+                                          const num = parseFloat(raw);
+                                          if (!isNaN(num) && num >= 0 && num <= 100) {
+                                            setParamValue(r.id, param.name, raw, r);
+                                          }
+                                        } else {
+                                          setParamValue(r.id, param.name, e.target.value, r);
+                                        }
+                                      }}
                                       onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
-                                      placeholder="..."
+                                      placeholder={isDiffParam ? "0" : "..."}
                                       className={cn("max-w-[160px] font-mono text-sm", !val.trim() && "border-destructive/50")}
                                     />
                                   );
