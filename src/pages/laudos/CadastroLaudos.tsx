@@ -313,7 +313,7 @@ const CadastroLaudos = () => {
 
                   <div className="font-mono text-sm">
                     {/* Column headers */}
-                    <div className="flex items-center gap-3 pb-2 border-b border-border mb-2">
+                    <div className="flex items-center gap-1.5 pb-2 border-b border-border mb-2">
                       <span className="flex-[2] font-bold text-foreground">Parâmetro</span>
                       <span className="w-24 font-bold text-foreground text-center">Resultado</span>
                       <span className="w-12 font-bold text-foreground text-center">Unidade</span>
@@ -338,7 +338,7 @@ const CadastroLaudos = () => {
                             </div>
                           )}
                           {items.map((param: any, idx: number) => (
-                            <div key={param.id} className={`flex items-center gap-3 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
+                            <div key={param.id} className={`flex items-center gap-1.5 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
                               <span className="flex-[2] flex items-baseline overflow-hidden">
                                 <span className="font-medium text-foreground whitespace-nowrap">{param.name}</span>
                                 <span className="flex-1 mx-1 mb-0.5 overflow-hidden whitespace-nowrap text-muted-foreground tracking-[0.15em] leading-none select-none" style={{ fontSize: '10px' }}>{'·'.repeat(200)}</span>
