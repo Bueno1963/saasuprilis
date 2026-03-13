@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Plus, Search, Filter, Eye, Edit2, Trash2, CheckCircle2, Clock, AlertTriangle, BookOpen } from "lucide-react";
+import { FileText, Plus, Search, Filter, Eye, Edit2, Trash2, CheckCircle2, Clock, AlertTriangle, BookOpen, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
