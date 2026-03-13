@@ -311,7 +311,7 @@ const LiberarExames = () => {
         name: p.name,
         value: paramValues[p.name] || "—",
         unit: p.unit || "",
-        referenceRange: p.reference_range || "",
+        referenceRange: resolveReferenceRange(p.id, p.reference_range || "", patient?.birth_date || null, patient?.gender || "", allRefRanges),
       }));
     }
 
