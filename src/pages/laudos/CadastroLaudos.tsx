@@ -84,6 +84,11 @@ const CadastroLaudos = () => {
   const [editingParamId, setEditingParamId] = useState<string | null>(null);
   const [examForm, setExamForm] = useState<ExamForm>(emptyExamForm);
   const [paramForm, setParamForm] = useState<ParamForm>(emptyParamForm);
+  const [refRangeDialogOpen, setRefRangeDialogOpen] = useState(false);
+  const [refRangeParamId, setRefRangeParamId] = useState<string | null>(null);
+  const [refRangeParamName, setRefRangeParamName] = useState("");
+  const [refRangeForm, setRefRangeForm] = useState<RefRangeForm>(emptyRefRangeForm);
+  const [editingRefId, setEditingRefId] = useState<string | null>(null);
   const qc = useQueryClient();
 
   // --- Queries ---
