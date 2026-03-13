@@ -28,6 +28,7 @@ import AgendamentoPage from "./pages/recepcao/AgendamentoPage";
 import FinanceiroPage from "./pages/FinanceiroPage";
 import POPsPage from "./pages/POPsPage";
 import CertificadosPage from "./pages/pops/CertificadosPage";
+import ManutencaoCalendarioPage from "./pages/pops/ManutencaoCalendarioPage";
 import PlanoContasPage from "./pages/financeiro/PlanoContasPage";
 import DREPage from "./pages/financeiro/DREPage";
 import ContasPagarPage from "./pages/financeiro/ContasPagarPage";
@@ -119,6 +120,7 @@ const ProtectedRoutes = () => {
         <Route path="/recepcao" element={<DynamicGuard route="/recepcao"><RecepcaoPage /></DynamicGuard>} />
         <Route path="/pops" element={<DynamicGuard route="/pops"><POPsPage /></DynamicGuard>} />
         <Route path="/pops/certificados" element={<DynamicGuard route="/pops"><CertificadosPage /></DynamicGuard>} />
+        <Route path="/pops/manutencoes" element={<DynamicGuard route="/pops"><ManutencaoCalendarioPage /></DynamicGuard>} />
         <Route path="/recepcao/agendamento" element={<DynamicGuard route="/recepcao"><AgendamentoPage /></DynamicGuard>} />
       </Route>
       <Route path="*" element={<NotFound />} />
