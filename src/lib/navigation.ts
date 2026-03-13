@@ -21,6 +21,7 @@ import {
   Scale,
   Upload,
   FileText,
+  Award,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
