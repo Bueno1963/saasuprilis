@@ -30,6 +30,16 @@ const ERITROGRAMA_OBS_OPTIONS = [
   "Corpos de Howell-Jolly",
 ];
 
+// Morphology options for Observações (LEUCOGRAMA)
+const LEUCOGRAMA_OBS_OPTIONS = [
+  "Presença de células jovens",
+  "Granulações tóxicas/Vacuolização",
+  "Hipersegmentação",
+  "Linfócitos Reativos ou Atípicos",
+  "Presença de Blastos",
+  "Eosinofilia",
+];
+
 // Parameters whose values must sum to 100%
 const DIFFERENTIAL_COUNT_PARAMS = [
   "Basófilos", "Eosinófilos", "Mielócitos", "Metamielócitos",
