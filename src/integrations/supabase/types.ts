@@ -734,6 +734,44 @@ export type Database = {
           },
         ]
       }
+      parameter_reference_ranges: {
+        Row: {
+          age_group: string
+          created_at: string
+          gender: string
+          id: string
+          parameter_id: string
+          reference_value: string
+          sort_order: number | null
+        }
+        Insert: {
+          age_group?: string
+          created_at?: string
+          gender?: string
+          id?: string
+          parameter_id: string
+          reference_value?: string
+          sort_order?: number | null
+        }
+        Update: {
+          age_group?: string
+          created_at?: string
+          gender?: string
+          id?: string
+          parameter_id?: string
+          reference_value?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parameter_reference_ranges_parameter_id_fkey"
+            columns: ["parameter_id"]
+            isOneToOne: false
+            referencedRelation: "exam_parameters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address: string | null
