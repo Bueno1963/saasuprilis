@@ -583,7 +583,6 @@ const ValidarExames = () => {
                                       </Select>
                                     );
                                   }
-                                  const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
                                   return (
                                     <Input
                                       value={val}
