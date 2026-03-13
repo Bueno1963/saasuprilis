@@ -8,7 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { FlaskConical, Printer, Plus, Pencil, Trash2, Save, ChevronDown, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { FlaskConical, Printer, Plus, Pencil, Trash2, Save, ChevronDown, ChevronRight, ListTree } from "lucide-react";
 import { toast } from "sonner";
 
 // --- Types ---
@@ -20,12 +22,23 @@ interface ExamForm {
 interface ParamForm {
   section: string; name: string; unit: string; reference_range: string; sort_order: number;
 }
+interface RefRangeForm {
+  age_group: string; gender: string; reference_value: string; sort_order: number;
+}
+
+const AGE_GROUPS = [
+  "RN (cordão)", "1 a 3 dias", "1 semana", "2 semanas", "1 mês", "2 meses",
+  "3 a 6 meses", "6 meses a 2 anos", "2 a 6 anos", "6 a 12 anos",
+  "12 a 18 anos", "Adulto", "> 16 anos",
+];
+const GENDERS = ["Ambos", "Masculino", "Feminino"];
 
 const emptyExamForm: ExamForm = {
   code: "", name: "", material: "Sangue", method: "", unit: "",
   reference_range: "", equipment: "", turnaround_hours: 24, price: 0,
 };
 const emptyParamForm: ParamForm = { section: "", name: "", unit: "", reference_range: "", sort_order: 0 };
+const emptyRefRangeForm: RefRangeForm = { age_group: "", gender: "Ambos", reference_value: "", sort_order: 0 };
 
 const EditableSelect = ({ value, onChange, options, placeholder }: {
   value: string; onChange: (v: string) => void; options: string[]; placeholder?: string;
@@ -71,6 +84,11 @@ const CadastroLaudos = () => {
   const [editingParamId, setEditingParamId] = useState<string | null>(null);
   const [examForm, setExamForm] = useState<ExamForm>(emptyExamForm);
   const [paramForm, setParamForm] = useState<ParamForm>(emptyParamForm);
+  const [refRangeDialogOpen, setRefRangeDialogOpen] = useState(false);
+  const [refRangeParamId, setRefRangeParamId] = useState<string | null>(null);
+  const [refRangeParamName, setRefRangeParamName] = useState("");
+  const [refRangeForm, setRefRangeForm] = useState<RefRangeForm>(emptyRefRangeForm);
+  const [editingRefId, setEditingRefId] = useState<string | null>(null);
   const qc = useQueryClient();
 
   // --- Queries ---
@@ -94,6 +112,20 @@ const CadastroLaudos = () => {
       return data as any[];
     },
   });
+
+  const { data: allRefRanges = [] } = useQuery({
+    queryKey: ["param-reference-ranges"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("parameter_reference_ranges" as any)
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const getParamRefRanges = (paramId: string) => allRefRanges.filter((r: any) => r.parameter_id === paramId);
 
   // --- Mutations ---
   const saveExamMutation = useMutation({
@@ -160,6 +192,38 @@ const CadastroLaudos = () => {
     onError: () => toast.error("Erro ao remover parâmetro"),
   });
 
+  const saveRefRangeMutation = useMutation({
+    mutationFn: async (payload: RefRangeForm & { parameter_id: string; id?: string }) => {
+      const { id, ...rest } = payload;
+      if (id) {
+        const { error } = await supabase.from("parameter_reference_ranges" as any).update(rest).eq("id", id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("parameter_reference_ranges" as any).insert(rest);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["param-reference-ranges"] });
+      toast.success(editingRefId ? "Referência atualizada" : "Referência adicionada");
+      setEditingRefId(null);
+      setRefRangeForm(emptyRefRangeForm);
+    },
+    onError: () => toast.error("Erro ao salvar referência"),
+  });
+
+  const deleteRefRangeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("parameter_reference_ranges" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["param-reference-ranges"] });
+      toast.success("Referência removida");
+    },
+    onError: () => toast.error("Erro ao remover referência"),
+  });
+
   // --- Computed ---
   const sectors = [...new Set(exams.map((e) => e.sector || "Outros"))];
   const sectorCounts = sectors.reduce((acc, s) => {
@@ -188,6 +252,8 @@ const CadastroLaudos = () => {
   // --- Dialog helpers ---
   const closeExamDialog = () => { setExamDialogOpen(false); setEditingExamId(null); setExamForm(emptyExamForm); };
   const closeParamDialog = () => { setParamDialogOpen(false); setEditingParamId(null); setParamForm(emptyParamForm); };
+  const closeRefRangeDialog = () => { setRefRangeDialogOpen(false); setRefRangeParamId(null); setEditingRefId(null); setRefRangeForm(emptyRefRangeForm); };
+  const openRefRangeDialog = (paramId: string, paramName: string) => { setRefRangeParamId(paramId); setRefRangeParamName(paramName); setRefRangeDialogOpen(true); };
 
   const openAddExam = () => { setEditingExamId(null); setExamForm(emptyExamForm); setExamDialogOpen(true); };
   const openEditExam = (exam: any) => {
@@ -318,7 +384,7 @@ const CadastroLaudos = () => {
                       <span className="w-24 font-bold text-foreground text-center">Resultado</span>
                       <span className="w-12 font-bold text-foreground text-center">Unidade</span>
                       <span className="w-36 font-bold text-foreground text-center">Referências</span>
-                      <span className="w-16 print:hidden" />
+                      <span className="w-20 print:hidden" />
                     </div>
 
                     {params.length === 0 ? (
@@ -337,7 +403,10 @@ const CadastroLaudos = () => {
                               </Button>
                             </div>
                           )}
-                          {items.map((param: any, idx: number) => (
+                          {items.map((param: any, idx: number) => {
+                            const refRanges = getParamRefRanges(param.id);
+                            const hasAgeRefs = refRanges.length > 0;
+                            return (
                             <div key={param.id} className={`flex items-center gap-1.5 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
                               <span className="flex-[2] flex items-baseline overflow-hidden">
                                 <span className="font-medium text-foreground whitespace-nowrap">{param.name}</span>
@@ -347,8 +416,17 @@ const CadastroLaudos = () => {
                                 <Input className="h-7 text-xs text-center font-bold border-dashed" placeholder="___" />
                               </div>
                               <span className="w-12 text-center text-muted-foreground text-xs">{param.unit || "—"}</span>
-                              <span className="w-36 text-center text-muted-foreground text-xs">{param.reference_range || "—"}</span>
-                              <div className="w-16 flex justify-center gap-0.5 print:hidden opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="w-36 text-center text-muted-foreground text-xs">
+                                {hasAgeRefs ? (
+                                  <Badge variant="secondary" className="text-[10px] cursor-pointer" onClick={() => openRefRangeDialog(param.id, param.name)}>
+                                    {refRanges.length} faixa(s) etária(s)
+                                  </Badge>
+                                ) : (param.reference_range || "—")}
+                              </span>
+                              <div className="w-20 flex justify-center gap-0.5 print:hidden opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openRefRangeDialog(param.id, param.name)} title="Referências por faixa etária">
+                                  <ListTree className="w-3 h-3" />
+                                </Button>
                                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditParam(param)}>
                                   <Pencil className="w-3 h-3" />
                                 </Button>
@@ -357,7 +435,8 @@ const CadastroLaudos = () => {
                                 </Button>
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       ))
                     )}
@@ -472,6 +551,119 @@ const CadastroLaudos = () => {
               <Save className="w-4 h-4 mr-1" /> {editingParamId ? "Salvar" : "Adicionar"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reference Ranges by Age Dialog */}
+      <Dialog open={refRangeDialogOpen} onOpenChange={(open) => !open && closeRefRangeDialog()}>
+        <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ListTree className="w-5 h-5" />
+              Referências por Faixa Etária — {refRangeParamName}
+            </DialogTitle>
+          </DialogHeader>
+
+          {refRangeParamId && (() => {
+            const ranges = getParamRefRanges(refRangeParamId);
+            return (
+              <div className="space-y-4">
+                {/* Existing ranges table */}
+                {ranges.length > 0 && (
+                  <div className="rounded-lg border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-muted/50">
+                          <TableHead className="text-xs">Faixa Etária</TableHead>
+                          <TableHead className="text-xs">Sexo</TableHead>
+                          <TableHead className="text-xs">Valor de Referência</TableHead>
+                          <TableHead className="text-xs w-20">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {ranges.map((ref: any) => (
+                          <TableRow key={ref.id}>
+                            <TableCell className="text-sm font-medium">{ref.age_group}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{ref.gender}</TableCell>
+                            <TableCell className="text-sm font-mono">{ref.reference_value}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                                  setEditingRefId(ref.id);
+                                  setRefRangeForm({ age_group: ref.age_group, gender: ref.gender, reference_value: ref.reference_value, sort_order: ref.sort_order ?? 0 });
+                                }}>
+                                  <Pencil className="w-3 h-3" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteRefRangeMutation.mutate(ref.id)}>
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                {ranges.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Nenhuma referência por faixa etária cadastrada. Adicione abaixo.
+                  </p>
+                )}
+
+                {/* Add/Edit form */}
+                <div className="border rounded-lg p-3 space-y-3 bg-muted/20">
+                  <p className="text-xs font-semibold text-foreground">{editingRefId ? "Editar referência" : "Adicionar referência"}</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Faixa Etária *</Label>
+                      <EditableSelect
+                        value={refRangeForm.age_group}
+                        onChange={(v) => setRefRangeForm(p => ({ ...p, age_group: v }))}
+                        options={AGE_GROUPS}
+                        placeholder="Ex: Adulto"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Sexo</Label>
+                      <Select value={refRangeForm.gender} onValueChange={(v) => setRefRangeForm(p => ({ ...p, gender: v }))}>
+                        <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {GENDERS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Valor de Referência *</Label>
+                      <Input
+                        value={refRangeForm.reference_value}
+                        onChange={(e) => setRefRangeForm(p => ({ ...p, reference_value: e.target.value }))}
+                        placeholder="Ex: 4,0 a 5,2"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {editingRefId && (
+                      <Button variant="outline" size="sm" onClick={() => { setEditingRefId(null); setRefRangeForm(emptyRefRangeForm); }}>
+                        Cancelar
+                      </Button>
+                    )}
+                    <Button size="sm" onClick={() => {
+                      if (!refRangeForm.age_group || !refRangeForm.reference_value) { toast.error("Faixa etária e valor são obrigatórios"); return; }
+                      saveRefRangeMutation.mutate({
+                        ...refRangeForm,
+                        parameter_id: refRangeParamId!,
+                        ...(editingRefId ? { id: editingRefId } : {}),
+                      });
+                    }} disabled={saveRefRangeMutation.isPending}>
+                      <Save className="w-3.5 h-3.5 mr-1" /> {editingRefId ? "Salvar" : "Adicionar"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
