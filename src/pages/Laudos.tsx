@@ -10,6 +10,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { resolveReferenceRange } from "@/lib/age-reference-utils";
 import { toast } from "sonner";
 
 interface ExamParam {
