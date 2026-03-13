@@ -13,6 +13,12 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
+// Parameters whose values must sum to 100%
+const DIFFERENTIAL_COUNT_PARAMS = [
+  "Basófilos", "Eosinófilos", "Mielócitos", "Metamielócitos",
+  "Bastões", "Segmentados", "Linfócitos típicos", "Linfócitos atípicos", "Monócitos",
+];
+
 interface ExamParam {
   id: string;
   exam_id: string;
