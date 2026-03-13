@@ -1,0 +1,1 @@
+UPDATE exam_parameters SET reference_range = 'Normal: < 10.000 UFC/mL | Duvidoso: 10.000 - 100.000 UFC/mL | Infecção: > 100.000 UFC/mL' WHERE id = '05b20d7c-a50c-40e9-ba74-1b0c61006d67';
