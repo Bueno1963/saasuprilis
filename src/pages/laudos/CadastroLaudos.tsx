@@ -404,7 +404,23 @@ const CadastroLaudos = () => {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Valor de Referência</Label>
-                <Input value={paramForm.reference_range} onChange={(e) => setP("reference_range", e.target.value)} placeholder="4.00 a 5.20" />
+                <EditableSelect
+                  value={paramForm.reference_range}
+                  onChange={(v) => setP("reference_range", v)}
+                  options={[
+                    "Negativo",
+                    "Positivo",
+                    "Normal",
+                    "Reagente",
+                    "Não Reagente",
+                    "Límpido",
+                    "Turvo",
+                    "Amarelo citrino",
+                    "Ausente",
+                    "Presente",
+                  ]}
+                  placeholder="Selecionar ou digitar..."
+                />
               </div>
             </div>
             <div className="space-y-1">
