@@ -384,7 +384,7 @@ const CadastroLaudos = () => {
                       <span className="w-24 font-bold text-foreground text-center">Resultado</span>
                       <span className="w-12 font-bold text-foreground text-center">Unidade</span>
                       <span className="w-36 font-bold text-foreground text-center">Referências</span>
-                      <span className="w-16 print:hidden" />
+                      <span className="w-20 print:hidden" />
                     </div>
 
                     {params.length === 0 ? (
