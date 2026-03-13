@@ -302,16 +302,16 @@ const CadastroLaudos = () => {
                             </div>
                           )}
                           {items.map((param: any, idx: number) => (
-                            <div key={param.id} className={`flex items-center gap-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
-                              <span className="flex-1 flex items-baseline overflow-hidden">
+                            <div key={param.id} className={`flex items-center gap-3 py-1.5 ${idx % 2 === 0 ? "bg-muted/30" : ""} px-1 rounded-sm group`}>
+                              <span className="flex-[2] flex items-baseline overflow-hidden">
                                 <span className="font-medium text-foreground whitespace-nowrap">{param.name}</span>
                                 <span className="flex-1 border-b border-dotted border-muted-foreground mx-1 mb-0.5" />
                               </span>
-                              <div className="w-28">
+                              <div className="w-24">
                                 <Input className="h-7 text-xs text-center font-bold border-dashed" placeholder="___" />
                               </div>
-                              <span className="w-16 text-center text-muted-foreground text-xs">{param.unit || "—"}</span>
-                              <span className="w-44 text-center text-muted-foreground text-xs">{param.reference_range || "—"}</span>
+                              <span className="w-12 text-center text-muted-foreground text-xs">{param.unit || "—"}</span>
+                              <span className="w-36 text-center text-muted-foreground text-xs">{param.reference_range || "—"}</span>
                               <div className="w-16 flex justify-center gap-0.5 print:hidden opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditParam(param)}>
                                   <Pencil className="w-3 h-3" />
