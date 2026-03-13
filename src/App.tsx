@@ -27,6 +27,7 @@ import RecepcaoPage from "./pages/RecepcaoPage";
 import AgendamentoPage from "./pages/recepcao/AgendamentoPage";
 import FinanceiroPage from "./pages/FinanceiroPage";
 import POPsPage from "./pages/POPsPage";
+import CertificadosPage from "./pages/pops/CertificadosPage";
 import PlanoContasPage from "./pages/financeiro/PlanoContasPage";
 import DREPage from "./pages/financeiro/DREPage";
 import ContasPagarPage from "./pages/financeiro/ContasPagarPage";
