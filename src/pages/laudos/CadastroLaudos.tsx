@@ -27,6 +27,41 @@ const emptyExamForm: ExamForm = {
 };
 const emptyParamForm: ParamForm = { section: "", name: "", unit: "", reference_range: "", sort_order: 0 };
 
+const EditableSelect = ({ value, onChange, options, placeholder }: {
+  value: string; onChange: (v: string) => void; options: string[]; placeholder?: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  const filtered = options.filter((o) => o.toLowerCase().includes(value.toLowerCase()));
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div className="relative">
+          <Input
+            value={value}
+            onChange={(e) => { onChange(e.target.value); if (!open) setOpen(true); }}
+            onFocus={() => setOpen(true)}
+            placeholder={placeholder}
+            className="pr-8"
+          />
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-1 max-h-48 overflow-y-auto" align="start" sideOffset={4}
+        onOpenAutoFocus={(e) => e.preventDefault()}>
+        {filtered.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-2">Nenhuma opção</p>
+        ) : filtered.map((opt) => (
+          <button key={opt} type="button"
+            className="w-full text-left text-sm px-2 py-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors"
+            onClick={() => { onChange(opt); setOpen(false); }}>
+            {opt}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 const CadastroLaudos = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
