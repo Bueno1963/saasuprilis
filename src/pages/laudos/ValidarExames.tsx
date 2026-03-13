@@ -585,10 +585,10 @@ const ValidarExames = () => {
                                 {(() => {
                                   const refRange = param.reference_range || "";
                                   const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
-                                  const isEritroObs = param.name === "Observações" && sectionName === "ERITROGRAMA";
+                                  const isObsMultiSelect = param.name === "Observações" && (sectionName === "ERITROGRAMA" || sectionName === "LEUCOGRAMA");
 
-                                  // Multi-select for Observações in ERITROGRAMA
-                                  if (isEritroObs) {
+                                  // Multi-select for Observações in ERITROGRAMA/LEUCOGRAMA
+                                  if (isObsMultiSelect) {
                                     const selectedItems = val ? val.split(", ").filter(Boolean) : [];
                                     const toggleItem = (item: string) => {
                                       const newItems = selectedItems.includes(item)
