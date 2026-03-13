@@ -764,6 +764,81 @@ export type Database = {
         }
         Relationships: []
       }
+      pops: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          category: string
+          code: string
+          created_at: string
+          created_by: string | null
+          effective_date: string | null
+          id: string
+          materials: string | null
+          next_review_date: string | null
+          objective: string | null
+          procedure_steps: string | null
+          references_docs: string | null
+          responsibilities: string | null
+          revision_history: string | null
+          safety_notes: string | null
+          scope: string | null
+          sector: string
+          status: string
+          title: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string | null
+          id?: string
+          materials?: string | null
+          next_review_date?: string | null
+          objective?: string | null
+          procedure_steps?: string | null
+          references_docs?: string | null
+          responsibilities?: string | null
+          revision_history?: string | null
+          safety_notes?: string | null
+          scope?: string | null
+          sector?: string
+          status?: string
+          title: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string | null
+          id?: string
+          materials?: string | null
+          next_review_date?: string | null
+          objective?: string | null
+          procedure_steps?: string | null
+          references_docs?: string | null
+          responsibilities?: string | null
+          revision_history?: string | null
+          safety_notes?: string | null
+          scope?: string | null
+          sector?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
       portal_access_logs: {
         Row: {
           access_ip: string | null
