@@ -26,6 +26,7 @@ import SettingsPage from "./pages/SettingsPage";
 import RecepcaoPage from "./pages/RecepcaoPage";
 import AgendamentoPage from "./pages/recepcao/AgendamentoPage";
 import FinanceiroPage from "./pages/FinanceiroPage";
+import POPsPage from "./pages/POPsPage";
 import PlanoContasPage from "./pages/financeiro/PlanoContasPage";
 import DREPage from "./pages/financeiro/DREPage";
 import ContasPagarPage from "./pages/financeiro/ContasPagarPage";
@@ -115,6 +116,7 @@ const ProtectedRoutes = () => {
         <Route path="/financeiro/balancete" element={<DynamicGuard route="/financeiro"><BalancetePage /></DynamicGuard>} />
         <Route path="/financeiro/importar-extrato" element={<DynamicGuard route="/financeiro"><ImportarExtratoPage /></DynamicGuard>} />
         <Route path="/recepcao" element={<DynamicGuard route="/recepcao"><RecepcaoPage /></DynamicGuard>} />
+        <Route path="/pops" element={<DynamicGuard route="/pops"><POPsPage /></DynamicGuard>} />
         <Route path="/recepcao/agendamento" element={<DynamicGuard route="/recepcao"><AgendamentoPage /></DynamicGuard>} />
       </Route>
       <Route path="*" element={<NotFound />} />

@@ -20,6 +20,7 @@ import {
   BookOpen,
   Scale,
   Upload,
+  FileText,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
@@ -75,5 +76,6 @@ export const navItems: NavItem[] = [
       { title: "Balancete", href: "/financeiro/balancete", icon: Scale },
     ],
   },
+  { title: "POPs", href: "/pops", icon: FileText, allowedRoles: ["admin", "tecnico"] },
   { title: "Configurações", href: "/configuracoes", icon: Settings, allowedRoles: ["admin"] },
 ];
