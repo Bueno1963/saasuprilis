@@ -553,6 +553,119 @@ const CadastroLaudos = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Reference Ranges by Age Dialog */}
+      <Dialog open={refRangeDialogOpen} onOpenChange={(open) => !open && closeRefRangeDialog()}>
+        <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ListTree className="w-5 h-5" />
+              Referências por Faixa Etária — {refRangeParamName}
+            </DialogTitle>
+          </DialogHeader>
+
+          {refRangeParamId && (() => {
+            const ranges = getParamRefRanges(refRangeParamId);
+            return (
+              <div className="space-y-4">
+                {/* Existing ranges table */}
+                {ranges.length > 0 && (
+                  <div className="rounded-lg border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-muted/50">
+                          <TableHead className="text-xs">Faixa Etária</TableHead>
+                          <TableHead className="text-xs">Sexo</TableHead>
+                          <TableHead className="text-xs">Valor de Referência</TableHead>
+                          <TableHead className="text-xs w-20">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {ranges.map((ref: any) => (
+                          <TableRow key={ref.id}>
+                            <TableCell className="text-sm font-medium">{ref.age_group}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{ref.gender}</TableCell>
+                            <TableCell className="text-sm font-mono">{ref.reference_value}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                                  setEditingRefId(ref.id);
+                                  setRefRangeForm({ age_group: ref.age_group, gender: ref.gender, reference_value: ref.reference_value, sort_order: ref.sort_order ?? 0 });
+                                }}>
+                                  <Pencil className="w-3 h-3" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteRefRangeMutation.mutate(ref.id)}>
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                {ranges.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Nenhuma referência por faixa etária cadastrada. Adicione abaixo.
+                  </p>
+                )}
+
+                {/* Add/Edit form */}
+                <div className="border rounded-lg p-3 space-y-3 bg-muted/20">
+                  <p className="text-xs font-semibold text-foreground">{editingRefId ? "Editar referência" : "Adicionar referência"}</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Faixa Etária *</Label>
+                      <EditableSelect
+                        value={refRangeForm.age_group}
+                        onChange={(v) => setRefRangeForm(p => ({ ...p, age_group: v }))}
+                        options={AGE_GROUPS}
+                        placeholder="Ex: Adulto"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Sexo</Label>
+                      <Select value={refRangeForm.gender} onValueChange={(v) => setRefRangeForm(p => ({ ...p, gender: v }))}>
+                        <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {GENDERS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Valor de Referência *</Label>
+                      <Input
+                        value={refRangeForm.reference_value}
+                        onChange={(e) => setRefRangeForm(p => ({ ...p, reference_value: e.target.value }))}
+                        placeholder="Ex: 4,0 a 5,2"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {editingRefId && (
+                      <Button variant="outline" size="sm" onClick={() => { setEditingRefId(null); setRefRangeForm(emptyRefRangeForm); }}>
+                        Cancelar
+                      </Button>
+                    )}
+                    <Button size="sm" onClick={() => {
+                      if (!refRangeForm.age_group || !refRangeForm.reference_value) { toast.error("Faixa etária e valor são obrigatórios"); return; }
+                      saveRefRangeMutation.mutate({
+                        ...refRangeForm,
+                        parameter_id: refRangeParamId!,
+                        ...(editingRefId ? { id: editingRefId } : {}),
+                      });
+                    }} disabled={saveRefRangeMutation.isPending}>
+                      <Save className="w-3.5 h-3.5 mr-1" /> {editingRefId ? "Salvar" : "Adicionar"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
