@@ -313,7 +313,7 @@ const CadastroLaudos = () => {
 
                   <div className="font-mono text-sm">
                     {/* Column headers */}
-                    <div className="flex items-center gap-3 pb-2 border-b border-border mb-2">
+                    <div className="flex items-center gap-1.5 pb-2 border-b border-border mb-2">
                       <span className="flex-[2] font-bold text-foreground">Parâmetro</span>
                       <span className="w-24 font-bold text-foreground text-center">Resultado</span>
                       <span className="w-12 font-bold text-foreground text-center">Unidade</span>
