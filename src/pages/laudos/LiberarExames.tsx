@@ -610,7 +610,8 @@ const LiberarExames = () => {
                               <Button size="sm" variant="outline" onClick={() => setConfirmRelease({ type: "single", result: r.id })} disabled={isPending || !isSampleDeAcordo(r)} title={!isSampleDeAcordo(r) ? `Bloqueado: ${getSampleConditionLabel(r)}` : ""}>
                                 <Unlock className="w-3.5 h-3.5 mr-1" /> Liberar
                               </Button>
-                              {printButton}
+                               {printButton}
+                               {historyButton}
                               {isSampleDeAcordo(r) && nextButton}
                             </div>
                           </TableCell>
