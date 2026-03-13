@@ -192,6 +192,38 @@ const CadastroLaudos = () => {
     onError: () => toast.error("Erro ao remover parâmetro"),
   });
 
+  const saveRefRangeMutation = useMutation({
+    mutationFn: async (payload: RefRangeForm & { parameter_id: string; id?: string }) => {
+      const { id, ...rest } = payload;
+      if (id) {
+        const { error } = await supabase.from("parameter_reference_ranges" as any).update(rest).eq("id", id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("parameter_reference_ranges" as any).insert(rest);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["param-reference-ranges"] });
+      toast.success(editingRefId ? "Referência atualizada" : "Referência adicionada");
+      setEditingRefId(null);
+      setRefRangeForm(emptyRefRangeForm);
+    },
+    onError: () => toast.error("Erro ao salvar referência"),
+  });
+
+  const deleteRefRangeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("parameter_reference_ranges" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["param-reference-ranges"] });
+      toast.success("Referência removida");
+    },
+    onError: () => toast.error("Erro ao remover referência"),
+  });
+
   // --- Computed ---
   const sectors = [...new Set(exams.map((e) => e.sector || "Outros"))];
   const sectorCounts = sectors.reduce((acc, s) => {
@@ -220,6 +252,8 @@ const CadastroLaudos = () => {
   // --- Dialog helpers ---
   const closeExamDialog = () => { setExamDialogOpen(false); setEditingExamId(null); setExamForm(emptyExamForm); };
   const closeParamDialog = () => { setParamDialogOpen(false); setEditingParamId(null); setParamForm(emptyParamForm); };
+  const closeRefRangeDialog = () => { setRefRangeDialogOpen(false); setRefRangeParamId(null); setEditingRefId(null); setRefRangeForm(emptyRefRangeForm); };
+  const openRefRangeDialog = (paramId: string, paramName: string) => { setRefRangeParamId(paramId); setRefRangeParamName(paramName); setRefRangeDialogOpen(true); };
 
   const openAddExam = () => { setEditingExamId(null); setExamForm(emptyExamForm); setExamDialogOpen(true); };
   const openEditExam = (exam: any) => {
