@@ -154,6 +154,7 @@ const App = () => (
             <Route path="/landing/exames" element={<ExamesPage />} />
             <Route path="/landing/convenios" element={<ConveniosPage />} />
             <Route path="/landing/vacinas" element={<VacinasPage />} />
+            <Route path="/saas" element={<SaaSLandingPage />} />
             <Route path="/*" element={<ProtectedRoutes />} />
           </Routes>
         </AuthProvider>
