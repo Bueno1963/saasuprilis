@@ -281,7 +281,7 @@ const CadastroLaudos = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Cadastro de Laudos</h1>
+        <h1 className="text-2xl font-bold text-foreground">Cadastro de Parâmetros</h1>
         <p className="text-muted-foreground text-sm">Modelo de exames por setor com parâmetros para digitação</p>
       </div>
 
