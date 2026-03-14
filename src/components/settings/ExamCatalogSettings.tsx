@@ -72,9 +72,10 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
 
   const allSectors = useMemo(() => {
     const set = new Set(DEFAULT_SECTORS);
+    customSectors.forEach((s) => set.add(s));
     items.forEach((i) => { if (i.sector) set.add(i.sector); });
     return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [items]);
+  }, [items, customSectors]);
 
   const allMaterials = useMemo(() => {
     const set = new Set(DEFAULT_MATERIALS);
