@@ -24,6 +24,7 @@ interface ExamForm {
 const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector: "Bioquímica", method: "", unit: "", reference_range: "", turnaround_hours: 24, price: 0, status: "active", equipment: "" };
 
 const DEFAULT_SECTORS = ["Bioquímica", "Hematologia", "Imunologia", "Microbiologia", "Uroanálise"];
+const DEFAULT_MATERIALS = ["Sangue", "Soro", "Plasma", "Urina", "Fezes", "Líquor", "Escarro", "Swab", "Tecido"];
 
 const SectorSelect = ({ value, onChange, sectors }: { value: string; onChange: (v: string) => void; sectors: string[] }) => {
   return (
@@ -45,6 +46,9 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
   const [activeSector, setActiveSector] = useState<string | null>(null);
   const [newSectorOpen, setNewSectorOpen] = useState(false);
   const [newSectorName, setNewSectorName] = useState("");
+  const [newMaterialOpen, setNewMaterialOpen] = useState(false);
+  const [newMaterialName, setNewMaterialName] = useState("");
+  const [customMaterials, setCustomMaterials] = useState<string[]>([]);
   const { register, handleSubmit, reset, control } = useForm<ExamForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
@@ -70,6 +74,13 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     items.forEach((i) => { if (i.sector) set.add(i.sector); });
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [items]);
+
+  const allMaterials = useMemo(() => {
+    const set = new Set(DEFAULT_MATERIALS);
+    customMaterials.forEach((m) => set.add(m));
+    items.forEach((i) => { if (i.material) set.add(i.material); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [items, customMaterials]);
 
   const filtered = items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()) || i.code.toLowerCase().includes(search.toLowerCase()));
 
@@ -179,6 +190,24 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
           ) : (
             <Button variant="outline" onClick={() => setNewSectorOpen(true)}><Plus className="h-4 w-4 mr-2" />Novo Setor</Button>
           )}
+          {newMaterialOpen ? (
+            <div className="flex items-center gap-2">
+              <Input placeholder="Nome do material" value={newMaterialName} onChange={(e) => setNewMaterialName(e.target.value)} className="w-44" autoFocus />
+              <Button size="sm" onClick={() => {
+                const trimmed = newMaterialName.trim();
+                if (trimmed && !allMaterials.includes(trimmed)) {
+                  setCustomMaterials((prev) => [...prev, trimmed]);
+                  toast.success(`Material "${trimmed}" cadastrado!`);
+                } else if (allMaterials.includes(trimmed)) {
+                  toast.error("Material já existe.");
+                }
+                setNewMaterialOpen(false); setNewMaterialName("");
+              }}>OK</Button>
+              <Button size="sm" variant="ghost" onClick={() => { setNewMaterialOpen(false); setNewMaterialName(""); }}>✕</Button>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={() => setNewMaterialOpen(true)}><Plus className="h-4 w-4 mr-2" />Novo Material</Button>
+          )}
           <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Exame</Button>
         </div>
       </div>
@@ -278,7 +307,17 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1"><Label>Código</Label><Input {...register("code", { required: true })} /></div>
               <div className="space-y-1"><Label>Nome</Label><Input {...register("name", { required: true })} /></div>
-              <div className="space-y-1"><Label>Material</Label><Input {...register("material")} /></div>
+              <div className="space-y-1">
+                <Label>Material</Label>
+                <Controller name="material" control={control} render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      {allMaterials.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )} />
+              </div>
               <div className="space-y-1">
                 <Label>Setor</Label>
                 <Controller name="sector" control={control} render={({ field }) => (
