@@ -186,9 +186,9 @@ const SaaSLandingPage = () => {
             </div>
             <div className="relative flex justify-center">
               <img
-                src={heroLabImg}
+                src={heroMockupImg}
                 alt="Sistema SUPRILIS - Dashboard"
-                className="w-full max-w-lg rounded-xl shadow-2xl"
+                className="w-full max-w-xl rounded-xl shadow-2xl border border-white/10"
               />
             </div>
           </div>
