@@ -55,7 +55,7 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<"list" | "sector">("list");
+  const [viewMode, setViewMode] = useState<"list" | "sector">("sector");
   const [activeSector, setActiveSector] = useState<string | null>(null);
   const { register, handleSubmit, reset, control } = useForm<ExamForm>({ defaultValues });
 
