@@ -252,8 +252,16 @@ const Worklist = () => {
                             const dateRange = dateFrom || dateTo
                               ? `Período: ${dateFrom ? format(dateFrom, "dd/MM/yyyy") : "—"} até ${dateTo ? format(dateTo, "dd/MM/yyyy") : "—"}`
                               : `Data: ${format(new Date(), "dd/MM/yyyy")}`;
+                            const statusPt: Record<string, string> = {
+                              collected: "Coletada", triaged: "Triada", processing: "Processando",
+                              analyzed: "Analisada", released: "Liberada", rejected: "Rejeitada",
+                              stored: "Armazenada", disposed: "Descartada",
+                            };
+                            const materialPt: Record<string, string> = {
+                              Sangue: "Sangue", Urina: "Urina", Fezes: "Fezes", Soro: "Soro",
+                            };
                             printWindow.document.write(`
-                              <html><head><title>Esteira - ${sector}</title>
+                              <html><head><title>Esteira de Produção - ${sector}</title>
                               <style>
                                 body { font-family: Arial, sans-serif; padding: 20px; }
                                 h2 { margin-bottom: 4px; }
@@ -263,16 +271,16 @@ const Worklist = () => {
                                 th { background: #f0f0f0; font-weight: 600; }
                                 @media print { body { padding: 0; } }
                               </style></head><body>
-                              <h2>${sector}</h2>
+                              <h2>Esteira de Produção — ${sector}</h2>
                               <p class="sub">${dateRange} · ${sectorSamples.length} amostra(s)</p>
                               <table>
-                                <thead><tr><th>Código</th><th>Paciente</th><th>Material</th><th>Status</th><th>Coleta</th></tr></thead>
+                                <thead><tr><th>Código</th><th>Paciente</th><th>Material</th><th>Situação</th><th>Data da Coleta</th></tr></thead>
                                 <tbody>
                                   ${sectorSamples.map(s => `<tr>
                                     <td>${s.barcode}</td>
                                     <td>${(s.orders as any)?.patients?.name || "—"}</td>
-                                    <td>${s.sample_type}</td>
-                                    <td>${s.status}</td>
+                                    <td>${materialPt[s.sample_type] || s.sample_type}</td>
+                                    <td>${statusPt[s.status] || s.status}</td>
                                     <td>${new Date(s.collected_at).toLocaleString("pt-BR")}</td>
                                   </tr>`).join("")}
                                 </tbody>
