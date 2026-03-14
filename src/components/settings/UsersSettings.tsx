@@ -26,7 +26,7 @@ const MENU_LABELS: Record<string, string> = {
   "/pacientes": "Pacientes",
   "/pedidos": "Pedidos",
   "/amostras": "Amostras",
-  "/worklist": "Mapa de Trabalho",
+  "/worklist": "Esteira de Produção",
   "/qc": "Controle de Qualidade",
   "/resultados": "Resultados",
   "/laudos": "Laudos",

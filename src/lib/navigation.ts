@@ -45,7 +45,7 @@ export const navItems: NavItem[] = [
   { title: "Pedidos", href: "/pedidos", icon: ClipboardList, phase: "pre", allowedRoles: ["admin", "tecnico", "recepcao"] },
   { title: "Impressão por Setor", href: "/laudos/imprimir", icon: Printer, phase: "post", allowedRoles: ["admin", "tecnico"] },
   { title: "Amostras", href: "/amostras", icon: TestTubes, phase: "analytical", allowedRoles: ["admin", "tecnico", "recepcao"] },
-  { title: "Mapa de Trabalho", href: "/worklist", icon: FlaskConical, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
+  { title: "Esteira de Produção", href: "/worklist", icon: FlaskConical, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
   { title: "Controle de Qualidade", href: "/qc", icon: BarChart3, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
   {
     title: "Laudos",

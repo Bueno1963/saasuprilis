@@ -113,7 +113,7 @@ const Worklist = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Mapa de Trabalho</h1>
+          <h1 className="text-2xl font-bold text-foreground">Esteira de Produção</h1>
           <p className="text-sm text-muted-foreground">Organização de amostras por setor e equipamento</p>
         </div>
 
