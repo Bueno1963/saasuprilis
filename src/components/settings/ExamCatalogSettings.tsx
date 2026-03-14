@@ -23,7 +23,7 @@ interface ExamForm {
 
 const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector: "Bioquímica", method: "", unit: "", reference_range: "", turnaround_hours: 24, price: 0, status: "active", equipment: "" };
 
-const SECTORS = ["Bioquímica", "Hematologia", "Imunologia", "Microbiologia", "Uroanálise"];
+const DEFAULT_SECTORS = ["Bioquímica", "Hematologia", "Imunologia", "Microbiologia", "Uroanálise"];
 
 const ExamCatalogSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
