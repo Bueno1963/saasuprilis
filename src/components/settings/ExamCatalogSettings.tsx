@@ -159,7 +159,28 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             <p className="text-sm text-muted-foreground">Valores de referência e configurações</p>
           </div>
         </div>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Exame</Button>
+        <div className="flex items-center gap-2">
+          {newSectorOpen ? (
+            <div className="flex items-center gap-2">
+              <Input placeholder="Nome do setor" value={newSectorName} onChange={(e) => setNewSectorName(e.target.value)} className="w-44" autoFocus />
+              <Button size="sm" onClick={() => {
+                if (newSectorName.trim() && !allSectors.includes(newSectorName.trim())) {
+                  // Create a placeholder exam to register the sector
+                  openNew();
+                  reset({ ...defaultValues, sector: newSectorName.trim() });
+                  toast.success(`Setor "${newSectorName.trim()}" pronto. Complete o cadastro do exame.`);
+                } else if (allSectors.includes(newSectorName.trim())) {
+                  toast.error("Setor já existe.");
+                }
+                setNewSectorOpen(false); setNewSectorName("");
+              }}>OK</Button>
+              <Button size="sm" variant="ghost" onClick={() => { setNewSectorOpen(false); setNewSectorName(""); }}>✕</Button>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={() => setNewSectorOpen(true)}><Plus className="h-4 w-4 mr-2" />Novo Setor</Button>
+          )}
+          <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Exame</Button>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
