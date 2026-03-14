@@ -418,20 +418,20 @@ const SaaSLandingPage = () => {
         </div>
       </section>
 
-      {/* ── CTA + Contato ── */}
+      {/* ── CTA + Cadastro ── */}
       <section id="contato" className="py-20 md:py-28 bg-gradient-to-br from-[hsl(210,50%,25%)] to-[hsl(200,45%,30%)]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center space-y-4 mb-14">
             <h2 className="text-2xl md:text-3xl font-bold text-white">
-              Pronto para transformar seu laboratório?
+              Comece agora — 14 dias grátis
             </h2>
             <p className="text-white/70 max-w-2xl mx-auto">
-              Solicite uma demonstração gratuita do SUPRILIS e descubra como podemos otimizar os processos do seu laboratório.
+              Cadastre seu laboratório e experimente o SupriLIS sem compromisso. Sem cartão de crédito.
             </p>
             <div className="flex flex-wrap justify-center gap-6 text-sm text-white/60 pt-2">
-              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[hsl(170,55%,55%)]" />Demonstração gratuita e sem compromisso</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[hsl(170,55%,55%)]" />Implantação assistida por especialistas</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[hsl(170,55%,55%)]" />Suporte técnico 24/7</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[hsl(170,55%,55%)]" />Trial gratuito de 14 dias</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[hsl(170,55%,55%)]" />Sem cartão de crédito</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[hsl(170,55%,55%)]" />Suporte na implantação</span>
             </div>
           </div>
 
@@ -448,46 +448,107 @@ const SaaSLandingPage = () => {
             </div>
 
             <div className="p-8 rounded-xl bg-white shadow-2xl">
-              <h3 className="text-lg font-bold mb-6">Solicite uma demonstração</h3>
+              <h3 className="text-lg font-bold mb-6">Cadastre seu laboratório</h3>
               {formSent ? (
                 <div className="text-center py-8 space-y-4">
                   <CheckCircle2 className="w-12 h-12 text-[hsl(170,55%,45%)] mx-auto" />
-                  <h3 className="text-xl font-bold">Mensagem enviada!</h3>
-                  <p className="text-muted-foreground text-sm">Nossa equipe entrará em contato em breve.</p>
+                  <h3 className="text-xl font-bold">Laboratório criado com sucesso!</h3>
+                  <p className="text-muted-foreground text-sm">Seu trial de 14 dias começou. Redirecionando para o sistema...</p>
                 </div>
               ) : (
-                <form onSubmit={(e) => { e.preventDefault(); setFormSent(true); }} className="space-y-4">
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (onboardForm.password.length < 6) {
+                      toast.error("A senha deve ter no mínimo 6 caracteres");
+                      return;
+                    }
+                    setIsSubmitting(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke("onboard-tenant", {
+                        body: onboardForm,
+                      });
+                      if (error) throw error;
+                      if (data?.error) throw new Error(data.error);
+                      setFormSent(true);
+                      toast.success("Laboratório criado! Fazendo login...");
+                      // Auto-login
+                      const { error: loginErr } = await supabase.auth.signInWithPassword({
+                        email: onboardForm.email,
+                        password: onboardForm.password,
+                      });
+                      if (!loginErr) {
+                        setTimeout(() => navigate("/"), 2000);
+                      }
+                    } catch (err: any) {
+                      toast.error(err.message || "Erro ao criar laboratório");
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
+                  className="space-y-4"
+                >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium mb-1.5 block">Nome *</label>
-                      <Input placeholder="Seu nome" required />
+                      <label className="text-sm font-medium mb-1.5 block">Nome do Laboratório *</label>
+                      <Input
+                        placeholder="Laboratório São Paulo"
+                        required
+                        value={onboardForm.lab_name}
+                        onChange={(e) => setOnboardForm({ ...onboardForm, lab_name: e.target.value })}
+                      />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-1.5 block">E-mail *</label>
-                      <Input type="email" placeholder="seu@email.com" required />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium mb-1.5 block">Telefone *</label>
-                      <Input placeholder="(00) 00000-0000" required />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-1.5 block">Laboratório</label>
-                      <Input placeholder="Nome do laboratório" />
+                      <label className="text-sm font-medium mb-1.5 block">CNPJ</label>
+                      <Input
+                        placeholder="00.000.000/0000-00"
+                        value={onboardForm.cnpj}
+                        onChange={(e) => setOnboardForm({ ...onboardForm, cnpj: e.target.value })}
+                      />
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-1.5 block">Mensagem</label>
-                    <Textarea placeholder="Conte-nos sobre seu laboratório..." rows={4} />
+                    <label className="text-sm font-medium mb-1.5 block">Responsável *</label>
+                    <Input
+                      placeholder="Nome do responsável técnico"
+                      required
+                      value={onboardForm.responsible_name}
+                      onChange={(e) => setOnboardForm({ ...onboardForm, responsible_name: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1.5 block">E-mail *</label>
+                      <Input
+                        type="email"
+                        placeholder="admin@seulab.com.br"
+                        required
+                        value={onboardForm.email}
+                        onChange={(e) => setOnboardForm({ ...onboardForm, email: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1.5 block">Senha *</label>
+                      <Input
+                        type="password"
+                        placeholder="Mínimo 6 caracteres"
+                        required
+                        minLength={6}
+                        value={onboardForm.password}
+                        onChange={(e) => setOnboardForm({ ...onboardForm, password: e.target.value })}
+                      />
+                    </div>
                   </div>
                   <Button
                     type="submit"
+                    disabled={isSubmitting}
                     className="w-full rounded-md h-12 text-base bg-[hsl(170,55%,45%)] hover:bg-[hsl(170,55%,38%)] text-white font-semibold"
                   >
-                    <Send className="w-4 h-4 mr-2" />
-                    Enviar
+                    {isSubmitting ? "Criando..." : "Criar Laboratório — Grátis por 14 dias"}
                   </Button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Ao se cadastrar, você concorda com nossos termos de uso.
+                  </p>
                 </form>
               )}
             </div>
