@@ -149,7 +149,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   }
 
   // Sectors that use the clean 4-column model (no Flag)
-  const CLEAN_TABLE_SECTORS = ["bioquímica", "bioquimica", "hormônio", "hormonio", "hormonios", "hormônios", "imunologia"];
+  const CLEAN_TABLE_SECTORS = ["bioquímica", "bioquimica", "hormônio", "hormonio", "hormonios", "hormônios", "imunologia", "hematologia"];
 
   const sectors = [...sectorMap.keys()].sort();
   const hasSectors = sectors.length > 1 || (sectors.length === 1 && sectors[0] !== "Geral");
@@ -215,7 +215,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       columnStyles[0] = { cellWidth: 'auto' };
       columnStyles[1] = { cellWidth: 28, fontStyle: "bold", halign: "center" };
       columnStyles[2] = { cellWidth: 22, halign: "center" };
-      columnStyles[3] = { cellWidth: 45 };
+      columnStyles[3] = { cellWidth: 45, halign: "center" };
     } else {
       let colIdx = 0;
       columnStyles[colIdx++] = { cellWidth: 'auto' }; // Exame
