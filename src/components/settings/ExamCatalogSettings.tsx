@@ -25,26 +25,12 @@ const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector
 
 const DEFAULT_SECTORS = ["Bioquímica", "Hematologia", "Imunologia", "Microbiologia", "Uroanálise"];
 
-const SectorSelect = ({ value, onChange, sectors, defaultSector }: { value: string; onChange: (v: string) => void; sectors: string[]; defaultSector: string }) => {
-  const [adding, setAdding] = useState(false);
-  const [custom, setCustom] = useState("");
-
-  if (adding) {
-    return (
-      <div className="flex gap-2">
-        <Input placeholder="Nome do novo setor" value={custom} onChange={(e) => setCustom(e.target.value)} autoFocus />
-        <Button type="button" size="sm" onClick={() => { if (custom.trim()) { onChange(custom.trim()); setAdding(false); setCustom(""); } }}>OK</Button>
-        <Button type="button" size="sm" variant="ghost" onClick={() => { setAdding(false); setCustom(""); }}>✕</Button>
-      </div>
-    );
-  }
-
+const SectorSelect = ({ value, onChange, sectors }: { value: string; onChange: (v: string) => void; sectors: string[] }) => {
   return (
-    <Select value={value} onValueChange={(v) => { if (v === "__custom__") { setAdding(true); } else { onChange(v); } }}>
+    <Select value={value} onValueChange={onChange}>
       <SelectTrigger><SelectValue /></SelectTrigger>
       <SelectContent>
         {sectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-        <SelectItem value="__custom__">+ Novo setor...</SelectItem>
       </SelectContent>
     </Select>
   );
@@ -57,6 +43,8 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "sector">("sector");
   const [activeSector, setActiveSector] = useState<string | null>(null);
+  const [newSectorOpen, setNewSectorOpen] = useState(false);
+  const [newSectorName, setNewSectorName] = useState("");
   const { register, handleSubmit, reset, control } = useForm<ExamForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
@@ -171,7 +159,28 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             <p className="text-sm text-muted-foreground">Valores de referência e configurações</p>
           </div>
         </div>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Exame</Button>
+        <div className="flex items-center gap-2">
+          {newSectorOpen ? (
+            <div className="flex items-center gap-2">
+              <Input placeholder="Nome do setor" value={newSectorName} onChange={(e) => setNewSectorName(e.target.value)} className="w-44" autoFocus />
+              <Button size="sm" onClick={() => {
+                if (newSectorName.trim() && !allSectors.includes(newSectorName.trim())) {
+                  // Create a placeholder exam to register the sector
+                  openNew();
+                  reset({ ...defaultValues, sector: newSectorName.trim() });
+                  toast.success(`Setor "${newSectorName.trim()}" pronto. Complete o cadastro do exame.`);
+                } else if (allSectors.includes(newSectorName.trim())) {
+                  toast.error("Setor já existe.");
+                }
+                setNewSectorOpen(false); setNewSectorName("");
+              }}>OK</Button>
+              <Button size="sm" variant="ghost" onClick={() => { setNewSectorOpen(false); setNewSectorName(""); }}>✕</Button>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={() => setNewSectorOpen(true)}><Plus className="h-4 w-4 mr-2" />Novo Setor</Button>
+          )}
+          <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Exame</Button>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
@@ -273,7 +282,7 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
               <div className="space-y-1">
                 <Label>Setor</Label>
                 <Controller name="sector" control={control} render={({ field }) => (
-                  <SectorSelect value={field.value} onChange={field.onChange} sectors={allSectors} defaultSector={defaultValues.sector} />
+                  <SectorSelect value={field.value} onChange={field.onChange} sectors={allSectors} />
                 )} />
               </div>
               <div className="space-y-1"><Label>Método</Label><Input {...register("method")} /></div>
