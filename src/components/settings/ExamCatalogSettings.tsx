@@ -46,6 +46,9 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
   const [activeSector, setActiveSector] = useState<string | null>(null);
   const [newSectorOpen, setNewSectorOpen] = useState(false);
   const [newSectorName, setNewSectorName] = useState("");
+  const [newMaterialOpen, setNewMaterialOpen] = useState(false);
+  const [newMaterialName, setNewMaterialName] = useState("");
+  const [customMaterials, setCustomMaterials] = useState<string[]>([]);
   const { register, handleSubmit, reset, control } = useForm<ExamForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
