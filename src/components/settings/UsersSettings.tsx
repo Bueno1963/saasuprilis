@@ -87,14 +87,14 @@ const UsersSettings = ({ onBack }: Props) => {
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
       const existing = roles.find((r) => r.user_id === userId);
       if (existing) {
-        const { error } = await supabase.from("user_roles").update({ role: role as any }).eq("id", existing.id);
+        const { error } = await supabase.from("tenant_members").update({ role: role as any }).eq("id", existing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: role as any });
+        const { error } = await supabase.from("tenant_members").insert({ user_id: userId, role: role as any } as any);
         if (error) throw error;
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["all_user_roles"] }); toast.success("Papel atualizado!"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["all_tenant_members"] }); toast.success("Papel atualizado!"); },
     onError: (e: any) => toast.error(e.message),
   });
 
