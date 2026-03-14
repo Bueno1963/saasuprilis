@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, Plus, X, Printer, Tag, Pencil, Trash2, Globe, MoreHorizontal } from "lucide-react";
+import { Search, Plus, X, Printer, Tag, Pencil, Trash2, Globe, MoreHorizontal, FileText } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { orderSchema, OrderFormData } from "@/lib/validations";
-import { printEtiquetaColeta, printAtendimento, printProtocoloAcesso } from "@/lib/print-utils";
+import { printEtiquetaColeta, printAtendimento, printProtocoloAcesso, printDeclaracaoComparecimento } from "@/lib/print-utils";
 import logoImg from "@/assets/logo-dra-dielem.png";
 
 const Orders = () => {
@@ -96,6 +96,15 @@ const Orders = () => {
     queryKey: ["insurance_plans_active"],
     queryFn: async () => {
       const { data, error } = await supabase.from("insurance_plans").select("id, name").eq("status", "active").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: labSettings } = useQuery({
+    queryKey: ["lab_settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lab_settings").select("name, address, city, state, cnpj, phone, logo_url").limit(1).maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -299,6 +308,12 @@ const Orders = () => {
                     }
                   }}>
                     <Globe className="w-4 h-4 mr-2" />Protocolo de Acesso Web
+                   </Button>
+                  <Button variant="outline" className="w-full" onClick={() => {
+                    const p = createdOrder.patients as any;
+                    if (p && labSettings) printDeclaracaoComparecimento({ name: p.name, cpf: p.cpf }, labSettings as any, logoImg);
+                  }}>
+                    <FileText className="w-4 h-4 mr-2" />Declaração Comparecimento
                   </Button>
                 </div>
                 <Button className="w-full" onClick={() => { setCreatedOrder(null); setOpen(false); }}>
@@ -383,8 +398,14 @@ const Orders = () => {
                               if (p) printAtendimento({ id: order.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date, gender: p.gender, phone: p.phone, email: p.email, insurance: order.insurance }, logoImg);
                             }}>
                               <Printer className="w-4 h-4 mr-2" />Comprovante de Atendimento
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
+                             </DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => {
+                               const p = (order.patients as any);
+                               if (p && labSettings) printDeclaracaoComparecimento({ name: p.name, cpf: p.cpf }, labSettings as any, logoImg);
+                             }}>
+                               <FileText className="w-4 h-4 mr-2" />Declaração Comparecimento
+                             </DropdownMenuItem>
+                             <DropdownMenuSeparator />
                            <DropdownMenuItem onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
                              <Pencil className="w-4 h-4 mr-2" />Editar Pedido
                            </DropdownMenuItem>

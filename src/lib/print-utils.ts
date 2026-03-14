@@ -282,3 +282,52 @@ export function printProtocoloAcesso(order: { order_number: string; created_at: 
   `);
   win.document.close();
 }
+
+export function printDeclaracaoComparecimento(
+  patient: { name: string; cpf: string },
+  labSettings: { name: string; address?: string; city?: string; state?: string; cnpj?: string; phone?: string; logo_url?: string },
+  logoUrl?: string
+) {
+  const win = window.open("", "_blank", "width=700,height=900");
+  if (!win) return;
+  const now = new Date();
+  const dia = now.toLocaleDateString("pt-BR", { day: "2-digit" });
+  const mes = now.toLocaleDateString("pt-BR", { month: "long" });
+  const ano = now.getFullYear();
+  const hora = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  const cityState = [labSettings.city, labSettings.state].filter(Boolean).join(" - ");
+  const logoSrc = logoUrl || labSettings.logo_url || "";
+  const logoHtml = logoSrc ? `<img src="${logoSrc}" alt="Logo" style="max-height:70px;" />` : "";
+  const labInfo = [labSettings.name, labSettings.address, cityState, labSettings.cnpj ? `CNPJ: ${labSettings.cnpj}` : "", labSettings.phone ? `Tel: ${labSettings.phone}` : ""].filter(Boolean).join(" | ");
+
+  win.document.write(`
+    <html><head><title>Declaração de Comparecimento</title>
+    <style>
+      @media print { body { margin: 25mm 20mm; } @page { margin: 20mm; } }
+      body { font-family: 'Times New Roman', Times, serif; padding: 40px; max-width: 650px; margin: 0 auto; color: #000; line-height: 1.6; }
+      .header { margin-bottom: 50px; }
+      .header .logo-area { text-align: left; margin-bottom: 4px; }
+      .header .lab-info { font-size: 11px; color: #444; }
+      h1 { text-align: center; font-size: 20px; font-weight: bold; margin: 50px 0 40px; letter-spacing: 1px; }
+      .body-text { font-size: 15px; text-align: justify; line-height: 2; margin-bottom: 60px; }
+      .signature-area { text-align: right; font-size: 14px; margin-top: 80px; }
+    </style></head><body>
+    <div class="header">
+      <div class="logo-area">${logoHtml}</div>
+      <div class="lab-info">${labInfo}</div>
+    </div>
+    <h1>DECLARAÇÃO DE COMPARECIMENTO</h1>
+    <p class="body-text">
+      Declaro, para os devidos fins, que o Sr(a). <strong>${patient.name}</strong>,
+      CPF sob o nº <strong>${patient.cpf}</strong>, esteve presente no laboratório da
+      <strong>${labSettings.name}</strong>, no dia <strong>${dia}</strong> de <strong>${mes}</strong> de <strong>${ano}</strong>,
+      durante a proximidade das 07:00 hrs às 09:00 hrs, para realizar exames laboratoriais.
+    </p>
+    <div class="signature-area">
+      ${cityState ? cityState + ", " : ""}${dia} de ${mes} de ${ano} às ${hora}
+    </div>
+    <script>window.print(); window.onafterprint = () => window.close();<\/script>
+    </body></html>
+  `);
+  win.document.close();
+}
