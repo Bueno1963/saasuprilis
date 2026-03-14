@@ -206,15 +206,24 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       }
     }
 
-    // Build column styles dynamically
-    const columnStyles: Record<number, any> = {
-      0: { cellWidth: 50 },
-      1: { cellWidth: 30, fontStyle: "bold", halign: "center" },
-    };
-    let colIdx = 2;
-    if (!sectorHideUnit) { columnStyles[colIdx] = { cellWidth: 25, halign: "center" }; colIdx++; }
-    if (!sectorHideRef) { columnStyles[colIdx] = { cellWidth: 50 }; colIdx++; }
-    if (!sectorHideFlag) { columnStyles[colIdx] = { cellWidth: 25, halign: "center" }; colIdx++; }
+    // Build column styles dynamically — fit within page (210 - 28 margins = 182 usable)
+    const usableWidth = pageWidth - 28;
+    const columnStyles: Record<number, any> = {};
+    
+    if (isCleanTable) {
+      // 4 columns: Exame(auto) | Resultado | Unidade | Referência
+      columnStyles[0] = { cellWidth: 'auto' };
+      columnStyles[1] = { cellWidth: 28, fontStyle: "bold", halign: "center" };
+      columnStyles[2] = { cellWidth: 22, halign: "center" };
+      columnStyles[3] = { cellWidth: 45 };
+    } else {
+      let colIdx = 0;
+      columnStyles[colIdx++] = { cellWidth: 'auto' }; // Exame
+      columnStyles[colIdx++] = { cellWidth: 28, fontStyle: "bold", halign: "center" }; // Resultado
+      if (!sectorHideUnit) { columnStyles[colIdx++] = { cellWidth: 20, halign: "center" }; }
+      if (!sectorHideRef) { columnStyles[colIdx++] = { cellWidth: 42 }; }
+      if (!sectorHideFlag) { columnStyles[colIdx++] = { cellWidth: 22, halign: "center" }; }
+    }
 
     autoTable(doc, {
       startY: y,
