@@ -1341,6 +1341,124 @@ export type Database = {
         }
         Relationships: []
       }
+      qc_analyte_configs: {
+        Row: {
+          active: boolean
+          analyte_name: string
+          created_at: string
+          equipment: string
+          id: string
+          level: string
+          lot_number: string
+          material: string
+          target_mean: number
+          target_sd: number
+          tenant_id: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          analyte_name: string
+          created_at?: string
+          equipment?: string
+          id?: string
+          level?: string
+          lot_number?: string
+          material?: string
+          target_mean?: number
+          target_sd?: number
+          tenant_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          analyte_name?: string
+          created_at?: string
+          equipment?: string
+          id?: string
+          level?: string
+          lot_number?: string
+          material?: string
+          target_mean?: number
+          target_sd?: number
+          tenant_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qc_analyte_configs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qc_control_lots: {
+        Row: {
+          analyte_name: string
+          created_at: string
+          expected_mean: number
+          expected_sd: number
+          expiry_date: string | null
+          id: string
+          level: string
+          lot_number: string
+          manufacturer: string
+          notes: string | null
+          opened_at: string | null
+          status: string
+          tenant_id: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          analyte_name?: string
+          created_at?: string
+          expected_mean?: number
+          expected_sd?: number
+          expiry_date?: string | null
+          id?: string
+          level?: string
+          lot_number: string
+          manufacturer?: string
+          notes?: string | null
+          opened_at?: string | null
+          status?: string
+          tenant_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          analyte_name?: string
+          created_at?: string
+          expected_mean?: number
+          expected_sd?: number
+          expiry_date?: string | null
+          id?: string
+          level?: string
+          lot_number?: string
+          manufacturer?: string
+          notes?: string | null
+          opened_at?: string | null
+          status?: string
+          tenant_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qc_control_lots_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       qc_data: {
         Row: {
           analyte: string
@@ -1384,6 +1502,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "qc_data_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qc_westgard_rules: {
+        Row: {
+          created_at: string
+          description: string
+          enabled: boolean
+          id: string
+          rule_code: string
+          rule_name: string
+          rule_type: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          enabled?: boolean
+          id?: string
+          rule_code: string
+          rule_name: string
+          rule_type?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          enabled?: boolean
+          id?: string
+          rule_code?: string
+          rule_name?: string
+          rule_type?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qc_westgard_rules_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
