@@ -58,26 +58,6 @@ const Worklist = () => {
     queryClient.invalidateQueries({ queryKey: ["exam_catalog_sectors_worklist"] });
   };
 
-  const addSectorMutation = useMutation({
-    mutationFn: async (sectorName: string) => {
-      const code = `SECTOR-${sectorName.toUpperCase().replace(/\s+/g, "-").slice(0, 10)}-${Date.now().toString(36)}`;
-      const { error } = await supabase.from("exam_catalog").insert({
-        name: `(Setor) ${sectorName}`,
-        code,
-        sector: sectorName,
-        status: "active",
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      invalidateSectors();
-      toast.success("Setor criado com sucesso");
-      setNewSector("");
-      setDialogOpen(false);
-    },
-    onError: () => toast.error("Erro ao criar setor"),
-  });
-
   const renameSectorMutation = useMutation({
     mutationFn: async ({ oldName, newName }: { oldName: string; newName: string }) => {
       const { error } = await supabase
