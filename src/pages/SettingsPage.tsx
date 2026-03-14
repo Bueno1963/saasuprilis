@@ -8,7 +8,7 @@ import InsuranceSettings from "@/components/settings/InsuranceSettings";
 import UsersSettings from "@/components/settings/UsersSettings";
 import IntegrationsSettings from "@/components/settings/IntegrationsSettings";
 
-type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations";
+type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
@@ -17,6 +17,7 @@ const sections = [
   { key: "insurance" as Section, title: "Convênios", desc: "Tabelas de preços, regras de faturamento e glosas", icon: HeartHandshake },
   { key: "users" as Section, title: "Usuários", desc: "Controle de acesso, perfis e permissões do sistema", icon: Users },
   { key: "integrations" as Section, title: "Integrações", desc: "HL7, ASTM, API externas e portal de resultados", icon: Plug },
+  { key: "printers" as Section, title: "Impressoras", desc: "Cadastro de impressoras para impressão de laudos e etiquetas", icon: Printer },
 ];
 
 const SettingsPage = () => {
