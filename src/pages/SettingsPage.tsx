@@ -8,6 +8,7 @@ import InsuranceSettings from "@/components/settings/InsuranceSettings";
 import UsersSettings from "@/components/settings/UsersSettings";
 import IntegrationsSettings from "@/components/settings/IntegrationsSettings";
 import PrinterSettings from "@/components/settings/PrinterSettings";
+import SupportLabSettings from "@/components/settings/SupportLabSettings";
 
 type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers";
 
