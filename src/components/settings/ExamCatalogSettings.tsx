@@ -23,7 +23,32 @@ interface ExamForm {
 
 const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector: "Bioquímica", method: "", unit: "", reference_range: "", turnaround_hours: 24, price: 0, status: "active", equipment: "" };
 
-const SECTORS = ["Bioquímica", "Hematologia", "Imunologia", "Microbiologia", "Uroanálise"];
+const DEFAULT_SECTORS = ["Bioquímica", "Hematologia", "Imunologia", "Microbiologia", "Uroanálise"];
+
+const SectorSelect = ({ value, onChange, sectors, defaultSector }: { value: string; onChange: (v: string) => void; sectors: string[]; defaultSector: string }) => {
+  const [adding, setAdding] = useState(false);
+  const [custom, setCustom] = useState("");
+
+  if (adding) {
+    return (
+      <div className="flex gap-2">
+        <Input placeholder="Nome do novo setor" value={custom} onChange={(e) => setCustom(e.target.value)} autoFocus />
+        <Button type="button" size="sm" onClick={() => { if (custom.trim()) { onChange(custom.trim()); setAdding(false); setCustom(""); } }}>OK</Button>
+        <Button type="button" size="sm" variant="ghost" onClick={() => { setAdding(false); setCustom(""); }}>✕</Button>
+      </div>
+    );
+  }
+
+  return (
+    <Select value={value} onValueChange={(v) => { if (v === "__custom__") { setAdding(true); } else { onChange(v); } }}>
+      <SelectTrigger><SelectValue /></SelectTrigger>
+      <SelectContent>
+        {sectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+        <SelectItem value="__custom__">+ Novo setor...</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+};
 
 const ExamCatalogSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
@@ -51,6 +76,12 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
       return data;
     },
   });
+
+  const allSectors = useMemo(() => {
+    const set = new Set(DEFAULT_SECTORS);
+    items.forEach((i) => { if (i.sector) set.add(i.sector); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [items]);
 
   const filtered = items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()) || i.code.toLowerCase().includes(search.toLowerCase()));
 
@@ -242,12 +273,7 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
               <div className="space-y-1">
                 <Label>Setor</Label>
                 <Controller name="sector" control={control} render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {SECTORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <SectorSelect value={field.value} onChange={field.onChange} sectors={allSectors} defaultSector={defaultValues.sector} />
                 )} />
               </div>
               <div className="space-y-1"><Label>Método</Label><Input {...register("method")} /></div>
