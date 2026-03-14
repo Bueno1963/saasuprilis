@@ -11,8 +11,9 @@ import PrinterSettings from "@/components/settings/PrinterSettings";
 import SupportLabSettings from "@/components/settings/SupportLabSettings";
 import ReportLayoutListSettings from "@/components/settings/ReportLayoutListSettings";
 import CadastroParametrosSettings from "@/components/settings/CadastroParametrosSettings";
+import QCManagementSettings from "@/components/settings/QCManagementSettings";
 
-type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros";
+type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "qc_management";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
