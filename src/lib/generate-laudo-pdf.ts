@@ -9,6 +9,11 @@ interface LaudoResult {
   flag: string;
   sector?: string;
   hideReferenceRange?: boolean;
+  hideFlag?: boolean;
+  hideUnit?: boolean;
+  headerText?: string;
+  footerText?: string;
+  defaultObservations?: string;
   parameters?: {
     section: string;
     name: string;
