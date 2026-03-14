@@ -11,7 +11,7 @@ export const useUserRole = (): { role: AppRole; isLoading: boolean } => {
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("user_roles")
+        .from("tenant_members")
         .select("role")
         .eq("user_id", user!.id)
         .maybeSingle();
