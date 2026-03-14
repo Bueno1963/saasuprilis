@@ -148,24 +148,32 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     sectorMap.get(sector)!.push(r);
   }
 
-  // Determine which columns to show (use first result's config as baseline)
-  const anyHideRef = data.results.some(r => r.hideReferenceRange);
-  const anyHideFlag = data.results.some(r => r.hideFlag);
-  const anyHideUnit = data.results.some(r => r.hideUnit);
+  // Sectors that use the clean 4-column model (no Flag)
+  const CLEAN_TABLE_SECTORS = ["bioquímica", "bioquimica", "hormônio", "hormonio", "hormonios", "hormônios", "imunologia"];
 
-  // Build dynamic columns
-  const headRow: string[] = ["Exame / Parâmetro", "Resultado"];
-  if (!anyHideUnit) headRow.push("Unidade");
-  if (!anyHideRef) headRow.push("Valor de Referência");
-  if (!anyHideFlag) headRow.push("Flag");
-  const colCount = headRow.length;
-
-  // Build table body with sector headers
-  const tableBody: any[][] = [];
   const sectors = [...sectorMap.keys()].sort();
   const hasSectors = sectors.length > 1 || (sectors.length === 1 && sectors[0] !== "Geral");
 
   for (const sector of sectors) {
+    const sectorResults = sectorMap.get(sector)!;
+    const isCleanTable = CLEAN_TABLE_SECTORS.includes(sector.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()) ||
+      CLEAN_TABLE_SECTORS.includes(sector.toLowerCase());
+
+    // Determine per-sector column visibility
+    const sectorHideRef = !isCleanTable && sectorResults.some(r => r.hideReferenceRange);
+    const sectorHideFlag = isCleanTable || sectorResults.some(r => r.hideFlag);
+    const sectorHideUnit = !isCleanTable && sectorResults.some(r => r.hideUnit);
+
+    // Build dynamic columns for this sector
+    const headRow: string[] = ["Exame / Parâmetro", "Resultado"];
+    if (!sectorHideUnit) headRow.push("Unidade");
+    if (!sectorHideRef) headRow.push("Valor de Referência");
+    if (!sectorHideFlag) headRow.push("Flag");
+    const colCount = headRow.length;
+
+    const tableBody: any[][] = [];
+
+    // Sector header row
     if (hasSectors) {
       tableBody.push([{
         content: `▸ ${sector.toUpperCase()}`,
@@ -174,7 +182,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       }]);
     }
 
-    for (const r of sectorMap.get(sector)!) {
+    for (const r of sectorResults) {
       if (r.parameters && r.parameters.length > 0) {
         tableBody.push([{ content: r.exam, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
         let lastSection = "";
@@ -184,42 +192,44 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             tableBody.push([{ content: p.section, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
           }
           const row: any[] = ["   " + p.name, p.value];
-          if (!anyHideUnit) row.push(p.unit);
-          if (!anyHideRef) row.push(r.hideReferenceRange ? "" : p.referenceRange);
-          if (!anyHideFlag) row.push("");
+          if (!sectorHideUnit) row.push(p.unit);
+          if (!sectorHideRef) row.push(r.hideReferenceRange ? "" : p.referenceRange);
+          if (!sectorHideFlag) row.push("");
           tableBody.push(row);
         }
       } else {
         const row: any[] = [r.exam, r.value];
-        if (!anyHideUnit) row.push(r.unit);
-        if (!anyHideRef) row.push(r.hideReferenceRange ? "" : r.referenceRange);
-        if (!anyHideFlag) row.push(FLAG_LABELS[r.flag] || "");
+        if (!sectorHideUnit) row.push(r.unit);
+        if (!sectorHideRef) row.push(r.hideReferenceRange ? "" : r.referenceRange);
+        if (!sectorHideFlag) row.push(FLAG_LABELS[r.flag] || "");
         tableBody.push(row);
       }
     }
+
+    // Build column styles dynamically
+    const columnStyles: Record<number, any> = {
+      0: { cellWidth: 50 },
+      1: { cellWidth: 30, fontStyle: "bold", halign: "center" },
+    };
+    let colIdx = 2;
+    if (!sectorHideUnit) { columnStyles[colIdx] = { cellWidth: 25, halign: "center" }; colIdx++; }
+    if (!sectorHideRef) { columnStyles[colIdx] = { cellWidth: 50 }; colIdx++; }
+    if (!sectorHideFlag) { columnStyles[colIdx] = { cellWidth: 25, halign: "center" }; colIdx++; }
+
+    autoTable(doc, {
+      startY: y,
+      head: [headRow],
+      body: tableBody,
+      theme: "grid",
+      headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
+      bodyStyles: { fontSize: 9, textColor: 40 },
+      alternateRowStyles: { fillColor: [245, 248, 252] },
+      columnStyles,
+      margin: { left: 14, right: 14 },
+    });
+
+    y = (doc as any).lastAutoTable?.finalY + 6 || y + 40;
   }
-
-  // Build column styles dynamically
-  const columnStyles: Record<number, any> = {
-    0: { cellWidth: 50 },
-    1: { cellWidth: 30, fontStyle: "bold", halign: "center" },
-  };
-  let colIdx = 2;
-  if (!anyHideUnit) { columnStyles[colIdx] = { cellWidth: 25, halign: "center" }; colIdx++; }
-  if (!anyHideRef) { columnStyles[colIdx] = { cellWidth: 50 }; colIdx++; }
-  if (!anyHideFlag) { columnStyles[colIdx] = { cellWidth: 25, halign: "center" }; colIdx++; }
-
-  autoTable(doc, {
-    startY: y,
-    head: [headRow],
-    body: tableBody,
-    theme: "grid",
-    headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
-    bodyStyles: { fontSize: 9, textColor: 40 },
-    alternateRowStyles: { fillColor: [245, 248, 252] },
-    columnStyles,
-    margin: { left: 14, right: 14 },
-  });
 
   // Observations
   let afterTableY = (doc as any).lastAutoTable?.finalY || y + 40;
