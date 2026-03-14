@@ -75,6 +75,13 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [items]);
 
+  const allMaterials = useMemo(() => {
+    const set = new Set(DEFAULT_MATERIALS);
+    customMaterials.forEach((m) => set.add(m));
+    items.forEach((i) => { if (i.material) set.add(i.material); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [items, customMaterials]);
+
   const filtered = items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()) || i.code.toLowerCase().includes(search.toLowerCase()));
 
   const groupedBySector = useMemo(() => {
