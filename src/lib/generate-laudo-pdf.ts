@@ -253,8 +253,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   }
 
   // Digital signature
-  const finalY = (doc as any).lastAutoTable?.finalY || y + 40;
-  const sigY = finalY + 20;
+  const sigY = afterTableY + 20;
 
   // Check if signature fits on current page
   const pageHeight = doc.internal.pageSize.getHeight();
