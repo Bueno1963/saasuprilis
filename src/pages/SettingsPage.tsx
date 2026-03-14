@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug, Printer, FlaskRound } from "lucide-react";
+import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug, Printer, FlaskRound, LayoutTemplate } from "lucide-react";
 import LabSettings from "@/components/settings/LabSettings";
 import EquipmentSettings from "@/components/settings/EquipmentSettings";
 import ExamCatalogSettings from "@/components/settings/ExamCatalogSettings";
@@ -9,8 +9,9 @@ import UsersSettings from "@/components/settings/UsersSettings";
 import IntegrationsSettings from "@/components/settings/IntegrationsSettings";
 import PrinterSettings from "@/components/settings/PrinterSettings";
 import SupportLabSettings from "@/components/settings/SupportLabSettings";
+import ReportLayoutListSettings from "@/components/settings/ReportLayoutListSettings";
 
-type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab";
+type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
@@ -21,6 +22,7 @@ const sections = [
   { key: "integrations" as Section, title: "Integrações", desc: "HL7, ASTM, API externas e portal de resultados", icon: Plug },
   { key: "printers" as Section, title: "Impressoras", desc: "Cadastro de impressoras para impressão de laudos e etiquetas", icon: Printer },
   { key: "support_lab" as Section, title: "Lab. de Apoio", desc: "Integração com laboratórios terceirizados para exames encaminhados", icon: FlaskRound },
+  { key: "report_layouts" as Section, title: "Cadastro de Layout", desc: "Modelos de impressão de laudos por exame: colunas, cabeçalho, rodapé e observações", icon: LayoutTemplate },
 ];
 
 const SettingsPage = () => {
@@ -36,6 +38,7 @@ const SettingsPage = () => {
   if (section === "integrations") return <IntegrationsSettings onBack={goBack} />;
   if (section === "printers") return <PrinterSettings onBack={goBack} />;
   if (section === "support_lab") return <SupportLabSettings onBack={goBack} />;
+  if (section === "report_layouts") return <ReportLayoutListSettings onBack={goBack} />;
 
   return (
     <div className="p-6 space-y-6">
