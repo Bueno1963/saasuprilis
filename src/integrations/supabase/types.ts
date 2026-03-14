@@ -1483,6 +1483,63 @@ export type Database = {
           },
         ]
       }
+      report_layouts: {
+        Row: {
+          created_at: string
+          default_observations: string | null
+          exam_id: string
+          footer_text: string | null
+          header_text: string | null
+          hide_flag: boolean
+          hide_reference_range: boolean
+          hide_unit: boolean
+          id: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_observations?: string | null
+          exam_id: string
+          footer_text?: string | null
+          header_text?: string | null
+          hide_flag?: boolean
+          hide_reference_range?: boolean
+          hide_unit?: boolean
+          id?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_observations?: string | null
+          exam_id?: string
+          footer_text?: string | null
+          header_text?: string | null
+          hide_flag?: boolean
+          hide_reference_range?: boolean
+          hide_unit?: boolean
+          id?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_layouts_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exam_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_layouts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       results: {
         Row: {
           analyst_id: string | null

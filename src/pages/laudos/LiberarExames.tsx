@@ -147,6 +147,18 @@ const LiberarExames = () => {
     },
   });
 
+  // Fetch report layouts for all exams
+  const { data: reportLayouts = [] } = useQuery({
+    queryKey: ["report-layouts-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("report_layouts" as any)
+        .select("*");
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
   // Fetch analyst profiles
   const analystIds = [...new Set(results.filter(r => r.analyst_id).map(r => r.analyst_id!))];
   const { data: profiles = [] } = useQuery({
@@ -163,6 +175,15 @@ const LiberarExames = () => {
   const profileMap = new Map(profiles.map(p => [p.user_id, p]));
 
   const examNameToId = new Map(examCatalogFull.map(e => [e.name, e.id]));
+  const layoutByExamId = useMemo(() => {
+    const map = new Map<string, any>();
+    for (const l of reportLayouts) map.set(l.exam_id, l);
+    return map;
+  }, [reportLayouts]);
+  const getExamLayout = useCallback((examName: string) => {
+    const examId = examNameToId.get(examName);
+    return examId ? layoutByExamId.get(examId) : null;
+  }, [examNameToId, layoutByExamId]);
   const examParamsByExamId = useMemo(() => {
     const map = new Map<string, ExamParam[]>();
     for (const p of allExamParams) {
@@ -247,20 +268,28 @@ const LiberarExames = () => {
       insurance: order?.insurance || "Particular",
       collectedAt: new Date(now).toLocaleDateString("pt-BR"),
       releasedAt: new Date(now).toLocaleString("pt-BR"),
-      results: [{
-        exam: r.exam,
-        value: hasParams ? "" : r.value,
-        unit: hasParams ? "" : r.unit,
-        referenceRange: hasParams ? "" : r.reference_range,
-        flag: r.flag,
-        hideReferenceRange: /equ|eas|urina/i.test(r.exam),
-        parameters: expandedParams,
-      }],
+      results: [(() => {
+        const layout = getExamLayout(r.exam);
+        return {
+          exam: r.exam,
+          value: hasParams ? "" : r.value,
+          unit: hasParams ? "" : r.unit,
+          referenceRange: hasParams ? "" : r.reference_range,
+          flag: r.flag,
+          hideReferenceRange: layout?.hide_reference_range ?? /equ|eas|urina/i.test(r.exam),
+          hideFlag: layout?.hide_flag ?? false,
+          hideUnit: layout?.hide_unit ?? false,
+          headerText: layout?.header_text || undefined,
+          footerText: layout?.footer_text || undefined,
+          defaultObservations: layout?.default_observations || undefined,
+          parameters: expandedParams,
+        };
+      })()],
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
-  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout]);
 
   // Generate PDF with history for a result
   const generatePdfWithHistory = useCallback(async (r: any) => {
@@ -327,15 +356,23 @@ const LiberarExames = () => {
       insurance: order?.insurance || "Particular",
       collectedAt: new Date(now).toLocaleDateString("pt-BR"),
       releasedAt: new Date(now).toLocaleString("pt-BR"),
-      results: [{
-        exam: r.exam,
-        value: hasParams ? "" : r.value,
-        unit: hasParams ? "" : r.unit,
-        referenceRange: hasParams ? "" : r.reference_range,
-        flag: r.flag,
-        hideReferenceRange: /equ|eas|urina/i.test(r.exam),
-        parameters: expandedParams,
-      }],
+      results: [(() => {
+        const layout = getExamLayout(r.exam);
+        return {
+          exam: r.exam,
+          value: hasParams ? "" : r.value,
+          unit: hasParams ? "" : r.unit,
+          referenceRange: hasParams ? "" : r.reference_range,
+          flag: r.flag,
+          hideReferenceRange: layout?.hide_reference_range ?? /equ|eas|urina/i.test(r.exam),
+          hideFlag: layout?.hide_flag ?? false,
+          hideUnit: layout?.hide_unit ?? false,
+          headerText: layout?.header_text || undefined,
+          footerText: layout?.footer_text || undefined,
+          defaultObservations: layout?.default_observations || undefined,
+          parameters: expandedParams,
+        };
+      })()],
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
       history: historyEntries.length > 0 ? historyEntries : undefined,
@@ -347,7 +384,7 @@ const LiberarExames = () => {
     } else {
       toast.success(`PDF gerado com ${historyEntries.length} resultado(s) anterior(es)`);
     }
-  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout]);
 
   const releaseMutation = useMutation({
     mutationFn: async (id: string) => {
