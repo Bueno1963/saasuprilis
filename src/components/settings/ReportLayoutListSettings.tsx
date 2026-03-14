@@ -147,9 +147,14 @@ const ReportLayoutListSettings = ({ onBack }: Props) => {
               </p>
             </div>
           </div>
-          <Button size="sm" variant="outline" onClick={() => { setGroupDialogOpen(true); setSelectedIds(new Set()); setGroupSearch(""); }}>
-            <Plus className="w-4 h-4 mr-1" /> Agrupar Exame ao Setor
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => { setLabelDialogOpen(true); setLabelSearch(""); }}>
+              <Tag className="w-4 h-4 mr-1" /> Definir Exame por Etiqueta
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => { setGroupDialogOpen(true); setSelectedIds(new Set()); setGroupSearch(""); }}>
+              <Plus className="w-4 h-4 mr-1" /> Agrupar Exame ao Setor
+            </Button>
+          </div>
         </div>
 
         <div className="relative max-w-sm">
