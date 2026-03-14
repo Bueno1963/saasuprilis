@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, X, Save } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, X, Save, BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Props {
   open: boolean;
@@ -20,9 +22,10 @@ interface ExamForm {
   procedure_code: string;
   description: string;
   price: number;
+  exam_catalog_id: string | null;
 }
 
-const emptyForm: ExamForm = { procedure_code: "", description: "", price: 0 };
+const emptyForm: ExamForm = { procedure_code: "", description: "", price: 0, exam_catalog_id: null };
 
 const InsurancePlanExamsDialog = ({ open, onOpenChange, insurancePlan }: Props) => {
   const qc = useQueryClient();
@@ -30,6 +33,8 @@ const InsurancePlanExamsDialog = ({ open, onOpenChange, insurancePlan }: Props) 
   const [addOpen, setAddOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<ExamForm>(emptyForm);
+  const [catalogSearch, setCatalogSearch] = useState("");
+  const [catalogPopoverOpen, setCatalogPopoverOpen] = useState(false);
 
   const planId = insurancePlan?.id;
 
@@ -48,6 +53,26 @@ const InsurancePlanExamsDialog = ({ open, onOpenChange, insurancePlan }: Props) 
     enabled: !!planId && open,
   });
 
+  const { data: catalogExams = [] } = useQuery({
+    queryKey: ["exam_catalog_all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("exam_catalog")
+        .select("id, code, name, price, sector")
+        .eq("status", "active")
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+    enabled: open,
+  });
+
+  const filteredCatalog = catalogExams.filter(
+    (e) =>
+      e.name.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+      e.code.toLowerCase().includes(catalogSearch.toLowerCase())
+  );
+
   const saveMutation = useMutation({
     mutationFn: async (values: ExamForm) => {
       const payload = {
@@ -55,6 +80,7 @@ const InsurancePlanExamsDialog = ({ open, onOpenChange, insurancePlan }: Props) 
         procedure_code: values.procedure_code.trim(),
         description: values.description.trim(),
         price: Number(values.price),
+        exam_catalog_id: values.exam_catalog_id || null,
       };
       if (editId) {
         const { error } = await supabase.from("insurance_plan_exams").update(payload).eq("id", editId);
@@ -88,7 +114,12 @@ const InsurancePlanExamsDialog = ({ open, onOpenChange, insurancePlan }: Props) 
 
   const openEdit = (item: any) => {
     setEditId(item.id);
-    setForm({ procedure_code: item.procedure_code, description: item.description, price: item.price });
+    setForm({
+      procedure_code: item.procedure_code,
+      description: item.description,
+      price: item.price,
+      exam_catalog_id: item.exam_catalog_id || null,
+    });
     setAddOpen(true);
   };
 
@@ -96,6 +127,17 @@ const InsurancePlanExamsDialog = ({ open, onOpenChange, insurancePlan }: Props) 
     setEditId(null);
     setForm(emptyForm);
     setAddOpen(true);
+  };
+
+  const selectFromCatalog = (catalogItem: { id: string; code: string; name: string; price: number | null }) => {
+    setForm({
+      procedure_code: catalogItem.code,
+      description: catalogItem.name,
+      price: catalogItem.price || 0,
+      exam_catalog_id: catalogItem.id,
+    });
+    setCatalogPopoverOpen(false);
+    setCatalogSearch("");
   };
 
   const filtered = exams.filter(
@@ -144,42 +186,92 @@ const InsurancePlanExamsDialog = ({ open, onOpenChange, insurancePlan }: Props) 
         </div>
 
         {addOpen && (
-          <form onSubmit={handleSubmit} className="flex items-end gap-3 p-3 rounded-lg bg-muted/40 border">
-            <div className="space-y-1 flex-shrink-0 w-40">
-              <Label className="text-xs">Código</Label>
-              <Input
-                value={form.procedure_code}
-                onChange={(e) => setForm({ ...form, procedure_code: e.target.value })}
-                placeholder="02.02.01.001-5"
-                className="h-9 text-sm"
-              />
+          <form onSubmit={handleSubmit} className="space-y-3 p-3 rounded-lg bg-muted/40 border">
+            <div className="flex items-center gap-2">
+              <Popover open={catalogPopoverOpen} onOpenChange={setCatalogPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="outline" size="sm" className="gap-1.5">
+                    <BookOpen className="h-4 w-4" />
+                    Selecionar do Catálogo
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-96 p-0" align="start">
+                  <div className="p-2 border-b">
+                    <Input
+                      placeholder="Buscar exame no catálogo..."
+                      value={catalogSearch}
+                      onChange={(e) => setCatalogSearch(e.target.value)}
+                      className="h-8 text-sm"
+                      autoFocus
+                    />
+                  </div>
+                  <ScrollArea className="h-64">
+                    {filteredCatalog.length === 0 ? (
+                      <p className="text-sm text-muted-foreground p-4 text-center">Nenhum exame encontrado</p>
+                    ) : (
+                      filteredCatalog.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className="w-full text-left px-3 py-2 hover:bg-accent text-sm border-b last:border-0 transition-colors"
+                          onClick={() => selectFromCatalog(item)}
+                        >
+                          <span className="font-mono text-xs text-muted-foreground">{item.code}</span>
+                          <span className="block font-medium truncate">{item.name}</span>
+                          <span className="text-xs text-muted-foreground">{item.sector} • R$ {Number(item.price || 0).toFixed(2)}</span>
+                        </button>
+                      ))
+                    )}
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
+              {form.exam_catalog_id && (
+                <Badge variant="outline" className="text-xs gap-1">
+                  <BookOpen className="h-3 w-3" />
+                  Vinculado ao catálogo
+                  <button type="button" onClick={() => setForm({ ...form, exam_catalog_id: null })}>
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
             </div>
-            <div className="space-y-1 flex-1">
-              <Label className="text-xs">Descrição</Label>
-              <Input
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="DOSAGEM DE..."
-                className="h-9 text-sm"
-              />
-            </div>
-            <div className="space-y-1 flex-shrink-0 w-28">
-              <Label className="text-xs">Preço (R$)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                className="h-9 text-sm"
-              />
-            </div>
-            <div className="flex gap-1">
-              <Button type="submit" size="sm" className="h-9" disabled={saveMutation.isPending}>
-                <Save className="h-4 w-4 mr-1" />{editId ? "Salvar" : "Adicionar"}
-              </Button>
-              <Button type="button" variant="ghost" size="sm" className="h-9" onClick={() => { setAddOpen(false); setEditId(null); }}>
-                Cancelar
-              </Button>
+            <div className="flex items-end gap-3">
+              <div className="space-y-1 flex-shrink-0 w-40">
+                <Label className="text-xs">Código</Label>
+                <Input
+                  value={form.procedure_code}
+                  onChange={(e) => setForm({ ...form, procedure_code: e.target.value })}
+                  placeholder="02.02.01.001-5"
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="space-y-1 flex-1">
+                <Label className="text-xs">Descrição</Label>
+                <Input
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="DOSAGEM DE..."
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="space-y-1 flex-shrink-0 w-28">
+                <Label className="text-xs">Preço (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="flex gap-1">
+                <Button type="submit" size="sm" className="h-9" disabled={saveMutation.isPending}>
+                  <Save className="h-4 w-4 mr-1" />{editId ? "Salvar" : "Adicionar"}
+                </Button>
+                <Button type="button" variant="ghost" size="sm" className="h-9" onClick={() => { setAddOpen(false); setEditId(null); }}>
+                  Cancelar
+                </Button>
+              </div>
             </div>
           </form>
         )}
@@ -205,7 +297,14 @@ const InsurancePlanExamsDialog = ({ open, onOpenChange, insurancePlan }: Props) 
                 filtered.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-mono text-xs">{item.procedure_code}</TableCell>
-                    <TableCell className="text-sm">{item.description}</TableCell>
+                    <TableCell className="text-sm">
+                      <div className="flex items-center gap-1.5">
+                        {item.description}
+                        {(item as any).exam_catalog_id && (
+                          <BookOpen className="h-3 w-3 text-primary flex-shrink-0" title="Vinculado ao catálogo" />
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right font-medium tabular-nums">
                       {Number(item.price).toFixed(2)}
                     </TableCell>
