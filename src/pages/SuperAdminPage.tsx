@@ -116,11 +116,12 @@ const SuperAdminPage = () => {
 
   const statusBadge = (s: string) => {
     if (s === "active") return <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Ativo</Badge>;
+    if (s === "trial") return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Trial</Badge>;
     if (s === "suspended") return <Badge variant="destructive">Suspenso</Badge>;
     return <Badge variant="secondary">{s}</Badge>;
   };
 
-  const planLabel: Record<string, string> = { starter: "Starter", professional: "Professional", enterprise: "Enterprise" };
+  const planLabel: Record<string, string> = { aprendiz: "Aprendiz", companheiro: "Companheiro", mestre: "Mestre", laboratorio_instalado: "Lab. Instalado", starter: "Aprendiz", professional: "Companheiro", enterprise: "Mestre" };
 
   return (
     <div className="p-6 space-y-6">
