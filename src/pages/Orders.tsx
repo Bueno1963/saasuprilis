@@ -104,7 +104,7 @@ const Orders = () => {
   const { data: labSettings } = useQuery({
     queryKey: ["lab_settings"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("lab_settings").select("name, address, city, state, cnpj, phone, logo_url").limit(1).maybeSingle();
+      const { data, error } = await supabase.from("lab_settings").select("name, address, city, state, cnpj, phone, logo_url, technical_responsible, crm_responsible").limit(1).maybeSingle();
       if (error) throw error;
       return data;
     },
