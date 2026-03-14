@@ -240,24 +240,69 @@ const Worklist = () => {
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">{sector} — {sectorSamples.length} amostras</CardTitle>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openRenameDialog(sector)}>
-                            <Pencil className="w-4 h-4 mr-2" /> Renomear
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => setDeleteTarget(sector)}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" /> Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                          disabled={sectorSamples.length === 0}
+                          onClick={() => {
+                            const printWindow = window.open("", "_blank");
+                            if (!printWindow) return;
+                            const dateRange = dateFrom || dateTo
+                              ? `Período: ${dateFrom ? format(dateFrom, "dd/MM/yyyy") : "—"} até ${dateTo ? format(dateTo, "dd/MM/yyyy") : "—"}`
+                              : `Data: ${format(new Date(), "dd/MM/yyyy")}`;
+                            printWindow.document.write(`
+                              <html><head><title>Esteira - ${sector}</title>
+                              <style>
+                                body { font-family: Arial, sans-serif; padding: 20px; }
+                                h2 { margin-bottom: 4px; }
+                                .sub { color: #666; font-size: 13px; margin-bottom: 16px; }
+                                table { width: 100%; border-collapse: collapse; font-size: 13px; }
+                                th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; }
+                                th { background: #f0f0f0; font-weight: 600; }
+                                @media print { body { padding: 0; } }
+                              </style></head><body>
+                              <h2>${sector}</h2>
+                              <p class="sub">${dateRange} · ${sectorSamples.length} amostra(s)</p>
+                              <table>
+                                <thead><tr><th>Código</th><th>Paciente</th><th>Material</th><th>Status</th><th>Coleta</th></tr></thead>
+                                <tbody>
+                                  ${sectorSamples.map(s => `<tr>
+                                    <td>${s.barcode}</td>
+                                    <td>${(s.orders as any)?.patients?.name || "—"}</td>
+                                    <td>${s.sample_type}</td>
+                                    <td>${s.status}</td>
+                                    <td>${new Date(s.collected_at).toLocaleString("pt-BR")}</td>
+                                  </tr>`).join("")}
+                                </tbody>
+                              </table></body></html>
+                            `);
+                            printWindow.document.close();
+                            printWindow.print();
+                          }}
+                        >
+                          <Printer className="w-3.5 h-3.5 mr-1" /> Imprimir
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openRenameDialog(sector)}>
+                              <Pencil className="w-4 h-4 mr-2" /> Renomear
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => setDeleteTarget(sector)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
