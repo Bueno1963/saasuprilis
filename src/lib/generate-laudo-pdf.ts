@@ -111,6 +111,28 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   doc.line(14, y, pageWidth - 14, y);
   y += 6;
 
+  // Collect per-exam header texts
+  const examHeaderTexts: string[] = [];
+  const examFooterTexts: string[] = [];
+  const examObservations: string[] = [];
+  for (const r of data.results) {
+    if (r.headerText) examHeaderTexts.push(r.headerText);
+    if (r.footerText) examFooterTexts.push(r.footerText);
+    if (r.defaultObservations) examObservations.push(r.defaultObservations);
+  }
+
+  // Print header texts if any
+  if (examHeaderTexts.length > 0) {
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(80);
+    for (const ht of examHeaderTexts) {
+      doc.text(ht, leftCol, y);
+      y += 4;
+    }
+    y += 2;
+  }
+
   // Results table — grouped by sector
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
@@ -126,6 +148,18 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     sectorMap.get(sector)!.push(r);
   }
 
+  // Determine which columns to show (use first result's config as baseline)
+  const anyHideRef = data.results.some(r => r.hideReferenceRange);
+  const anyHideFlag = data.results.some(r => r.hideFlag);
+  const anyHideUnit = data.results.some(r => r.hideUnit);
+
+  // Build dynamic columns
+  const headRow: string[] = ["Exame / Parâmetro", "Resultado"];
+  if (!anyHideUnit) headRow.push("Unidade");
+  if (!anyHideRef) headRow.push("Valor de Referência");
+  if (!anyHideFlag) headRow.push("Flag");
+  const colCount = headRow.length;
+
   // Build table body with sector headers
   const tableBody: any[][] = [];
   const sectors = [...sectorMap.keys()].sort();
@@ -135,45 +169,88 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     if (hasSectors) {
       tableBody.push([{
         content: `▸ ${sector.toUpperCase()}`,
-        colSpan: 5,
+        colSpan: colCount,
         styles: { fontStyle: "bold", fillColor: [20, 55, 90], textColor: [255, 255, 255], fontSize: 9, cellPadding: { top: 3, bottom: 3, left: 4, right: 4 } },
       }]);
     }
 
     for (const r of sectorMap.get(sector)!) {
       if (r.parameters && r.parameters.length > 0) {
-        tableBody.push([{ content: r.exam, colSpan: 5, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
+        tableBody.push([{ content: r.exam, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
         let lastSection = "";
         for (const p of r.parameters) {
           if (p.section && p.section !== lastSection) {
             lastSection = p.section;
-            tableBody.push([{ content: p.section, colSpan: 5, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
+            tableBody.push([{ content: p.section, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
           }
-          tableBody.push(["   " + p.name, p.value, p.unit, r.hideReferenceRange ? "" : p.referenceRange, ""]);
+          const row: any[] = ["   " + p.name, p.value];
+          if (!anyHideUnit) row.push(p.unit);
+          if (!anyHideRef) row.push(r.hideReferenceRange ? "" : p.referenceRange);
+          if (!anyHideFlag) row.push("");
+          tableBody.push(row);
         }
       } else {
-        tableBody.push([r.exam, r.value, r.unit, r.hideReferenceRange ? "" : r.referenceRange, FLAG_LABELS[r.flag] || ""]);
+        const row: any[] = [r.exam, r.value];
+        if (!anyHideUnit) row.push(r.unit);
+        if (!anyHideRef) row.push(r.hideReferenceRange ? "" : r.referenceRange);
+        if (!anyHideFlag) row.push(FLAG_LABELS[r.flag] || "");
+        tableBody.push(row);
       }
     }
   }
 
+  // Build column styles dynamically
+  const columnStyles: Record<number, any> = {
+    0: { cellWidth: 50 },
+    1: { cellWidth: 30, fontStyle: "bold", halign: "center" },
+  };
+  let colIdx = 2;
+  if (!anyHideUnit) { columnStyles[colIdx] = { cellWidth: 25, halign: "center" }; colIdx++; }
+  if (!anyHideRef) { columnStyles[colIdx] = { cellWidth: 50 }; colIdx++; }
+  if (!anyHideFlag) { columnStyles[colIdx] = { cellWidth: 25, halign: "center" }; colIdx++; }
+
   autoTable(doc, {
     startY: y,
-    head: [["Exame / Parâmetro", "Resultado", "Unidade", "Valor de Referência", "Flag"]],
+    head: [headRow],
     body: tableBody,
     theme: "grid",
     headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
     bodyStyles: { fontSize: 9, textColor: 40 },
     alternateRowStyles: { fillColor: [245, 248, 252] },
-    columnStyles: {
-      0: { cellWidth: 50 },
-      1: { cellWidth: 30, fontStyle: "bold", halign: "center" },
-      2: { cellWidth: 25, halign: "center" },
-      3: { cellWidth: 50 },
-      4: { cellWidth: 25, halign: "center" },
-    },
+    columnStyles,
     margin: { left: 14, right: 14 },
   });
+
+  // Observations
+  let afterTableY = (doc as any).lastAutoTable?.finalY || y + 40;
+  if (examObservations.length > 0) {
+    afterTableY += 6;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(20, 55, 90);
+    doc.text("OBSERVAÇÕES", leftCol, afterTableY);
+    afterTableY += 5;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(60);
+    doc.setFontSize(8);
+    for (const obs of examObservations) {
+      const lines = doc.splitTextToSize(obs, pageWidth - 28);
+      doc.text(lines, leftCol, afterTableY);
+      afterTableY += lines.length * 4 + 2;
+    }
+  }
+
+  // Exam footer texts
+  if (examFooterTexts.length > 0) {
+    afterTableY += 4;
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(100);
+    for (const ft of examFooterTexts) {
+      doc.text(ft, leftCol, afterTableY);
+      afterTableY += 4;
+    }
+  }
 
   // Digital signature
   const finalY = (doc as any).lastAutoTable?.finalY || y + 40;
