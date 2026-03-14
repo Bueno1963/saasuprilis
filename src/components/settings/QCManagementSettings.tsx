@@ -119,10 +119,11 @@ const AnalytesTab = () => {
       {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum analito cadastrado{sectorFilter !== "__all__" ? " neste setor" : ""}</p>}
 
       {[...grouped.entries()].map(([sector, sectorItems]) => (
-        <div key={sector} className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className="text-xs font-semibold">{sector}</Badge>
-            <span className="text-xs text-muted-foreground">({sectorItems.length} analito{sectorItems.length !== 1 ? "s" : ""})</span>
+        <div key={sector} className="mb-6 border border-border rounded-lg overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 border-b border-border">
+            <div className="w-2 h-2 rounded-full bg-primary" />
+            <h3 className="text-sm font-bold text-primary uppercase tracking-wide">{sector}</h3>
+            <span className="text-xs text-muted-foreground ml-auto">({sectorItems.length} analito{sectorItems.length !== 1 ? "s" : ""})</span>
           </div>
           <Table>
             <TableHeader>
@@ -333,10 +334,11 @@ const LotsTab = () => {
       {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum lote cadastrado{sectorFilter !== "__all__" ? " neste setor" : ""}</p>}
 
       {[...grouped.entries()].map(([sector, sectorLots]) => (
-        <div key={sector} className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className="text-xs font-semibold">{sector}</Badge>
-            <span className="text-xs text-muted-foreground">({sectorLots.length} lote{sectorLots.length !== 1 ? "s" : ""})</span>
+        <div key={sector} className="mb-6 border border-border rounded-lg overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 border-b border-border">
+            <div className="w-2 h-2 rounded-full bg-primary" />
+            <h3 className="text-sm font-bold text-primary uppercase tracking-wide">{sector}</h3>
+            <span className="text-xs text-muted-foreground ml-auto">({sectorLots.length} lote{sectorLots.length !== 1 ? "s" : ""})</span>
           </div>
           <Table>
             <TableHeader>
