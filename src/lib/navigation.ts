@@ -43,6 +43,7 @@ export const navItems: NavItem[] = [
   { title: "Recepção", href: "/recepcao", icon: ConciergeBell, phase: "pre", allowedRoles: ["admin", "recepcao"] },
   { title: "Pacientes", href: "/pacientes", icon: Users, phase: "pre", allowedRoles: ["admin", "tecnico", "recepcao"] },
   { title: "Pedidos", href: "/pedidos", icon: ClipboardList, phase: "pre", allowedRoles: ["admin", "tecnico", "recepcao"] },
+  { title: "Impressão por Setor", href: "/laudos/imprimir", icon: Printer, phase: "post", allowedRoles: ["admin", "tecnico"] },
   { title: "Amostras", href: "/amostras", icon: TestTubes, phase: "analytical", allowedRoles: ["admin", "tecnico", "recepcao"] },
   { title: "Mapa de Trabalho", href: "/worklist", icon: FlaskConical, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
   { title: "Controle de Qualidade", href: "/qc", icon: BarChart3, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
@@ -59,7 +60,6 @@ export const navItems: NavItem[] = [
       { title: "Pedidos Incompletos", href: "/laudos/incompletos", icon: AlertTriangle },
     ],
   },
-  { title: "Impressão por Setor", href: "/laudos/imprimir", icon: Printer, phase: "post", allowedRoles: ["admin", "tecnico"] },
   { title: "Resultados", href: "/resultados", icon: FileCheck, phase: "post", allowedRoles: ["admin", "tecnico"] },
   
   {
