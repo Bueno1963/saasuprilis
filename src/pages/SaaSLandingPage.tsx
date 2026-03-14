@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import heroLabImg from "@/assets/hero-lab.jpg";
+import heroMockupImg from "@/assets/saas-hero-mockup.png";
 
 /* ──────────────────────────── DATA ──────────────────────────── */
 
