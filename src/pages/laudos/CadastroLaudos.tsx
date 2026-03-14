@@ -448,6 +448,9 @@ const CadastroLaudos = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Report Layout Settings */}
+              <ReportLayoutSettings examId={exam.id} examName={exam.name} />
             </div>
           );
         })()
