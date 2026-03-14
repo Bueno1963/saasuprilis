@@ -88,6 +88,20 @@ const ReportLayoutListSettings = ({ onBack }: Props) => {
     onError: () => toast.error("Erro ao agrupar exames"),
   });
 
+  const labelToggleMutation = useMutation({
+    mutationFn: async ({ examId, showOnLabel }: { examId: string; showOnLabel: boolean }) => {
+      const { error } = await supabase
+        .from("exam_catalog")
+        .update({ show_on_label: showOnLabel } as any)
+        .eq("id", examId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["exam-catalog-all"] });
+    },
+    onError: () => toast.error("Erro ao atualizar configuração de etiqueta"),
+  });
+
   const toggleId = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
