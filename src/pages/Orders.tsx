@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { orderSchema, OrderFormData } from "@/lib/validations";
-import { printEtiquetaColeta, printAtendimento, printProtocoloAcesso } from "@/lib/print-utils";
+import { printEtiquetaColeta, printAtendimento, printProtocoloAcesso, printDeclaracaoComparecimento } from "@/lib/print-utils";
 import logoImg from "@/assets/logo-dra-dielem.png";
 
 const Orders = () => {
