@@ -50,6 +50,7 @@ const SectorSelect = ({ value, onChange, sectors, defaultSector }: { value: stri
   );
 };
 
+const ExamCatalogSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
