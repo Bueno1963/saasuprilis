@@ -38,6 +38,7 @@ const SettingsPage = () => {
   if (section === "integrations") return <IntegrationsSettings onBack={goBack} />;
   if (section === "printers") return <PrinterSettings onBack={goBack} />;
   if (section === "support_lab") return <SupportLabSettings onBack={goBack} />;
+  if (section === "report_layouts") return <ReportLayoutListSettings onBack={goBack} />;
 
   return (
     <div className="p-6 space-y-6">
