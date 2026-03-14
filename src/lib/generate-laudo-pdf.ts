@@ -215,7 +215,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       columnStyles[0] = { cellWidth: 'auto' };
       columnStyles[1] = { cellWidth: 28, fontStyle: "bold", halign: "center" };
       columnStyles[2] = { cellWidth: 22, halign: "center" };
-      columnStyles[3] = { cellWidth: 45 };
+      columnStyles[3] = { cellWidth: 45, halign: "center" };
     } else {
       let colIdx = 0;
       columnStyles[colIdx++] = { cellWidth: 'auto' }; // Exame
