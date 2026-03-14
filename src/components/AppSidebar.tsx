@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 const AppSidebar = () => {
   const location = useLocation();
@@ -13,6 +14,7 @@ const AppSidebar = () => {
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const { profile, signOut } = useAuth();
   const { isRouteAllowed } = useRolePermissions();
+  const { branding } = useTenantBranding();
 
   const filteredItems = useMemo(
     () => navItems.filter(n => isRouteAllowed(n.href)),
@@ -47,9 +49,14 @@ const AppSidebar = () => {
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-12 border-b border-sidebar-border shrink-0">
+      <div className="flex items-center gap-3 px-4 h-14 border-b border-sidebar-border shrink-0">
+        {branding?.logo_url ? (
+          <img src={branding.logo_url} alt={branding.name} className={cn("object-contain", collapsed ? "h-8 w-8" : "h-9 w-9")} />
+        ) : null}
         {!collapsed && (
-          <p className="text-xs font-semibold text-sidebar-foreground uppercase tracking-widest">LIS System</p>
+          <p className="text-xs font-semibold text-sidebar-foreground uppercase tracking-widest truncate">
+            {branding?.name || "LIS System"}
+          </p>
         )}
       </div>
 

@@ -1,7 +1,11 @@
 import { Outlet } from "react-router-dom";
 import AppSidebar from "./AppSidebar";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 const AppLayout = () => {
+  // Load and apply tenant branding (CSS variables)
+  useTenantBranding();
+
   return (
     <div className="flex h-screen overflow-hidden">
       <AppSidebar />
