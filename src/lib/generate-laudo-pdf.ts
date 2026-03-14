@@ -173,14 +173,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
     const tableBody: any[][] = [];
 
-    // Sector header row
-    if (hasSectors) {
-      tableBody.push([{
-        content: `▸ ${sector.toUpperCase()}`,
-        colSpan: colCount,
-        styles: { fontStyle: "bold", fillColor: [20, 55, 90], textColor: [255, 255, 255], fontSize: 9, cellPadding: { top: 3, bottom: 3, left: 4, right: 4 } },
-      }]);
-    }
+    // Sector header row — disabled (user requested no sector headers in PDF)
 
     for (const r of sectorResults) {
       if (r.parameters && r.parameters.length > 0) {
