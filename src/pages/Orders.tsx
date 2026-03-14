@@ -399,17 +399,15 @@ const Orders = () => {
                            <DropdownMenuItem onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
                              <Pencil className="w-4 h-4 mr-2" />Editar Pedido
                            </DropdownMenuItem>
-                           {!ordersWithResultsSet.has(order.id) && (
-                             <DropdownMenuItem
-                               className="text-destructive focus:text-destructive"
-                               onClick={() => {
-                                 setDeleteOrderId(order.id);
-                                 setDeleteOrderNumber(order.order_number);
-                               }}
-                             >
-                               <Trash2 className="w-4 h-4 mr-2" />Excluir Pedido
-                             </DropdownMenuItem>
-                           )}
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => {
+                                setDeleteOrderId(order.id);
+                                setDeleteOrderNumber(order.order_number);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />Excluir Pedido
+                            </DropdownMenuItem>
                          </DropdownMenuContent>
                        </DropdownMenu>
                      </TableCell>
