@@ -282,7 +282,7 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
               <div className="space-y-1">
                 <Label>Setor</Label>
                 <Controller name="sector" control={control} render={({ field }) => (
-                  <SectorSelect value={field.value} onChange={field.onChange} sectors={allSectors} defaultSector={defaultValues.sector} />
+                  <SectorSelect value={field.value} onChange={field.onChange} sectors={allSectors} />
                 )} />
               </div>
               <div className="space-y-1"><Label>Método</Label><Input {...register("method")} /></div>
