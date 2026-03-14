@@ -175,6 +175,15 @@ const LiberarExames = () => {
   const profileMap = new Map(profiles.map(p => [p.user_id, p]));
 
   const examNameToId = new Map(examCatalogFull.map(e => [e.name, e.id]));
+  const layoutByExamId = useMemo(() => {
+    const map = new Map<string, any>();
+    for (const l of reportLayouts) map.set(l.exam_id, l);
+    return map;
+  }, [reportLayouts]);
+  const getExamLayout = useCallback((examName: string) => {
+    const examId = examNameToId.get(examName);
+    return examId ? layoutByExamId.get(examId) : null;
+  }, [examNameToId, layoutByExamId]);
   const examParamsByExamId = useMemo(() => {
     const map = new Map<string, ExamParam[]>();
     for (const p of allExamParams) {
