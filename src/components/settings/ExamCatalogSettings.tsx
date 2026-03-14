@@ -49,6 +49,7 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
   const [newMaterialOpen, setNewMaterialOpen] = useState(false);
   const [newMaterialName, setNewMaterialName] = useState("");
   const [customMaterials, setCustomMaterials] = useState<string[]>([]);
+  const [customSectors, setCustomSectors] = useState<string[]>([]);
   const { register, handleSubmit, reset, control } = useForm<ExamForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
@@ -71,9 +72,10 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
 
   const allSectors = useMemo(() => {
     const set = new Set(DEFAULT_SECTORS);
+    customSectors.forEach((s) => set.add(s));
     items.forEach((i) => { if (i.sector) set.add(i.sector); });
     return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [items]);
+  }, [items, customSectors]);
 
   const allMaterials = useMemo(() => {
     const set = new Set(DEFAULT_MATERIALS);
@@ -175,12 +177,11 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             <div className="flex items-center gap-2">
               <Input placeholder="Nome do setor" value={newSectorName} onChange={(e) => setNewSectorName(e.target.value)} className="w-44" autoFocus />
               <Button size="sm" onClick={() => {
-                if (newSectorName.trim() && !allSectors.includes(newSectorName.trim())) {
-                  // Create a placeholder exam to register the sector
-                  openNew();
-                  reset({ ...defaultValues, sector: newSectorName.trim() });
-                  toast.success(`Setor "${newSectorName.trim()}" pronto. Complete o cadastro do exame.`);
-                } else if (allSectors.includes(newSectorName.trim())) {
+                const trimmed = newSectorName.trim();
+                if (trimmed && !allSectors.includes(trimmed)) {
+                  setCustomSectors((prev) => [...prev, trimmed]);
+                  toast.success(`Setor "${trimmed}" cadastrado!`);
+                } else if (allSectors.includes(trimmed)) {
                   toast.error("Setor já existe.");
                 }
                 setNewSectorOpen(false); setNewSectorName("");
