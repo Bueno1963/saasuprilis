@@ -22,7 +22,9 @@ const ReportLayoutListSettings = ({ onBack }: Props) => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedExam, setSelectedExam] = useState<{ id: string; name: string } | null>(null);
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
+  const [labelDialogOpen, setLabelDialogOpen] = useState(false);
   const [groupSearch, setGroupSearch] = useState("");
+  const [labelSearch, setLabelSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: exams = [] } = useQuery({
