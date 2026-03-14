@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
         slug,
         cnpj: cnpj || "",
         email,
-        plan: "starter",
+        plan: "aprendiz",
         status: "trial",
       })
       .select("id")

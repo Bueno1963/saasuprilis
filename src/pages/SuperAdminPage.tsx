@@ -246,9 +246,10 @@ const SuperAdminPage = () => {
                 <Select value={form.plan} onValueChange={(v) => setForm({ ...form, plan: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="starter">Starter</SelectItem>
-                    <SelectItem value="professional">Professional</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                    <SelectItem value="aprendiz">Aprendiz</SelectItem>
+                    <SelectItem value="companheiro">Companheiro</SelectItem>
+                    <SelectItem value="mestre">Mestre</SelectItem>
+                    <SelectItem value="laboratorio_instalado">Lab. Instalado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
