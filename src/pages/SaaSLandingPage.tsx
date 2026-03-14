@@ -150,7 +150,7 @@ const SaaSLandingPage = () => {
           </div>
           <a href="#contato">
             <Button size="sm" className="rounded-md px-5 text-sm bg-[hsl(170,55%,45%)] hover:bg-[hsl(170,55%,38%)] text-white font-semibold">
-              Fale Conosco
+              Começar Grátis
             </Button>
           </a>
         </div>
