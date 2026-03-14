@@ -39,7 +39,7 @@ interface TenantForm {
 
 const emptyForm: TenantForm = {
   name: "", slug: "", cnpj: "", email: "", phone: "",
-  plan: "starter", status: "active", primary_color: "#1e40af",
+  plan: "aprendiz", status: "active", primary_color: "#1e40af",
 };
 
 const SuperAdminPage = () => {
@@ -116,11 +116,12 @@ const SuperAdminPage = () => {
 
   const statusBadge = (s: string) => {
     if (s === "active") return <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Ativo</Badge>;
+    if (s === "trial") return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Trial</Badge>;
     if (s === "suspended") return <Badge variant="destructive">Suspenso</Badge>;
     return <Badge variant="secondary">{s}</Badge>;
   };
 
-  const planLabel: Record<string, string> = { starter: "Starter", professional: "Professional", enterprise: "Enterprise" };
+  const planLabel: Record<string, string> = { aprendiz: "Aprendiz", companheiro: "Companheiro", mestre: "Mestre", laboratorio_instalado: "Lab. Instalado", starter: "Aprendiz", professional: "Companheiro", enterprise: "Mestre" };
 
   return (
     <div className="p-6 space-y-6">
@@ -245,9 +246,10 @@ const SuperAdminPage = () => {
                 <Select value={form.plan} onValueChange={(v) => setForm({ ...form, plan: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="starter">Starter</SelectItem>
-                    <SelectItem value="professional">Professional</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                    <SelectItem value="aprendiz">Aprendiz</SelectItem>
+                    <SelectItem value="companheiro">Companheiro</SelectItem>
+                    <SelectItem value="mestre">Mestre</SelectItem>
+                    <SelectItem value="laboratorio_instalado">Lab. Instalado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
