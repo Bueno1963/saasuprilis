@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import heroLabImg from "@/assets/hero-lab.jpg";
+import heroMockupImg from "@/assets/saas-hero-mockup.png";
 
 /* ──────────────────────────── DATA ──────────────────────────── */
 
@@ -186,9 +186,9 @@ const SaaSLandingPage = () => {
             </div>
             <div className="relative flex justify-center">
               <img
-                src={heroLabImg}
+                src={heroMockupImg}
                 alt="Sistema SUPRILIS - Dashboard"
-                className="w-full max-w-lg rounded-xl shadow-2xl"
+                className="w-full max-w-xl rounded-xl shadow-2xl border border-white/10"
               />
             </div>
           </div>
