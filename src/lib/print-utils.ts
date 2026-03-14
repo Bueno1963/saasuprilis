@@ -311,6 +311,10 @@ export function printDeclaracaoComparecimento(
       h1 { text-align: center; font-size: 20px; font-weight: bold; margin: 50px 0 40px; letter-spacing: 1px; }
       .body-text { font-size: 15px; text-align: justify; line-height: 2; margin-bottom: 60px; }
       .signature-area { text-align: right; font-size: 14px; margin-top: 80px; }
+      .responsible { text-align: center; margin-top: 100px; }
+      .responsible .line { border-top: 1px solid #000; width: 300px; margin: 0 auto 6px; }
+      .responsible .name { font-size: 14px; font-weight: bold; }
+      .responsible .role { font-size: 12px; color: #444; }
     </style></head><body>
     <div class="header">
       <div class="logo-area">${logoHtml}</div>
@@ -325,6 +329,12 @@ export function printDeclaracaoComparecimento(
     </p>
     <div class="signature-area">
       ${cityState ? cityState + ", " : ""}${dia} de ${mes} de ${ano} às ${hora}
+    </div>
+    <div class="responsible">
+      <div class="line"></div>
+      <div class="name">${labSettings.technical_responsible || labSettings.name}</div>
+      <div class="role">Responsável pelas Informações</div>
+      ${labSettings.crm_responsible ? `<div class="role">${labSettings.crm_responsible}</div>` : ""}
     </div>
     <script>window.print(); window.onafterprint = () => window.close();<\/script>
     </body></html>
