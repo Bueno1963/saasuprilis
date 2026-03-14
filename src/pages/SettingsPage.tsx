@@ -24,6 +24,7 @@ const sections = [
   { key: "printers" as Section, title: "Impressoras", desc: "Cadastro de impressoras para impressão de laudos e etiquetas", icon: Printer },
   { key: "support_lab" as Section, title: "Lab. de Apoio", desc: "Integração com laboratórios terceirizados para exames encaminhados", icon: FlaskRound },
   { key: "report_layouts" as Section, title: "Cadastro de Layout", desc: "Modelos de impressão de laudos por exame: colunas, cabeçalho, rodapé e observações", icon: LayoutTemplate },
+  { key: "cadastro_parametros" as Section, title: "Cadastro de Parâmetros", desc: "Modelo de exames por setor com parâmetros para digitação de laudos", icon: ListTree },
 ];
 
 const SettingsPage = () => {
