@@ -39,7 +39,7 @@ interface TenantForm {
 
 const emptyForm: TenantForm = {
   name: "", slug: "", cnpj: "", email: "", phone: "",
-  plan: "starter", status: "active", primary_color: "#1e40af",
+  plan: "aprendiz", status: "active", primary_color: "#1e40af",
 };
 
 const SuperAdminPage = () => {
