@@ -30,7 +30,7 @@ const ReportLayoutListSettings = ({ onBack }: Props) => {
   const { data: exams = [] } = useQuery({
     queryKey: ["exam-catalog-all"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("exam_catalog").select("id, name, code, sector, status").order("name");
+      const { data, error } = await supabase.from("exam_catalog").select("id, name, code, sector, status, show_on_label").order("name");
       if (error) throw error;
       return data;
     },
