@@ -232,18 +232,7 @@ const Orders = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      // Check if order has any results with values entered
-      const { data: existingResults } = await supabase
-        .from("results")
-        .select("id, value, status")
-        .eq("order_id", id);
-      
-      const hasFilledResults = existingResults?.some(r => r.value && r.value.trim() !== "");
-      if (hasFilledResults) {
-        throw new Error("Não é possível excluir: este pedido possui resultados preenchidos.");
-      }
-
-      // Delete pending (empty) results
+      // Delete all results (including filled ones)
       await supabase.from("results").delete().eq("order_id", id);
       // Delete related samples
       await supabase.from("samples").delete().eq("order_id", id);
@@ -399,17 +388,15 @@ const Orders = () => {
                            <DropdownMenuItem onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
                              <Pencil className="w-4 h-4 mr-2" />Editar Pedido
                            </DropdownMenuItem>
-                           {!ordersWithResultsSet.has(order.id) && (
-                             <DropdownMenuItem
-                               className="text-destructive focus:text-destructive"
-                               onClick={() => {
-                                 setDeleteOrderId(order.id);
-                                 setDeleteOrderNumber(order.order_number);
-                               }}
-                             >
-                               <Trash2 className="w-4 h-4 mr-2" />Excluir Pedido
-                             </DropdownMenuItem>
-                           )}
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => {
+                                setDeleteOrderId(order.id);
+                                setDeleteOrderNumber(order.order_number);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />Excluir Pedido
+                            </DropdownMenuItem>
                          </DropdownMenuContent>
                        </DropdownMenu>
                      </TableCell>
