@@ -22,8 +22,6 @@ import { toast } from "sonner";
 import SampleEditDialog from "@/components/worklist/SampleEditDialog";
 
 const Worklist = () => {
-  const [newSector, setNewSector] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renamingSector, setRenamingSector] = useState("");
   const [renameValue, setRenameValue] = useState("");
@@ -60,26 +58,6 @@ const Worklist = () => {
     queryClient.invalidateQueries({ queryKey: ["exam_catalog_sectors_worklist"] });
   };
 
-  const addSectorMutation = useMutation({
-    mutationFn: async (sectorName: string) => {
-      const code = `SECTOR-${sectorName.toUpperCase().replace(/\s+/g, "-").slice(0, 10)}-${Date.now().toString(36)}`;
-      const { error } = await supabase.from("exam_catalog").insert({
-        name: `(Setor) ${sectorName}`,
-        code,
-        sector: sectorName,
-        status: "active",
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      invalidateSectors();
-      toast.success("Setor criado com sucesso");
-      setNewSector("");
-      setDialogOpen(false);
-    },
-    onError: () => toast.error("Erro ao criar setor"),
-  });
-
   const renameSectorMutation = useMutation({
     mutationFn: async ({ oldName, newName }: { oldName: string; newName: string }) => {
       const { error } = await supabase
@@ -115,16 +93,6 @@ const Worklist = () => {
     onError: () => toast.error("Erro ao excluir setor"),
   });
 
-  const handleAddSector = () => {
-    const trimmed = newSector.trim();
-    if (!trimmed) return;
-    if (sectors.includes(trimmed)) {
-      toast.error("Este setor já existe");
-      return;
-    }
-    addSectorMutation.mutate(trimmed);
-  };
-
   const handleRename = () => {
     const trimmed = renameValue.trim();
     if (!trimmed || trimmed === renamingSector) return;
@@ -149,34 +117,6 @@ const Worklist = () => {
           <p className="text-sm text-muted-foreground">Organização de amostras por setor e equipamento</p>
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Plus className="w-4 h-4 mr-1" /> Novo Setor
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Criar Novo Setor</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <Input
-                placeholder="Nome do setor (ex: Hormônios)"
-                value={newSector}
-                onChange={e => setNewSector(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleAddSector()}
-              />
-            </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="ghost">Cancelar</Button>
-              </DialogClose>
-              <Button onClick={handleAddSector} disabled={addSectorMutation.isPending || !newSector.trim()}>
-                Criar Setor
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
 
       {/* Rename Dialog */}
