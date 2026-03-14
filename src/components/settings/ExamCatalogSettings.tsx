@@ -24,6 +24,7 @@ interface ExamForm {
 const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector: "Bioquímica", method: "", unit: "", reference_range: "", turnaround_hours: 24, price: 0, status: "active", equipment: "" };
 
 const DEFAULT_SECTORS = ["Bioquímica", "Hematologia", "Imunologia", "Microbiologia", "Uroanálise"];
+const DEFAULT_MATERIALS = ["Sangue", "Soro", "Plasma", "Urina", "Fezes", "Líquor", "Escarro", "Swab", "Tecido"];
 
 const SectorSelect = ({ value, onChange, sectors }: { value: string; onChange: (v: string) => void; sectors: string[] }) => {
   return (
