@@ -23,6 +23,7 @@ import {
   FileText,
   Award,
   CalendarClock,
+  ShieldAlert,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
@@ -89,4 +90,5 @@ export const navItems: NavItem[] = [
     ],
   },
   { title: "Configurações", href: "/configuracoes", icon: Settings, allowedRoles: ["admin"] },
+  { title: "Super Admin", href: "/admin", icon: ShieldAlert, allowedRoles: ["admin"] },
 ];
