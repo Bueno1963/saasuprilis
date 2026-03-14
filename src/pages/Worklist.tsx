@@ -127,34 +127,6 @@ const Worklist = () => {
           <p className="text-sm text-muted-foreground">Organização de amostras por setor e equipamento</p>
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Plus className="w-4 h-4 mr-1" /> Novo Setor
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Criar Novo Setor</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <Input
-                placeholder="Nome do setor (ex: Hormônios)"
-                value={newSector}
-                onChange={e => setNewSector(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleAddSector()}
-              />
-            </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="ghost">Cancelar</Button>
-              </DialogClose>
-              <Button onClick={handleAddSector} disabled={addSectorMutation.isPending || !newSector.trim()}>
-                Criar Setor
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
 
       {/* Rename Dialog */}
