@@ -22,6 +22,7 @@ import ValidarExames from "./pages/laudos/ValidarExames";
 import CadastroLaudos from "./pages/laudos/CadastroLaudos";
 import ExamesLiberados from "./pages/laudos/ExamesLiberados";
 import SettingsPage from "./pages/SettingsPage";
+import SuperAdminPage from "./pages/SuperAdminPage";
 
 import RecepcaoPage from "./pages/RecepcaoPage";
 import AgendamentoPage from "./pages/recepcao/AgendamentoPage";

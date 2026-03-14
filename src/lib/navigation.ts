@@ -23,6 +23,7 @@ import {
   FileText,
   Award,
   CalendarClock,
+  ShieldAlert,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
