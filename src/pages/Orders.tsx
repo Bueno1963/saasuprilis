@@ -392,8 +392,14 @@ const Orders = () => {
                               if (p) printAtendimento({ id: order.id, name: p.name, cpf: p.cpf, birth_date: p.birth_date, gender: p.gender, phone: p.phone, email: p.email, insurance: order.insurance }, logoImg);
                             }}>
                               <Printer className="w-4 h-4 mr-2" />Comprovante de Atendimento
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
+                             </DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => {
+                               const p = (order.patients as any);
+                               if (p && labSettings) printDeclaracaoComparecimento({ name: p.name, cpf: p.cpf }, labSettings as any, logoImg);
+                             }}>
+                               <FileText className="w-4 h-4 mr-2" />Declaração Comparecimento
+                             </DropdownMenuItem>
+                             <DropdownMenuSeparator />
                            <DropdownMenuItem onClick={() => { setEditingOrder(order); setEditOpen(true); }}>
                              <Pencil className="w-4 h-4 mr-2" />Editar Pedido
                            </DropdownMenuItem>
