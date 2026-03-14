@@ -247,14 +247,30 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
               <div className="space-y-1"><Label>Material</Label><Input {...register("material")} /></div>
               <div className="space-y-1">
                 <Label>Setor</Label>
-                <Controller name="sector" control={control} render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {SECTORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                )} />
+                <Controller name="sector" control={control} render={({ field }) => {
+                  const [customSector, setCustomSector] = useState("");
+                  const showAddCustom = field.value === "__custom__";
+                  return showAddCustom ? (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Nome do novo setor"
+                        value={customSector}
+                        onChange={(e) => setCustomSector(e.target.value)}
+                        autoFocus
+                      />
+                      <Button type="button" size="sm" onClick={() => { if (customSector.trim()) { field.onChange(customSector.trim()); setCustomSector(""); } }}>OK</Button>
+                      <Button type="button" size="sm" variant="ghost" onClick={() => field.onChange(defaultValues.sector)}>✕</Button>
+                    </div>
+                  ) : (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {allSectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        <SelectItem value="__custom__">+ Novo setor...</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  );
+                }} />
               </div>
               <div className="space-y-1"><Label>Método</Label><Input {...register("method")} /></div>
               <div className="space-y-1">
