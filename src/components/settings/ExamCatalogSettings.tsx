@@ -52,6 +52,12 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     },
   });
 
+  const allSectors = useMemo(() => {
+    const set = new Set(DEFAULT_SECTORS);
+    items.forEach((i) => { if (i.sector) set.add(i.sector); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [items]);
+
   const filtered = items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()) || i.code.toLowerCase().includes(search.toLowerCase()));
 
   const groupedBySector = useMemo(() => {
