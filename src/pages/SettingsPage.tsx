@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug } from "lucide-react";
+import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug, Printer } from "lucide-react";
 import LabSettings from "@/components/settings/LabSettings";
 import EquipmentSettings from "@/components/settings/EquipmentSettings";
 import ExamCatalogSettings from "@/components/settings/ExamCatalogSettings";
 import InsuranceSettings from "@/components/settings/InsuranceSettings";
 import UsersSettings from "@/components/settings/UsersSettings";
 import IntegrationsSettings from "@/components/settings/IntegrationsSettings";
+import PrinterSettings from "@/components/settings/PrinterSettings";
 
-type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations";
+type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
@@ -17,6 +18,7 @@ const sections = [
   { key: "insurance" as Section, title: "Convênios", desc: "Tabelas de preços, regras de faturamento e glosas", icon: HeartHandshake },
   { key: "users" as Section, title: "Usuários", desc: "Controle de acesso, perfis e permissões do sistema", icon: Users },
   { key: "integrations" as Section, title: "Integrações", desc: "HL7, ASTM, API externas e portal de resultados", icon: Plug },
+  { key: "printers" as Section, title: "Impressoras", desc: "Cadastro de impressoras para impressão de laudos e etiquetas", icon: Printer },
 ];
 
 const SettingsPage = () => {
@@ -30,6 +32,7 @@ const SettingsPage = () => {
   if (section === "insurance") return <InsuranceSettings onBack={goBack} />;
   if (section === "users") return <UsersSettings onBack={goBack} />;
   if (section === "integrations") return <IntegrationsSettings onBack={goBack} />;
+  if (section === "printers") return <PrinterSettings onBack={goBack} />;
 
   return (
     <div className="p-6 space-y-6">
