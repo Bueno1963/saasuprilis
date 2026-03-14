@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FlaskConical, Printer, Plus, Pencil, Trash2, Save, ChevronDown, ChevronRight, ListTree } from "lucide-react";
+import ReportLayoutSettings from "@/components/laudos/ReportLayoutSettings";
 import { toast } from "sonner";
 
 // --- Types ---
