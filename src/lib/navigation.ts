@@ -57,10 +57,9 @@ export const navItems: NavItem[] = [
       { title: "Liberar Exames", href: "/laudos/liberar", icon: Unlock },
       { title: "Pacientes Liberados", href: "/laudos/liberados", icon: FileCheck },
       { title: "Pedidos Incompletos", href: "/laudos/incompletos", icon: AlertTriangle },
-      { title: "Impressão por Setor", href: "/laudos/imprimir", icon: Printer },
-      
     ],
   },
+  { title: "Impressão por Setor", href: "/laudos/imprimir", icon: Printer, phase: "post", allowedRoles: ["admin", "tecnico"] },
   { title: "Resultados", href: "/resultados", icon: FileCheck, phase: "post", allowedRoles: ["admin", "tecnico"] },
   
   {
