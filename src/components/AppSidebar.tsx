@@ -14,6 +14,7 @@ const AppSidebar = () => {
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const { profile, signOut } = useAuth();
   const { isRouteAllowed } = useRolePermissions();
+  const { branding } = useTenantBranding();
 
   const filteredItems = useMemo(
     () => navItems.filter(n => isRouteAllowed(n.href)),
