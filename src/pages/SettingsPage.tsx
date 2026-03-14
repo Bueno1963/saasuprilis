@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug, Printer, FlaskRound } from "lucide-react";
+import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug, Printer, FlaskRound, LayoutTemplate } from "lucide-react";
 import LabSettings from "@/components/settings/LabSettings";
 import EquipmentSettings from "@/components/settings/EquipmentSettings";
 import ExamCatalogSettings from "@/components/settings/ExamCatalogSettings";
@@ -9,8 +9,9 @@ import UsersSettings from "@/components/settings/UsersSettings";
 import IntegrationsSettings from "@/components/settings/IntegrationsSettings";
 import PrinterSettings from "@/components/settings/PrinterSettings";
 import SupportLabSettings from "@/components/settings/SupportLabSettings";
+import ReportLayoutListSettings from "@/components/settings/ReportLayoutListSettings";
 
-type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab";
+type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
