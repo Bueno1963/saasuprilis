@@ -333,6 +333,7 @@ const LiberarExames = () => {
         unit: hasParams ? "" : r.unit,
         referenceRange: hasParams ? "" : r.reference_range,
         flag: r.flag,
+        hideReferenceRange: /equ|eas|urina/i.test(r.exam),
         parameters: expandedParams,
       }],
       analystName: analyst?.full_name || "Analista",
