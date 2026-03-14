@@ -144,10 +144,10 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             lastSection = p.section;
             tableBody.push([{ content: p.section, colSpan: 5, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
           }
-          tableBody.push(["   " + p.name, p.value, p.unit, p.referenceRange, ""]);
+          tableBody.push(["   " + p.name, p.value, p.unit, r.hideReferenceRange ? "" : p.referenceRange, ""]);
         }
       } else {
-        tableBody.push([r.exam, r.value, r.unit, r.referenceRange, FLAG_LABELS[r.flag] || ""]);
+        tableBody.push([r.exam, r.value, r.unit, r.hideReferenceRange ? "" : r.referenceRange, FLAG_LABELS[r.flag] || ""]);
       }
     }
   }
