@@ -356,15 +356,23 @@ const LiberarExames = () => {
       insurance: order?.insurance || "Particular",
       collectedAt: new Date(now).toLocaleDateString("pt-BR"),
       releasedAt: new Date(now).toLocaleString("pt-BR"),
-      results: [{
-        exam: r.exam,
-        value: hasParams ? "" : r.value,
-        unit: hasParams ? "" : r.unit,
-        referenceRange: hasParams ? "" : r.reference_range,
-        flag: r.flag,
-        hideReferenceRange: /equ|eas|urina/i.test(r.exam),
-        parameters: expandedParams,
-      }],
+      results: [(() => {
+        const layout = getExamLayout(r.exam);
+        return {
+          exam: r.exam,
+          value: hasParams ? "" : r.value,
+          unit: hasParams ? "" : r.unit,
+          referenceRange: hasParams ? "" : r.reference_range,
+          flag: r.flag,
+          hideReferenceRange: layout?.hide_reference_range ?? /equ|eas|urina/i.test(r.exam),
+          hideFlag: layout?.hide_flag ?? false,
+          hideUnit: layout?.hide_unit ?? false,
+          headerText: layout?.header_text || undefined,
+          footerText: layout?.footer_text || undefined,
+          defaultObservations: layout?.default_observations || undefined,
+          parameters: expandedParams,
+        };
+      })()],
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
       history: historyEntries.length > 0 ? historyEntries : undefined,
@@ -376,7 +384,7 @@ const LiberarExames = () => {
     } else {
       toast.success(`PDF gerado com ${historyEntries.length} resultado(s) anterior(es)`);
     }
-  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout]);
 
   const releaseMutation = useMutation({
     mutationFn: async (id: string) => {
