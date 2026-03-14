@@ -28,6 +28,7 @@ const InsuranceSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [examsDialogPlan, setExamsDialogPlan] = useState<{ id: string; name: string } | null>(null);
   const { register, handleSubmit, reset, control } = useForm<InsForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
