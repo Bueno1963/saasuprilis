@@ -7,6 +7,7 @@ import ExamCatalogSettings from "@/components/settings/ExamCatalogSettings";
 import InsuranceSettings from "@/components/settings/InsuranceSettings";
 import UsersSettings from "@/components/settings/UsersSettings";
 import IntegrationsSettings from "@/components/settings/IntegrationsSettings";
+import PrinterSettings from "@/components/settings/PrinterSettings";
 
 type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers";
 
