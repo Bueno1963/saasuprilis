@@ -10,8 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, FileText } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
+import InsurancePlanExamsDialog from "./InsurancePlanExamsDialog";
 
 interface Props { onBack: () => void; }
 
