@@ -285,7 +285,7 @@ export function printProtocoloAcesso(order: { order_number: string; created_at: 
 
 export function printDeclaracaoComparecimento(
   patient: { name: string; cpf: string },
-  labSettings: { name: string; address?: string; city?: string; state?: string; cnpj?: string; phone?: string; logo_url?: string },
+  labSettings: { name: string; address?: string; city?: string; state?: string; cnpj?: string; phone?: string; logo_url?: string; technical_responsible?: string; crm_responsible?: string },
   logoUrl?: string
 ) {
   const win = window.open("", "_blank", "width=700,height=900");
