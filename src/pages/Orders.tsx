@@ -308,6 +308,12 @@ const Orders = () => {
                     }
                   }}>
                     <Globe className="w-4 h-4 mr-2" />Protocolo de Acesso Web
+                   </Button>
+                  <Button variant="outline" className="w-full" onClick={() => {
+                    const p = createdOrder.patients as any;
+                    if (p && labSettings) printDeclaracaoComparecimento({ name: p.name, cpf: p.cpf }, labSettings as any, logoImg);
+                  }}>
+                    <FileText className="w-4 h-4 mr-2" />Declaração Comparecimento
                   </Button>
                 </div>
                 <Button className="w-full" onClick={() => { setCreatedOrder(null); setOpen(false); }}>
