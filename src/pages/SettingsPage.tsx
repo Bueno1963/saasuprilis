@@ -22,6 +22,7 @@ const sections = [
   { key: "integrations" as Section, title: "Integrações", desc: "HL7, ASTM, API externas e portal de resultados", icon: Plug },
   { key: "printers" as Section, title: "Impressoras", desc: "Cadastro de impressoras para impressão de laudos e etiquetas", icon: Printer },
   { key: "support_lab" as Section, title: "Lab. de Apoio", desc: "Integração com laboratórios terceirizados para exames encaminhados", icon: FlaskRound },
+  { key: "report_layouts" as Section, title: "Cadastro de Layout", desc: "Modelos de impressão de laudos por exame: colunas, cabeçalho, rodapé e observações", icon: LayoutTemplate },
 ];
 
 const SettingsPage = () => {
