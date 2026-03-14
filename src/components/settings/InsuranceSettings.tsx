@@ -155,6 +155,12 @@ const InsuranceSettings = ({ onBack }: Props) => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <InsurancePlanExamsDialog
+        open={!!examsDialogPlan}
+        onOpenChange={(v) => { if (!v) setExamsDialogPlan(null); }}
+        insurancePlan={examsDialogPlan}
+      />
     </div>
   );
 };
