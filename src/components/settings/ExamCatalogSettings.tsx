@@ -190,6 +190,24 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
           ) : (
             <Button variant="outline" onClick={() => setNewSectorOpen(true)}><Plus className="h-4 w-4 mr-2" />Novo Setor</Button>
           )}
+          {newMaterialOpen ? (
+            <div className="flex items-center gap-2">
+              <Input placeholder="Nome do material" value={newMaterialName} onChange={(e) => setNewMaterialName(e.target.value)} className="w-44" autoFocus />
+              <Button size="sm" onClick={() => {
+                const trimmed = newMaterialName.trim();
+                if (trimmed && !allMaterials.includes(trimmed)) {
+                  setCustomMaterials((prev) => [...prev, trimmed]);
+                  toast.success(`Material "${trimmed}" cadastrado!`);
+                } else if (allMaterials.includes(trimmed)) {
+                  toast.error("Material já existe.");
+                }
+                setNewMaterialOpen(false); setNewMaterialName("");
+              }}>OK</Button>
+              <Button size="sm" variant="ghost" onClick={() => { setNewMaterialOpen(false); setNewMaterialName(""); }}>✕</Button>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={() => setNewMaterialOpen(true)}><Plus className="h-4 w-4 mr-2" />Novo Material</Button>
+          )}
           <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Exame</Button>
         </div>
       </div>
