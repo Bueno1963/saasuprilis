@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 const AppSidebar = () => {
   const location = useLocation();
