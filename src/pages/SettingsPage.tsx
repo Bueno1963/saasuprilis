@@ -35,6 +35,7 @@ const SettingsPage = () => {
   if (section === "users") return <UsersSettings onBack={goBack} />;
   if (section === "integrations") return <IntegrationsSettings onBack={goBack} />;
   if (section === "printers") return <PrinterSettings onBack={goBack} />;
+  if (section === "support_lab") return <SupportLabSettings onBack={goBack} />;
 
   return (
     <div className="p-6 space-y-6">
