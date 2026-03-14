@@ -1,0 +1,1 @@
+ALTER TABLE public.insurance_plan_exams ADD COLUMN exam_catalog_id uuid REFERENCES public.exam_catalog(id) ON DELETE SET NULL;

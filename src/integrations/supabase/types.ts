@@ -440,6 +440,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string
+          exam_catalog_id: string | null
           id: string
           insurance_plan_id: string
           price: number
@@ -448,6 +449,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description: string
+          exam_catalog_id?: string | null
           id?: string
           insurance_plan_id: string
           price?: number
@@ -456,12 +458,20 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string
+          exam_catalog_id?: string | null
           id?: string
           insurance_plan_id?: string
           price?: number
           procedure_code?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "insurance_plan_exams_exam_catalog_id_fkey"
+            columns: ["exam_catalog_id"]
+            isOneToOne: false
+            referencedRelation: "exam_catalog"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "insurance_plan_exams_insurance_plan_id_fkey"
             columns: ["insurance_plan_id"]
