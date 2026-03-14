@@ -8,6 +8,7 @@ interface LaudoResult {
   referenceRange: string;
   flag: string;
   sector?: string;
+  hideReferenceRange?: boolean;
   parameters?: {
     section: string;
     name: string;
