@@ -268,20 +268,28 @@ const LiberarExames = () => {
       insurance: order?.insurance || "Particular",
       collectedAt: new Date(now).toLocaleDateString("pt-BR"),
       releasedAt: new Date(now).toLocaleString("pt-BR"),
-      results: [{
-        exam: r.exam,
-        value: hasParams ? "" : r.value,
-        unit: hasParams ? "" : r.unit,
-        referenceRange: hasParams ? "" : r.reference_range,
-        flag: r.flag,
-        hideReferenceRange: /equ|eas|urina/i.test(r.exam),
-        parameters: expandedParams,
-      }],
+      results: [(() => {
+        const layout = getExamLayout(r.exam);
+        return {
+          exam: r.exam,
+          value: hasParams ? "" : r.value,
+          unit: hasParams ? "" : r.unit,
+          referenceRange: hasParams ? "" : r.reference_range,
+          flag: r.flag,
+          hideReferenceRange: layout?.hide_reference_range ?? /equ|eas|urina/i.test(r.exam),
+          hideFlag: layout?.hide_flag ?? false,
+          hideUnit: layout?.hide_unit ?? false,
+          headerText: layout?.header_text || undefined,
+          footerText: layout?.footer_text || undefined,
+          defaultObservations: layout?.default_observations || undefined,
+          parameters: expandedParams,
+        };
+      })()],
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
-  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout]);
 
   // Generate PDF with history for a result
   const generatePdfWithHistory = useCallback(async (r: any) => {
