@@ -50,9 +50,9 @@ const UsersSettings = ({ onBack }: Props) => {
   });
 
   const { data: roles = [] } = useQuery({
-    queryKey: ["all_user_roles"],
+    queryKey: ["all_tenant_members"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("user_roles").select("*");
+      const { data, error } = await supabase.from("tenant_members").select("*");
       if (error) throw error;
       return data;
     },
