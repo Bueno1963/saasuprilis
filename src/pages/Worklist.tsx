@@ -93,16 +93,6 @@ const Worklist = () => {
     onError: () => toast.error("Erro ao excluir setor"),
   });
 
-  const handleAddSector = () => {
-    const trimmed = newSector.trim();
-    if (!trimmed) return;
-    if (sectors.includes(trimmed)) {
-      toast.error("Este setor já existe");
-      return;
-    }
-    addSectorMutation.mutate(trimmed);
-  };
-
   const handleRename = () => {
     const trimmed = renameValue.trim();
     if (!trimmed || trimmed === renamingSector) return;
