@@ -301,7 +301,7 @@ const InsurancePlanExamsDialog = ({ open, onOpenChange, insurancePlan }: Props) 
                       <div className="flex items-center gap-1.5">
                         {item.description}
                         {(item as any).exam_catalog_id && (
-                          <BookOpen className="h-3 w-3 text-primary flex-shrink-0" title="Vinculado ao catálogo" />
+                          <span title="Vinculado ao catálogo"><BookOpen className="h-3 w-3 text-primary flex-shrink-0" /></span>
                         )}
                       </div>
                     </TableCell>
