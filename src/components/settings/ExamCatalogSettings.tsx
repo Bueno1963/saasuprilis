@@ -25,7 +25,31 @@ const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector
 
 const DEFAULT_SECTORS = ["Bioquímica", "Hematologia", "Imunologia", "Microbiologia", "Uroanálise"];
 
-const ExamCatalogSettings = ({ onBack }: Props) => {
+const SectorSelect = ({ value, onChange, sectors, defaultSector }: { value: string; onChange: (v: string) => void; sectors: string[]; defaultSector: string }) => {
+  const [adding, setAdding] = useState(false);
+  const [custom, setCustom] = useState("");
+
+  if (adding) {
+    return (
+      <div className="flex gap-2">
+        <Input placeholder="Nome do novo setor" value={custom} onChange={(e) => setCustom(e.target.value)} autoFocus />
+        <Button type="button" size="sm" onClick={() => { if (custom.trim()) { onChange(custom.trim()); setAdding(false); setCustom(""); } }}>OK</Button>
+        <Button type="button" size="sm" variant="ghost" onClick={() => { setAdding(false); setCustom(""); }}>✕</Button>
+      </div>
+    );
+  }
+
+  return (
+    <Select value={value} onValueChange={(v) => { if (v === "__custom__") { setAdding(true); } else { onChange(v); } }}>
+      <SelectTrigger><SelectValue /></SelectTrigger>
+      <SelectContent>
+        {sectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+        <SelectItem value="__custom__">+ Novo setor...</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+};
+
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
