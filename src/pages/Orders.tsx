@@ -101,6 +101,15 @@ const Orders = () => {
     },
   });
 
+  const { data: labSettings } = useQuery({
+    queryKey: ["lab_settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lab_settings").select("name, address, city, state, cnpj, phone, logo_url").limit(1).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async (form: OrderFormData) => {
       const { data: orderData, error } = await supabase.from("orders").insert([{
