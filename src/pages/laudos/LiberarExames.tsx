@@ -147,6 +147,18 @@ const LiberarExames = () => {
     },
   });
 
+  // Fetch report layouts for all exams
+  const { data: reportLayouts = [] } = useQuery({
+    queryKey: ["report-layouts-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("report_layouts" as any)
+        .select("*");
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
   // Fetch analyst profiles
   const analystIds = [...new Set(results.filter(r => r.analyst_id).map(r => r.analyst_id!))];
   const { data: profiles = [] } = useQuery({
