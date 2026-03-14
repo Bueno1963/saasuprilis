@@ -307,7 +307,17 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1"><Label>Código</Label><Input {...register("code", { required: true })} /></div>
               <div className="space-y-1"><Label>Nome</Label><Input {...register("name", { required: true })} /></div>
-              <div className="space-y-1"><Label>Material</Label><Input {...register("material")} /></div>
+              <div className="space-y-1">
+                <Label>Material</Label>
+                <Controller name="material" control={control} render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      {allMaterials.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )} />
+              </div>
               <div className="space-y-1">
                 <Label>Setor</Label>
                 <Controller name="sector" control={control} render={({ field }) => (
