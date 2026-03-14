@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Search, LayoutTemplate, FlaskConical, ChevronRight, Plus } from "lucide-react";
+import { ArrowLeft, Search, LayoutTemplate, FlaskConical, ChevronRight, Plus, Tag } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import ReportLayoutSettings from "@/components/laudos/ReportLayoutSettings";
 
@@ -21,13 +22,15 @@ const ReportLayoutListSettings = ({ onBack }: Props) => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedExam, setSelectedExam] = useState<{ id: string; name: string } | null>(null);
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
+  const [labelDialogOpen, setLabelDialogOpen] = useState(false);
   const [groupSearch, setGroupSearch] = useState("");
+  const [labelSearch, setLabelSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: exams = [] } = useQuery({
     queryKey: ["exam-catalog-all"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("exam_catalog").select("id, name, code, sector, status").order("name");
+      const { data, error } = await supabase.from("exam_catalog").select("id, name, code, sector, status, show_on_label").order("name");
       if (error) throw error;
       return data;
     },
@@ -85,6 +88,20 @@ const ReportLayoutListSettings = ({ onBack }: Props) => {
     onError: () => toast.error("Erro ao agrupar exames"),
   });
 
+  const labelToggleMutation = useMutation({
+    mutationFn: async ({ examId, showOnLabel }: { examId: string; showOnLabel: boolean }) => {
+      const { error } = await supabase
+        .from("exam_catalog")
+        .update({ show_on_label: showOnLabel } as any)
+        .eq("id", examId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["exam-catalog-all"] });
+    },
+    onError: () => toast.error("Erro ao atualizar configuração de etiqueta"),
+  });
+
   const toggleId = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -130,9 +147,14 @@ const ReportLayoutListSettings = ({ onBack }: Props) => {
               </p>
             </div>
           </div>
-          <Button size="sm" variant="outline" onClick={() => { setGroupDialogOpen(true); setSelectedIds(new Set()); setGroupSearch(""); }}>
-            <Plus className="w-4 h-4 mr-1" /> Agrupar Exame ao Setor
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => { setLabelDialogOpen(true); setLabelSearch(""); }}>
+              <Tag className="w-4 h-4 mr-1" /> Definir Exame por Etiqueta
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => { setGroupDialogOpen(true); setSelectedIds(new Set()); setGroupSearch(""); }}>
+              <Plus className="w-4 h-4 mr-1" /> Agrupar Exame ao Setor
+            </Button>
+          </div>
         </div>
 
         <div className="relative max-w-sm">
@@ -230,6 +252,58 @@ const ReportLayoutListSettings = ({ onBack }: Props) => {
               >
                 Agrupar ao Setor
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog: Definir exame por etiqueta */}
+        <Dialog open={labelDialogOpen} onOpenChange={setLabelDialogOpen}>
+          <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle>Definir Exame por Etiqueta — {selectedSector}</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Ative ou desative quais exames deste setor aparecem nas etiquetas de amostras.
+            </p>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar exame..."
+                value={labelSearch}
+                onChange={(e) => setLabelSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-1 min-h-0 max-h-[40vh] border border-border rounded-lg p-2">
+              {(() => {
+                const sExams = sectorMap.get(selectedSector!) || [];
+                const q = labelSearch.toLowerCase();
+                const filtered = q
+                  ? sExams.filter((e) => e.name.toLowerCase().includes(q) || e.code.toLowerCase().includes(q))
+                  : sExams;
+                if (filtered.length === 0) {
+                  return <p className="text-center text-muted-foreground py-6 text-sm">Nenhum exame encontrado</p>;
+                }
+                return filtered.map((exam) => (
+                  <div
+                    key={exam.id}
+                    className="flex items-center justify-between gap-3 p-2 rounded-md hover:bg-muted/50"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{exam.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        <span className="font-mono">{exam.code}</span>
+                      </p>
+                    </div>
+                    <Switch
+                      checked={(exam as any).show_on_label !== false}
+                      onCheckedChange={(checked) =>
+                        labelToggleMutation.mutate({ examId: exam.id, showOnLabel: checked })
+                      }
+                    />
+                  </div>
+                ));
+              })()}
             </div>
           </DialogContent>
         </Dialog>

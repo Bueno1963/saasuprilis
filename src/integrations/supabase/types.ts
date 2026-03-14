@@ -414,6 +414,7 @@ export type Database = {
           reference_range: string | null
           section_group: string
           sector: string | null
+          show_on_label: boolean
           status: string
           tenant_id: string | null
           turnaround_hours: number | null
@@ -433,6 +434,7 @@ export type Database = {
           reference_range?: string | null
           section_group?: string
           sector?: string | null
+          show_on_label?: boolean
           status?: string
           tenant_id?: string | null
           turnaround_hours?: number | null
@@ -452,6 +454,7 @@ export type Database = {
           reference_range?: string | null
           section_group?: string
           sector?: string | null
+          show_on_label?: boolean
           status?: string
           tenant_id?: string | null
           turnaround_hours?: number | null
