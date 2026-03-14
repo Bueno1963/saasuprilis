@@ -122,7 +122,12 @@ const comparisonFeatures = [
 ];
 
 const SaaSLandingPage = () => {
+  const navigate = useNavigate();
   const [formSent, setFormSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [onboardForm, setOnboardForm] = useState({
+    lab_name: "", cnpj: "", responsible_name: "", email: "", password: "",
+  });
 
   return (
     <div className="min-h-screen bg-white font-sans text-foreground">
