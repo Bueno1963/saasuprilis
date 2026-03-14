@@ -117,7 +117,7 @@ const UsersSettings = ({ onBack }: Props) => {
         onOpenChange={setCreateOpen}
         onSuccess={() => {
           qc.invalidateQueries({ queryKey: ["all_profiles"] });
-          qc.invalidateQueries({ queryKey: ["all_user_roles"] });
+          qc.invalidateQueries({ queryKey: ["all_tenant_members"] });
         }}
       />
 

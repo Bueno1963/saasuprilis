@@ -61,6 +61,7 @@ Deno.serve(async (req) => {
 
     // Update role if not default
     if (role && role !== "tecnico") {
+      await adminClient.from("tenant_members").update({ role }).eq("user_id", userId);
       await adminClient.from("user_roles").update({ role }).eq("user_id", userId);
     }
 
