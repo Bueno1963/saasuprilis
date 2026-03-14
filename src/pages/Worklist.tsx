@@ -233,7 +233,7 @@ const Worklist = () => {
           </TabsList>
 
           {sectors.map(sector => {
-            const sectorSamples = samples.filter(s => s.sector === sector);
+            const sectorSamples = filteredSamples.filter(s => s.sector === sector);
             return (
               <TabsContent key={sector} value={sector}>
                 <Card>
