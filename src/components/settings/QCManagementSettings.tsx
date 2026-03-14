@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Filter } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -19,21 +19,69 @@ interface Props {
   onBack: () => void;
 }
 
+// Hook to get distinct sectors from exam_catalog
+const useSectors = () => {
+  const { data = [] } = useQuery({
+    queryKey: ["qc_sectors"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("exam_catalog").select("sector").not("sector", "is", null).order("sector");
+      if (error) throw error;
+      const unique = [...new Set(data.map(d => d.sector).filter(Boolean))] as string[];
+      return unique;
+    },
+  });
+  return data;
+};
+
+// Sector filter bar component
+const SectorFilter = ({ value, onChange, sectors }: { value: string; onChange: (v: string) => void; sectors: string[] }) => (
+  <div className="flex items-center gap-2">
+    <Filter className="w-4 h-4 text-muted-foreground" />
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="w-[200px] h-8 text-sm">
+        <SelectValue placeholder="Todos os setores" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="__all__">Todos os setores</SelectItem>
+        {sectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+      </SelectContent>
+    </Select>
+  </div>
+);
+
 // ─── Analytes Tab ───
 const AnalytesTab = () => {
   const qc = useQueryClient();
+  const sectors = useSectors();
+  const [sectorFilter, setSectorFilter] = useState("__all__");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: "" });
+  const [form, setForm] = useState({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: "", sector: "" });
 
   const { data: items = [] } = useQuery({
     queryKey: ["qc_analyte_configs"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("qc_analyte_configs").select("*").order("analyte_name");
+      const { data, error } = await supabase.from("qc_analyte_configs").select("*").order("sector").order("analyte_name");
       if (error) throw error;
       return data;
     },
   });
+
+  const filtered = useMemo(() => {
+    if (sectorFilter === "__all__") return items;
+    return items.filter((i: any) => i.sector === sectorFilter);
+  }, [items, sectorFilter]);
+
+  // Group by sector
+  const grouped = useMemo(() => {
+    const map = new Map<string, any[]>();
+    for (const item of filtered) {
+      const s = (item as any).sector || "Sem setor";
+      if (!map.has(s)) map.set(s, []);
+      map.get(s)!.push(item);
+    }
+    return map;
+  }, [filtered]);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -58,55 +106,71 @@ const AnalytesTab = () => {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["qc_analyte_configs"] }); toast.success("Removido"); },
   });
 
-  const openNew = () => { setEditing(null); setForm({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: "" }); setOpen(true); };
-  const openEdit = (item: any) => { setEditing(item); setForm({ analyte_name: item.analyte_name, equipment: item.equipment, level: item.level, lot_number: item.lot_number, target_mean: String(item.target_mean), target_sd: String(item.target_sd), unit: item.unit, material: item.material }); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: "", sector: sectorFilter !== "__all__" ? sectorFilter : "" }); setOpen(true); };
+  const openEdit = (item: any) => { setEditing(item); setForm({ analyte_name: item.analyte_name, equipment: item.equipment, level: item.level, lot_number: item.lot_number, target_mean: String(item.target_mean), target_sd: String(item.target_sd), unit: item.unit, material: item.material, sector: item.sector || "" }); setOpen(true); };
 
   return (
     <>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-muted-foreground">Cadastro de analitos com média e desvio padrão alvo para controle interno.</p>
+        <SectorFilter value={sectorFilter} onChange={setSectorFilter} sectors={sectors} />
         <Button size="sm" onClick={openNew}><Plus className="w-4 h-4 mr-1" /> Novo Analito</Button>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Analito</TableHead>
-            <TableHead>Equipamento</TableHead>
-            <TableHead>Nível</TableHead>
-            <TableHead>Lote</TableHead>
-            <TableHead>Média Alvo</TableHead>
-            <TableHead>DP Alvo</TableHead>
-            <TableHead>Unidade</TableHead>
-            <TableHead className="w-20">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Nenhum analito cadastrado</TableCell></TableRow>}
-          {items.map((item: any) => (
-            <TableRow key={item.id}>
-              <TableCell className="font-medium">{item.analyte_name}</TableCell>
-              <TableCell>{item.equipment || "—"}</TableCell>
-              <TableCell><Badge variant="outline">{item.level}</Badge></TableCell>
-              <TableCell>{item.lot_number || "—"}</TableCell>
-              <TableCell>{item.target_mean}</TableCell>
-              <TableCell>{item.target_sd}</TableCell>
-              <TableCell>{item.unit || "—"}</TableCell>
-              <TableCell>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="w-3.5 h-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => remove.mutate(item.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+
+      {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum analito cadastrado{sectorFilter !== "__all__" ? " neste setor" : ""}</p>}
+
+      {[...grouped.entries()].map(([sector, sectorItems]) => (
+        <div key={sector} className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="outline" className="text-xs font-semibold">{sector}</Badge>
+            <span className="text-xs text-muted-foreground">({sectorItems.length} analito{sectorItems.length !== 1 ? "s" : ""})</span>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Analito</TableHead>
+                <TableHead>Equipamento</TableHead>
+                <TableHead>Nível</TableHead>
+                <TableHead>Lote</TableHead>
+                <TableHead>Média Alvo</TableHead>
+                <TableHead>DP Alvo</TableHead>
+                <TableHead>Unidade</TableHead>
+                <TableHead className="w-20">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sectorItems.map((item: any) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.analyte_name}</TableCell>
+                  <TableCell>{item.equipment || "—"}</TableCell>
+                  <TableCell><Badge variant="outline">{item.level}</Badge></TableCell>
+                  <TableCell>{item.lot_number || "—"}</TableCell>
+                  <TableCell>{item.target_mean}</TableCell>
+                  <TableCell>{item.target_sd}</TableCell>
+                  <TableCell>{item.unit || "—"}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => remove.mutate(item.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ))}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>{editing ? "Editar Analito" : "Novo Analito"}</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2"><Label>Analito *</Label><Input value={form.analyte_name} onChange={e => setForm(f => ({ ...f, analyte_name: e.target.value }))} /></div>
+            <div><Label>Setor *</Label>
+              <Select value={form.sector} onValueChange={v => setForm(f => ({ ...f, sector: v }))}>
+                <SelectTrigger><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
+                <SelectContent>{sectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
             <div><Label>Equipamento</Label><Input value={form.equipment} onChange={e => setForm(f => ({ ...f, equipment: e.target.value }))} /></div>
             <div><Label>Nível</Label>
               <Select value={form.level} onValueChange={v => setForm(f => ({ ...f, level: v }))}>
@@ -120,7 +184,7 @@ const AnalytesTab = () => {
             <div><Label>DP Alvo *</Label><Input type="number" value={form.target_sd} onChange={e => setForm(f => ({ ...f, target_sd: e.target.value }))} /></div>
             <div><Label>Unidade</Label><Input value={form.unit} onChange={e => setForm(f => ({ ...f, unit: e.target.value }))} /></div>
           </div>
-          <DialogFooter><Button onClick={() => save.mutate()} disabled={!form.analyte_name || save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button></DialogFooter>
+          <DialogFooter><Button onClick={() => save.mutate()} disabled={!form.analyte_name || !form.sector || save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </>
@@ -201,18 +265,35 @@ const WestgardTab = () => {
 // ─── Control Lots Tab ───
 const LotsTab = () => {
   const qc = useQueryClient();
+  const sectors = useSectors();
+  const [sectorFilter, setSectorFilter] = useState("__all__");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState({ lot_number: "", manufacturer: "", analyte_name: "", level: "N1", expected_mean: "", expected_sd: "", unit: "", expiry_date: "", notes: "" });
+  const [form, setForm] = useState({ lot_number: "", manufacturer: "", analyte_name: "", level: "N1", expected_mean: "", expected_sd: "", unit: "", expiry_date: "", notes: "", sector: "" });
 
   const { data: lots = [] } = useQuery({
     queryKey: ["qc_control_lots"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("qc_control_lots").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("qc_control_lots").select("*").order("sector").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
   });
+
+  const filtered = useMemo(() => {
+    if (sectorFilter === "__all__") return lots;
+    return lots.filter((l: any) => l.sector === sectorFilter);
+  }, [lots, sectorFilter]);
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, any[]>();
+    for (const lot of filtered) {
+      const s = (lot as any).sector || "Sem setor";
+      if (!map.has(s)) map.set(s, []);
+      map.get(s)!.push(lot);
+    }
+    return map;
+  }, [filtered]);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -237,59 +318,75 @@ const LotsTab = () => {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["qc_control_lots"] }); toast.success("Removido"); },
   });
 
-  const openNew = () => { setEditing(null); setForm({ lot_number: "", manufacturer: "", analyte_name: "", level: "N1", expected_mean: "", expected_sd: "", unit: "", expiry_date: "", notes: "" }); setOpen(true); };
-  const openEdit = (item: any) => { setEditing(item); setForm({ lot_number: item.lot_number, manufacturer: item.manufacturer, analyte_name: item.analyte_name, level: item.level, expected_mean: String(item.expected_mean), expected_sd: String(item.expected_sd), unit: item.unit, expiry_date: item.expiry_date || "", notes: item.notes || "" }); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ lot_number: "", manufacturer: "", analyte_name: "", level: "N1", expected_mean: "", expected_sd: "", unit: "", expiry_date: "", notes: "", sector: sectorFilter !== "__all__" ? sectorFilter : "" }); setOpen(true); };
+  const openEdit = (item: any) => { setEditing(item); setForm({ lot_number: item.lot_number, manufacturer: item.manufacturer, analyte_name: item.analyte_name, level: item.level, expected_mean: String(item.expected_mean), expected_sd: String(item.expected_sd), unit: item.unit, expiry_date: item.expiry_date || "", notes: item.notes || "", sector: item.sector || "" }); setOpen(true); };
 
   const statusLabel: Record<string, string> = { vigente: "Vigente", vencido: "Vencido", aberto: "Aberto" };
 
   return (
     <>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-muted-foreground">Lotes de reagentes de controle com validade e valores esperados.</p>
+        <SectorFilter value={sectorFilter} onChange={setSectorFilter} sectors={sectors} />
         <Button size="sm" onClick={openNew}><Plus className="w-4 h-4 mr-1" /> Novo Lote</Button>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nº Lote</TableHead>
-            <TableHead>Fabricante</TableHead>
-            <TableHead>Analito</TableHead>
-            <TableHead>Nível</TableHead>
-            <TableHead>Média</TableHead>
-            <TableHead>DP</TableHead>
-            <TableHead>Validade</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="w-20">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {lots.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Nenhum lote cadastrado</TableCell></TableRow>}
-          {lots.map((lot: any) => (
-            <TableRow key={lot.id}>
-              <TableCell className="font-medium">{lot.lot_number}</TableCell>
-              <TableCell>{lot.manufacturer || "—"}</TableCell>
-              <TableCell>{lot.analyte_name || "—"}</TableCell>
-              <TableCell><Badge variant="outline">{lot.level}</Badge></TableCell>
-              <TableCell>{lot.expected_mean}</TableCell>
-              <TableCell>{lot.expected_sd}</TableCell>
-              <TableCell>{lot.expiry_date ? new Date(lot.expiry_date + "T12:00:00").toLocaleDateString("pt-BR") : "—"}</TableCell>
-              <TableCell><Badge variant={lot.status === "vencido" ? "destructive" : "secondary"}>{statusLabel[lot.status] || lot.status}</Badge></TableCell>
-              <TableCell>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(lot)}><Pencil className="w-3.5 h-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => remove.mutate(lot.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+
+      {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum lote cadastrado{sectorFilter !== "__all__" ? " neste setor" : ""}</p>}
+
+      {[...grouped.entries()].map(([sector, sectorLots]) => (
+        <div key={sector} className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="outline" className="text-xs font-semibold">{sector}</Badge>
+            <span className="text-xs text-muted-foreground">({sectorLots.length} lote{sectorLots.length !== 1 ? "s" : ""})</span>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nº Lote</TableHead>
+                <TableHead>Fabricante</TableHead>
+                <TableHead>Analito</TableHead>
+                <TableHead>Nível</TableHead>
+                <TableHead>Média</TableHead>
+                <TableHead>DP</TableHead>
+                <TableHead>Validade</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-20">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sectorLots.map((lot: any) => (
+                <TableRow key={lot.id}>
+                  <TableCell className="font-medium">{lot.lot_number}</TableCell>
+                  <TableCell>{lot.manufacturer || "—"}</TableCell>
+                  <TableCell>{lot.analyte_name || "—"}</TableCell>
+                  <TableCell><Badge variant="outline">{lot.level}</Badge></TableCell>
+                  <TableCell>{lot.expected_mean}</TableCell>
+                  <TableCell>{lot.expected_sd}</TableCell>
+                  <TableCell>{lot.expiry_date ? new Date(lot.expiry_date + "T12:00:00").toLocaleDateString("pt-BR") : "—"}</TableCell>
+                  <TableCell><Badge variant={lot.status === "vencido" ? "destructive" : "secondary"}>{statusLabel[lot.status] || lot.status}</Badge></TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(lot)}><Pencil className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => remove.mutate(lot.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ))}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>{editing ? "Editar Lote" : "Novo Lote"}</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-3">
             <div><Label>Nº Lote *</Label><Input value={form.lot_number} onChange={e => setForm(f => ({ ...f, lot_number: e.target.value }))} /></div>
+            <div><Label>Setor *</Label>
+              <Select value={form.sector} onValueChange={v => setForm(f => ({ ...f, sector: v }))}>
+                <SelectTrigger><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
+                <SelectContent>{sectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
             <div><Label>Fabricante</Label><Input value={form.manufacturer} onChange={e => setForm(f => ({ ...f, manufacturer: e.target.value }))} /></div>
             <div><Label>Analito</Label><Input value={form.analyte_name} onChange={e => setForm(f => ({ ...f, analyte_name: e.target.value }))} /></div>
             <div><Label>Nível</Label>
@@ -304,7 +401,7 @@ const LotsTab = () => {
             <div><Label>Validade</Label><Input type="date" value={form.expiry_date} onChange={e => setForm(f => ({ ...f, expiry_date: e.target.value }))} /></div>
             <div className="col-span-2"><Label>Observações</Label><Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} /></div>
           </div>
-          <DialogFooter><Button onClick={() => save.mutate()} disabled={!form.lot_number || save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button></DialogFooter>
+          <DialogFooter><Button onClick={() => save.mutate()} disabled={!form.lot_number || !form.sector || save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </>
@@ -320,7 +417,7 @@ const QCManagementSettings = ({ onBack }: Props) => {
       </Button>
       <div>
         <h2 className="text-xl font-bold text-foreground">Gestão Controle de Qualidade</h2>
-        <p className="text-sm text-muted-foreground">Configuração de analitos, regras de Westgard e lotes de controle</p>
+        <p className="text-sm text-muted-foreground">Configuração de analitos, regras de Westgard e lotes de controle — organizados por setor</p>
       </div>
       <Tabs defaultValue="analytes">
         <TabsList>

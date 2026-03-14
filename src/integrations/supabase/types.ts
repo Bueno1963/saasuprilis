@@ -1351,6 +1351,7 @@ export type Database = {
           level: string
           lot_number: string
           material: string
+          sector: string
           target_mean: number
           target_sd: number
           tenant_id: string | null
@@ -1366,6 +1367,7 @@ export type Database = {
           level?: string
           lot_number?: string
           material?: string
+          sector?: string
           target_mean?: number
           target_sd?: number
           tenant_id?: string | null
@@ -1381,6 +1383,7 @@ export type Database = {
           level?: string
           lot_number?: string
           material?: string
+          sector?: string
           target_mean?: number
           target_sd?: number
           tenant_id?: string | null
@@ -1410,6 +1413,7 @@ export type Database = {
           manufacturer: string
           notes: string | null
           opened_at: string | null
+          sector: string
           status: string
           tenant_id: string | null
           unit: string
@@ -1427,6 +1431,7 @@ export type Database = {
           manufacturer?: string
           notes?: string | null
           opened_at?: string | null
+          sector?: string
           status?: string
           tenant_id?: string | null
           unit?: string
@@ -1444,6 +1449,7 @@ export type Database = {
           manufacturer?: string
           notes?: string | null
           opened_at?: string | null
+          sector?: string
           status?: string
           tenant_id?: string | null
           unit?: string
