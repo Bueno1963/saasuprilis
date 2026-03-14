@@ -22,8 +22,6 @@ import { toast } from "sonner";
 import SampleEditDialog from "@/components/worklist/SampleEditDialog";
 
 const Worklist = () => {
-  const [newSector, setNewSector] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renamingSector, setRenamingSector] = useState("");
   const [renameValue, setRenameValue] = useState("");
