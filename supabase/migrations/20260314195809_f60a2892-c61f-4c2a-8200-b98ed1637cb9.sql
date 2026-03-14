@@ -1,0 +1,1 @@
+ALTER TABLE public.exam_catalog ADD COLUMN show_on_label boolean NOT NULL DEFAULT true;
