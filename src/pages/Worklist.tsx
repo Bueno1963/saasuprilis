@@ -116,6 +116,24 @@ const Worklist = () => {
     setRenameDialogOpen(true);
   };
 
+  // Filter samples by date range
+  const filteredSamples = samples.filter(s => {
+    const collected = new Date(s.collected_at);
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      from.setHours(0, 0, 0, 0);
+      if (collected < from) return false;
+    }
+    if (dateTo) {
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      if (collected > to) return false;
+    }
+    return true;
+  });
+
+  const hasDateFilter = !!dateFrom || !!dateTo;
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -123,7 +141,39 @@ const Worklist = () => {
           <h1 className="text-2xl font-bold text-foreground">Esteira de Produção</h1>
           <p className="text-sm text-muted-foreground">Organização de amostras por setor e equipamento</p>
         </div>
+      </div>
 
+      {/* Filtro por período */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm font-medium text-muted-foreground">Período:</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+              {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "De"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} locale={ptBR} initialFocus className="p-3 pointer-events-auto" />
+          </PopoverContent>
+        </Popover>
+        <span className="text-sm text-muted-foreground">até</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateTo && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+              {dateTo ? format(dateTo, "dd/MM/yyyy") : "Até"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} locale={ptBR} initialFocus className="p-3 pointer-events-auto" />
+          </PopoverContent>
+        </Popover>
+        {hasDateFilter && (
+          <Button variant="ghost" size="sm" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
+            <X className="h-3.5 w-3.5 mr-1" /> Limpar
+          </Button>
+        )}
       </div>
 
       {/* Rename Dialog */}
