@@ -611,14 +611,14 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
       // Sector label — bold, dark blue, underlined
       if (hasSectors) {
-        doc.setFontSize(12);
+        doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
         doc.text(sector.toUpperCase(), bMargin, y);
         doc.setDrawColor(20, 55, 90);
-        doc.setLineWidth(0.6);
+        doc.setLineWidth(0.4);
         doc.line(bMargin, y + 1.5, bMargin + doc.getTextWidth(sector.toUpperCase()), y + 1.5);
-        y += 12;
+        y += 9;
       }
 
       // Build rows
