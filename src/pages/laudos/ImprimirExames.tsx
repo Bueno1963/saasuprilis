@@ -43,6 +43,7 @@ const ImprimirExames = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedSectors, setExpandedSectors] = useState<Set<string>>(new Set());
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+  const { logoUrl, sectorSigners } = useLaudoSignatures();
 
   const { data: results = [], isLoading } = useQuery({
     queryKey: ["laudos-released-print"],

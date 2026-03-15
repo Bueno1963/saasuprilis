@@ -78,6 +78,7 @@ const LiberarExames = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [confirmRelease, setConfirmRelease] = useState<{ type: "single" | "all" | "next"; result?: any; ids?: string[] } | null>(null);
+  const { logoUrl, sectorSigners } = useLaudoSignatures();
   const queryClient = useQueryClient();
   const { user, profile: authProfile } = useAuth();
 

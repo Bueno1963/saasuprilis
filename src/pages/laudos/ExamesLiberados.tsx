@@ -43,6 +43,7 @@ interface GroupedPatient {
 
 const ExamesLiberados = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { logoUrl, sectorSigners } = useLaudoSignatures();
   const [expandedPatients, setExpandedPatients] = useState<Set<string>>(new Set());
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
   const { role } = useUserRole();
