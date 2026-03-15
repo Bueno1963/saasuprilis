@@ -387,7 +387,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               const remainingCols = colCount5 - 1;
               body5.push(["   " + displayName, { content: displayValue || "", colSpan: remainingCols, styles: { fontStyle: "normal" } }]);
             } else {
-              const outOfRange = isOutOfRange(displayValue, p.referenceRange);
+              const outOfRange = !isLeucocitoParam && isOutOfRange(displayValue, p.referenceRange);
               const valCell = outOfRange
                 ? { content: displayValue, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
                 : displayValue;
