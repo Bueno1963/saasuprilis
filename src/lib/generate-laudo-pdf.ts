@@ -843,41 +843,135 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     doc.setLineWidth(0.5);
     doc.line(14, 30, pageWidth - 14, 30);
 
-    const historyByExam = new Map<string, HistoryEntry[]>();
-    for (const h of data.history) {
-      if (!historyByExam.has(h.exam)) historyByExam.set(h.exam, []);
-      historyByExam.get(h.exam)!.push(h);
-    }
+    // Check if this is a Hemograma history (has hemograma-specific params)
+    const HEMOGRAMA_PARAMS = [
+      "Hemácias", "Hemoglobina", "Hematócrito", "VCM", "HCM", "CHCM", "RDW",
+      "Leucócitos", "Basófilos", "Eosinófilos", "Mielócitos", "Metamielócitos",
+      "Bastões", "Segmentados", "Linfócitos típicos", "Linfócitos atípicos",
+      "Monócitos", "Plaquetas", "VPM", "PDW"
+    ];
+    const HEMOGRAMA_NORM = HEMOGRAMA_PARAMS.map(p => p.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
 
-    const historyBody: any[][] = [];
-    for (const [exam, entries] of historyByExam) {
-      historyBody.push([{
-        content: exam,
-        colSpan: 4,
-        styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 },
-      }]);
-      entries.sort((a, b) => b.date.localeCompare(a.date));
-      for (const entry of entries) {
-        historyBody.push([entry.date, entry.value, entry.unit, FLAG_LABELS[entry.flag] || ""]);
+    const historyExamNames = new Set(data.history.map(h => h.exam));
+    const normExamNames = [...historyExamNames].map(n => n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim());
+    const isHemogramaHistory = HEMOGRAMA_NORM.some(hp => normExamNames.some(en => en === hp || en.includes(hp)));
+
+    if (isHemogramaHistory) {
+      // === Hemograma-specific history: landscape-style pivot table ===
+      // Group 1: ERITROGRAMA
+      const ERITRO_COLS = ["Hemácias", "Hemoglobina", "Hematócrito", "VCM", "HCM", "CHCM", "RDW"];
+      // Group 2: LEUCOGRAMA
+      const LEUCO_COLS = ["Leucócitos", "Basófilos", "Eosinófilos", "Mielócitos", "Metamielócitos", "Bastões", "Segmentados", "Linfócitos típicos", "Linfócitos atípicos", "Monócitos"];
+      // Group 3: PLAQUETAS
+      const PLAQ_COLS = ["Plaquetas", "VPM", "PDW"];
+
+      // Collect all unique dates
+      const dateSet = new Set<string>();
+      for (const h of data.history) dateSet.add(h.date);
+      const dates = [...dateSet].sort((a, b) => b.localeCompare(a));
+
+      // Build a lookup: date → paramName → value
+      const lookup = new Map<string, Map<string, string>>();
+      for (const h of data.history) {
+        if (!lookup.has(h.date)) lookup.set(h.date, new Map());
+        const normParam = h.exam.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        lookup.get(h.date)!.set(normParam, h.value);
       }
-    }
 
-    autoTable(doc, {
-      startY: 35,
-      head: [["Data", "Resultado", "Unidade", "Flag"]],
-      body: historyBody,
-      theme: "grid",
-      headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
-      bodyStyles: { fontSize: 9, textColor: 40 },
-      alternateRowStyles: { fillColor: [245, 248, 252] },
-      columnStyles: {
-        0: { cellWidth: 40 },
-        1: { cellWidth: 50, fontStyle: "bold", halign: "center" },
-        2: { cellWidth: 30, halign: "center" },
-        3: { cellWidth: 30, halign: "center" },
-      },
-      margin: { left: 14, right: 14 },
-    });
+      const getVal = (date: string, param: string) => {
+        const normP = param.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        return lookup.get(date)?.get(normP) || "";
+      };
+
+      // Helper to render a section table
+      const renderHemoSection = (title: string, cols: string[], startY: number): number => {
+        // Section title
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(20, 55, 90);
+        doc.text(title, 14, startY);
+        startY += 2;
+
+        const head = [["Data", ...cols]];
+        const body: any[][] = dates.map(date => [date, ...cols.map(c => getVal(date, c))]);
+
+        autoTable(doc, {
+          startY,
+          head,
+          body,
+          theme: "grid",
+          headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 6, fontStyle: "bold", halign: "center", cellPadding: 1.5 },
+          bodyStyles: { fontSize: 6.5, textColor: 40, halign: "center", cellPadding: 1.5 },
+          alternateRowStyles: { fillColor: [245, 248, 252] },
+          columnStyles: { 0: { fontStyle: "bold", halign: "left", cellWidth: 22 } },
+          margin: { left: 14, right: 14 },
+          tableWidth: "auto",
+        });
+
+        return (doc as any).lastAutoTable.finalY + 8;
+      };
+
+      let curY = 35;
+
+      // ERITROGRAMA
+      curY = renderHemoSection("ERITROGRAMA", ERITRO_COLS, curY);
+
+      // Page break if needed
+      if (curY + 40 > doc.internal.pageSize.getHeight() - 20) {
+        doc.addPage();
+        curY = 20;
+      }
+
+      // LEUCOGRAMA
+      curY = renderHemoSection("LEUCOGRAMA", LEUCO_COLS, curY);
+
+      // Page break if needed
+      if (curY + 30 > doc.internal.pageSize.getHeight() - 20) {
+        doc.addPage();
+        curY = 20;
+      }
+
+      // PLAQUETAS
+      curY = renderHemoSection("PLAQUETAS", PLAQ_COLS, curY);
+
+    } else {
+      // === Generic history layout ===
+      const historyByExam = new Map<string, HistoryEntry[]>();
+      for (const h of data.history) {
+        if (!historyByExam.has(h.exam)) historyByExam.set(h.exam, []);
+        historyByExam.get(h.exam)!.push(h);
+      }
+
+      const historyBody: any[][] = [];
+      for (const [exam, entries] of historyByExam) {
+        historyBody.push([{
+          content: exam,
+          colSpan: 4,
+          styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 },
+        }]);
+        entries.sort((a, b) => b.date.localeCompare(a.date));
+        for (const entry of entries) {
+          historyBody.push([entry.date, entry.value, entry.unit, FLAG_LABELS[entry.flag] || ""]);
+        }
+      }
+
+      autoTable(doc, {
+        startY: 35,
+        head: [["Data", "Resultado", "Unidade", "Flag"]],
+        body: historyBody,
+        theme: "grid",
+        headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
+        bodyStyles: { fontSize: 9, textColor: 40 },
+        alternateRowStyles: { fillColor: [245, 248, 252] },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 50, fontStyle: "bold", halign: "center" },
+          2: { cellWidth: 30, halign: "center" },
+          3: { cellWidth: 30, halign: "center" },
+        },
+        margin: { left: 14, right: 14 },
+      });
+    }
   }
 
   // Footer on all pages
