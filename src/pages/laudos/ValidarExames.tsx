@@ -670,7 +670,7 @@ const ValidarExames = () => {
                                      return (
                                        <Input
                                          value={val}
-                                         onChange={e => setParamValue(r.id, param.name, e.target.value, r)}
+                                         onChange={e => setParamValue(r.id, param.name, e.target.value, r, sectionName)}
                                          onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
                                          placeholder="Observações..."
                                          className="max-w-[320px] text-sm"
