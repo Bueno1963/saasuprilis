@@ -199,7 +199,7 @@ const Samples = () => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader><DialogTitle>Registrar Amostras</DialogTitle></DialogHeader>
-            <SampleForm orders={orders} onSubmit={items => createMutation.mutate(items)} loading={createMutation.isPending} />
+            <SampleForm orders={orders} examCatalog={examCatalog} onSubmit={items => createMutation.mutate(items)} loading={createMutation.isPending} />
           </DialogContent>
         </Dialog>
       </div>
