@@ -251,7 +251,7 @@ const LiberarExames = () => {
       expandedParams = params!.map(p => ({
         section: p.section || "",
         name: p.name,
-        value: paramValues[p.name] || "—",
+        value: resolveParamValue(paramValues, p.name, p.section) || "—",
         unit: p.unit || "",
         referenceRange: resolveReferenceRange(p.id, p.reference_range || "", patient?.birth_date || null, patient?.gender || "", allRefRanges),
       }));
