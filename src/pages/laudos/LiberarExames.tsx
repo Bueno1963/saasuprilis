@@ -237,7 +237,7 @@ const LiberarExames = () => {
   };
 
   // Generate PDF for a single result
-  const generatePdfForResult = useCallback((r: any) => {
+  const generatePdfForResult = useCallback(async (r: any) => {
     const order = r.orders as any;
     const patient = order?.patients;
     const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
