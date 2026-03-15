@@ -615,7 +615,7 @@ const ValidarExames = () => {
                                       const newItems = selectedItems.includes(item)
                                         ? selectedItems.filter(i => i !== item)
                                         : [...selectedItems, item];
-                                      setParamValue(r.id, param.name, newItems.join(", "), r);
+                                      setParamValue(r.id, param.name, newItems.join(", "), r, sectionName);
                                     };
                                     return (
                                       <Popover>
