@@ -214,10 +214,11 @@ const ImprimirExames = () => {
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
       results: relevantResults.map((r: any) => buildResultWithParams(r)),
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM", logoUrl, sectorSigners,
     });
     const suffix = sectorFilter ? `_${sectorFilter.replace(/\s/g, "_")}` : "";
     doc.save(`Laudo_${order.orderNumber}${suffix}.pdf`);
-  }, [profileMap, buildResultWithParams, examNameToSector]);
+  }, [profileMap, buildResultWithParams, examNameToSector, logoUrl, sectorSigners]);
 
   const handlePrintSector = useCallback(async (sectorGroup: GroupedSector) => {
     for (const order of sectorGroup.orders) {

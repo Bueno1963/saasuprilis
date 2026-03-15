@@ -310,10 +310,11 @@ const ExamesLiberados = () => {
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
       results: allResults.map((r: any) => buildResultWithParams(r)),
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM", logoUrl, sectorSigners,
       history,
     });
     doc.save(`Laudo_${group.patientName.replace(/\s+/g, "_")}_completo.pdf`);
-  }, [profileMap, buildResultWithParams, fetchPatientHistory]);
+  }, [profileMap, buildResultWithParams, fetchPatientHistory, logoUrl, sectorSigners]);
 
   const totalExams = grouped.reduce((sum, g) => sum + g.totalExams, 0);
   const totalOrders = grouped.reduce((sum, g) => sum + g.orders.length, 0);
