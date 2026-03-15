@@ -283,10 +283,11 @@ const ExamesLiberados = () => {
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
       results: order.results.map((r: any) => buildResultWithParams(r)),
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM", logoUrl, sectorSigners,
       history,
     });
     doc.save(`Laudo_${order.orderNumber}.pdf`);
-  }, [profileMap, buildResultWithParams, fetchPatientHistory]);
+  }, [profileMap, buildResultWithParams, fetchPatientHistory, logoUrl, sectorSigners]);
 
   const handlePrintAll = useCallback(async (group: GroupedPatient) => {
     const allResults = group.orders.flatMap(o => o.results);
