@@ -545,12 +545,12 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             }
 
             if (isSedimento) {
-              doc.text(p.value || "—", uMargin + uWidth * 0.55, y, { align: "left" });
-              // Unit
+              doc.text(p.value || "—", uMargin + uWidth * 0.45, y, { align: "left" });
+              // Fixed "por campo 40x" column
               doc.setFont("helvetica", "normal");
               doc.setTextColor(100, 105, 115);
               doc.setFontSize(6.5);
-              doc.text(p.unit || "", uRight - 2, y, { align: "right" });
+              doc.text("por campo 40x", uRight - 2, y, { align: "right" });
             } else {
               doc.text(p.value || "—", uRight - 3, y, { align: "right" });
             }
