@@ -57,6 +57,7 @@ const AgendamentoPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
