@@ -260,6 +260,7 @@ const ExamesLiberados = () => {
       releasedAt: r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—",
       results: [buildResultWithParams(r)],
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM", logoUrl, sectorSigners,
       history,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
