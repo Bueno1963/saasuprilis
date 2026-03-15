@@ -611,14 +611,14 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
       // Sector label — bold, dark blue, underlined
       if (hasSectors) {
-        doc.setFontSize(12);
+        doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
         doc.text(sector.toUpperCase(), bMargin, y);
         doc.setDrawColor(20, 55, 90);
-        doc.setLineWidth(0.6);
+        doc.setLineWidth(0.4);
         doc.line(bMargin, y + 1.5, bMargin + doc.getTextWidth(sector.toUpperCase()), y + 1.5);
-        y += 12;
+        y += 9;
       }
 
       // Build rows
@@ -668,9 +668,9 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       }
 
       // Column headers — only once before all groups
-      doc.setFontSize(8.5);
-      doc.setFont("helvetica", "italic");
-      doc.setTextColor(100, 105, 115);
+      doc.setFontSize(5.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 110, 125);
       doc.text("Resultado", colResult, y);
       doc.text("Unid.", colUnit, y);
       doc.text("Referência", colRef, y);
@@ -681,7 +681,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       y += 6;
 
       for (const group of sectionGroups) {
-        const rowH = 8;
+        const rowH = 5.5;
         for (let pi = 0; pi < group.params.length; pi++) {
           const p = group.params[pi];
 
@@ -690,30 +690,29 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             y = 20;
           }
 
-          // Parameter name — 10pt regular
-          doc.setFontSize(10);
+          // Parameter name — 7pt regular (matching EQU)
+          doc.setFontSize(7);
           doc.setFont("helvetica", "normal");
-          doc.setTextColor(30, 35, 45);
+          doc.setTextColor(35, 40, 50);
           doc.text(p.name, bMargin + 4, y);
 
-          // Result — 10pt bold
+          // Result — 7pt bold
           doc.setFont("helvetica", "bold");
           if (p.outOfRange) {
-            doc.setTextColor(180, 20, 20);
+            doc.setTextColor(200, 30, 30);
           } else {
             doc.setTextColor(20, 25, 35);
           }
           doc.text(p.value || "—", colResult, y);
 
-          // Unit — 9pt
-          doc.setFontSize(9);
+          // Unit — 6.5pt
+          doc.setFontSize(6.5);
           doc.setFont("helvetica", "normal");
-          doc.setTextColor(60, 65, 75);
+          doc.setTextColor(100, 105, 115);
           doc.text(p.unit || "", colUnit, y);
 
-          // Reference — 8.5pt
-          doc.setFontSize(8.5);
-          doc.setTextColor(80, 85, 95);
+          // Reference — 6.5pt
+          doc.setTextColor(100, 105, 115);
           doc.text(p.ref || "", colRef, y);
 
           y += rowH;
