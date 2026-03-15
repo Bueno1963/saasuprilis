@@ -371,9 +371,10 @@ const ValidarExames = () => {
       return {};
     };
 
-    const setParamValue = (resultId: string, paramName: string, val: string, currentResult: any) => {
+    const setParamValue = (resultId: string, paramName: string, val: string, currentResult: any, section?: string) => {
       const existing = getParamValues(currentResult);
-      const updated = { ...existing, [paramName]: val };
+      const key = getParamKey(paramName, section);
+      const updated = { ...existing, [key]: val };
       handleValueChange(resultId, JSON.stringify(updated));
     };
 
