@@ -381,6 +381,9 @@ const LiberarExames = () => {
       })()],
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM",
+      logoUrl,
+      sectorSigners,
       history: historyEntries.length > 0 ? historyEntries : undefined,
     });
     doc.save(`Laudo_Historico_${order?.order_number || "exame"}_${r.exam}.pdf`);
@@ -390,7 +393,7 @@ const LiberarExames = () => {
     } else {
       toast.success(`PDF gerado com ${historyEntries.length} resultado(s) anterior(es)`);
     }
-  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout, logoUrl, sectorSigners]);
 
   const releaseMutation = useMutation({
     mutationFn: async (id: string) => {
