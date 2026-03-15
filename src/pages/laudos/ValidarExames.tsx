@@ -529,7 +529,11 @@ const ValidarExames = () => {
             sections.get(sec)!.push(p);
           }
 
-          const allParamsFilled = params!.every(p => paramValues[p.name]?.trim());
+          const OPTIONAL_PARAMS_CHECK = [...DIFFERENTIAL_COUNT_PARAMS, "Observações"];
+          const allParamsFilled = params!.every(p => {
+            if (OPTIONAL_PARAMS_CHECK.includes(p.name)) return true;
+            return paramValues[p.name]?.trim();
+          });
 
           // Check if this exam has differential count params that must sum to 100%
           const diffParams = params!.filter(p => DIFFERENTIAL_COUNT_PARAMS.includes(p.name));
