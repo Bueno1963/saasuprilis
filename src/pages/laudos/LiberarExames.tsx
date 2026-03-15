@@ -735,7 +735,7 @@ const LiberarExames = () => {
                             return (
                             <TableRow key={param.id}>
                               <TableCell className="font-medium text-sm">{param.name}</TableCell>
-                              <TableCell className={cn("font-mono font-semibold text-sm", isOutOfRange(paramValues[param.name] || "", resolvedRef) && "text-destructive")}>{paramValues[param.name] || "—"}</TableCell>
+                              <TableCell className={cn("font-mono font-semibold text-sm", isOutOfRange(resolveParamValue(paramValues, param.name, sectionName) || "", resolvedRef) && "text-destructive")}>{resolveParamValue(paramValues, param.name, sectionName) || "—"}</TableCell>
                               <TableCell className="text-sm text-muted-foreground">{param.unit || ""}</TableCell>
                               <TableCell className="text-xs text-muted-foreground">{resolvedRef}</TableCell>
                             </TableRow>

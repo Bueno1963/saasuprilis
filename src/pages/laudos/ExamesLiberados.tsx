@@ -132,7 +132,7 @@ const ExamesLiberados = () => {
     return {
       exam: r.exam, value: "", unit: "", referenceRange: "", flag: r.flag, sector,
       parameters: params.map(p => ({
-        section: p.section || "", name: p.name, value: paramValues[p.name] || "—",
+        section: p.section || "", name: p.name, value: resolveParamValue(paramValues, p.name, p.section) || "—",
         unit: p.unit || "", referenceRange: p.reference_range || "",
       })),
     };
