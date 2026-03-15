@@ -193,10 +193,14 @@ const ImprimirExames = () => {
     });
   };
 
-  const handlePrintOrder = useCallback(async (order: GroupedOrder) => {
-    const first = order.results[0];
+  const handlePrintOrder = useCallback(async (order: GroupedOrder, sectorFilter?: string) => {
+    const relevantResults = sectorFilter
+      ? order.results.filter((r: any) => (examNameToSector.get(r.exam) || "Geral") === sectorFilter)
+      : order.results;
+    if (relevantResults.length === 0) return;
+    const first = relevantResults[0];
     const analyst = first?.analyst_id ? profileMap.get(first.analyst_id) : null;
-    const latestRelease = order.results.reduce((l: string | null, r: any) => {
+    const latestRelease = relevantResults.reduce((l: string | null, r: any) => {
       if (!r.released_at) return l; if (!l) return r.released_at;
       return r.released_at > l ? r.released_at : l;
     }, null);
@@ -206,15 +210,16 @@ const ImprimirExames = () => {
       patientGender: order.patientGender, doctorName: order.doctorName, insurance: order.insurance,
       collectedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy") : "—",
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
-      results: order.results.map((r: any) => buildResultWithParams(r)),
+      results: relevantResults.map((r: any) => buildResultWithParams(r)),
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
     });
-    doc.save(`Laudo_${order.orderNumber}.pdf`);
-  }, [profileMap, buildResultWithParams]);
+    const suffix = sectorFilter ? `_${sectorFilter.replace(/\s/g, "_")}` : "";
+    doc.save(`Laudo_${order.orderNumber}${suffix}.pdf`);
+  }, [profileMap, buildResultWithParams, examNameToSector]);
 
   const handlePrintSector = useCallback(async (sectorGroup: GroupedSector) => {
     for (const order of sectorGroup.orders) {
-      await handlePrintOrder(order);
+      await handlePrintOrder(order, sectorGroup.sector);
     }
   }, [handlePrintOrder]);
 
