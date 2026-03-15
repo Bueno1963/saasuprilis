@@ -180,6 +180,22 @@ const ReportLayoutListSettings = ({ onBack }: Props) => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {(() => {
+              const setting = sectorSettings.find((s: any) => s.sector === selectedSector);
+              const showHistory = setting?.show_history ?? false;
+              return (
+                <div className="flex items-center gap-2 border border-border rounded-md px-3 py-1.5">
+                  <History className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-foreground">Histórico</span>
+                  <Switch
+                    checked={showHistory}
+                    onCheckedChange={(checked) =>
+                      historyToggleMutation.mutate({ sector: selectedSector!, showHistory: checked })
+                    }
+                  />
+                </div>
+              );
+            })()}
             <Button size="sm" variant="outline" onClick={() => { setLabelDialogOpen(true); setLabelSearch(""); }}>
               <Tag className="w-4 h-4 mr-1" /> Definir Exame por Etiqueta
             </Button>
