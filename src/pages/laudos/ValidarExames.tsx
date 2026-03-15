@@ -597,7 +597,7 @@ const ValidarExames = () => {
                           </TableRow>
                         )}
                         {sectionParams.map(param => {
-                          const val = paramValues[param.name] || "";
+                          const val = resolveParamValue(paramValues, param.name, sectionName) || "";
                           return (
                             <TableRow key={param.id} className={cn(!val.trim() && "bg-muted/20")}>
                               <TableCell className="font-medium text-sm">{param.name}</TableCell>
