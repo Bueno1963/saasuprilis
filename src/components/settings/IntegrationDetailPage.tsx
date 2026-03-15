@@ -11,13 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Wifi, WifiOff } from "lucide-react";
+import { ArrowLeft, Save, Wifi, WifiOff, Plus, Trash2, GripVertical } from "lucide-react";
 import IntegrationLogsTab from "./IntegrationLogsTab";
 import { useForm, Controller } from "react-hook-form";
 
-
 interface Props {
-  integrationId: string | null; // null = new
+  integrationId: string | null;
   onBack: () => void;
 }
 
@@ -41,16 +40,15 @@ const defaultValues: IntForm = {
   notes: "",
 };
 
-// Sample field mapping data (static for now)
-const fieldMappings = [
-  { lis: "patient_id", remote: "PID.3", desc: "Identificador do paciente" },
-  { lis: "patient_name", remote: "PID.5", desc: "Nome do paciente" },
-  { lis: "order_number", remote: "ORC.2", desc: "Número do pedido" },
-  { lis: "exam_code", remote: "OBR.4", desc: "Código do exame" },
-  { lis: "result_value", remote: "OBX.5", desc: "Valor do resultado" },
-  { lis: "result_unit", remote: "OBX.6", desc: "Unidade do resultado" },
-  { lis: "reference_range", remote: "OBX.7", desc: "Faixa de referência" },
-  { lis: "result_flag", remote: "OBX.8", desc: "Flag (normal/alto/baixo)" },
+const DEFAULT_MAPPINGS = [
+  { lis_field: "patient_id", remote_field: "PID.3", description: "Identificador do paciente" },
+  { lis_field: "patient_name", remote_field: "PID.5", description: "Nome do paciente" },
+  { lis_field: "order_number", remote_field: "ORC.2", description: "Número do pedido" },
+  { lis_field: "exam_code", remote_field: "OBR.4", description: "Código do exame" },
+  { lis_field: "result_value", remote_field: "OBX.5", description: "Valor do resultado" },
+  { lis_field: "result_unit", remote_field: "OBX.6", description: "Unidade do resultado" },
+  { lis_field: "reference_range", remote_field: "OBX.7", description: "Faixa de referência" },
+  { lis_field: "result_flag", remote_field: "OBX.8", description: "Flag (normal/alto/baixo)" },
 ];
 
 const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
@@ -62,27 +60,6 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
   const currentStatus = watch("status");
   const currentType = watch("type");
 
-  // Load existing integration
-  const { isLoading } = useQuery({
-    queryKey: ["integration-detail", integrationId],
-    queryFn: async () => {
-      if (!integrationId) return null;
-      const { data, error } = await supabase.from("integrations").select("*").eq("id", integrationId).single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!integrationId && !loaded,
-    meta: {
-      onSuccess: (data: any) => {
-        if (data) {
-          reset(data);
-          setLoaded(true);
-        }
-      },
-    },
-  });
-
-  // Manual load via effect-like approach
   const { data: integrationData } = useQuery({
     queryKey: ["integration-detail", integrationId],
     queryFn: async () => {
@@ -117,7 +94,7 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
   });
 
   return (
-    <div className="p-6 space-y-6 max-w-[80%] bg-foreground/10 min-h-screen">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -133,12 +110,10 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant={currentStatus === "active" ? "default" : "secondary"} className="gap-1">
-            {currentStatus === "active" ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-            {currentStatus === "active" ? "Ativo" : "Inativo"}
-          </Badge>
-        </div>
+        <Badge variant={currentStatus === "active" ? "default" : "secondary"} className="gap-1">
+          {currentStatus === "active" ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+          {currentStatus === "active" ? "Ativo" : "Inativo"}
+        </Badge>
       </div>
 
       {/* Tabs */}
@@ -234,51 +209,41 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
                   </div>
                 </div>
 
-                {/* Connection info based on type */}
                 <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
                   <h3 className="text-sm font-semibold text-foreground">Informações de Conexão — {currentType}</h3>
                   {currentType === "HL7" && (
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
-                      <li>Protocolo de transporte: <strong className="text-foreground">MLLP</strong> (Minimal Lower Layer Protocol)</li>
-                      <li>Mensagens suportadas: ORM (pedidos), ORU (resultados), ADT (admissão), ACK</li>
-                      <li>Versão recomendada: <strong className="text-foreground">HL7 v2.5.1</strong></li>
-                      <li>Encoding: UTF-8 com delimitadores padrão (|^~\&amp;)</li>
+                      <li>Protocolo: <strong className="text-foreground">MLLP</strong></li>
+                      <li>Mensagens: ORM, ORU, ADT, ACK — HL7 v2.5.1</li>
                     </ul>
                   )}
                   {currentType === "ASTM" && (
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
                       <li>Protocolo: <strong className="text-foreground">ASTM E1381/E1394</strong> ou LIS2-A2</li>
                       <li>Comunicação via Serial (RS-232) ou TCP/IP</li>
-                      <li>Frames: ENQ → STX [dados] ETX [checksum] CR LF → EOT</li>
-                      <li>Records: H (Header), P (Patient), O (Order), R (Result), L (Terminator)</li>
                     </ul>
                   )}
                   {currentType === "FHIR" && (
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
-                      <li>Base URL do servidor FHIR (R4 ou R5)</li>
-                      <li>Resources: DiagnosticReport, Observation, ServiceRequest, Patient</li>
-                      <li>Autenticação: OAuth 2.0 / SMART on FHIR</li>
-                      <li>Formato: application/fhir+json</li>
+                      <li>Resources: DiagnosticReport, Observation, ServiceRequest</li>
+                      <li>Auth: OAuth 2.0 / SMART on FHIR</li>
                     </ul>
                   )}
                   {currentType === "POCT" && (
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
                       <li>Padrão: <strong className="text-foreground">CLSI POCT1-A2</strong></li>
                       <li>Camadas: Device → Access Point → LIS Gateway</li>
-                      <li>Suporte a worklists bidirecionais e controle de QC</li>
                     </ul>
                   )}
                   {currentType === "API" && (
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
-                      <li>API REST com autenticação via header Authorization</li>
-                      <li>Content-Type: application/json</li>
-                      <li>Métodos: GET (consulta), POST (envio), PUT (atualização)</li>
+                      <li>API REST — Content-Type: application/json</li>
+                      <li>Métodos: GET, POST, PUT</li>
                     </ul>
                   )}
                   {currentType === "Portal" && (
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
-                      <li>Portal web para disponibilização de laudos ao paciente/médico</li>
-                      <li>Integração via webhook ou polling de resultados liberados</li>
+                      <li>Portal web para laudos — webhook ou polling</li>
                     </ul>
                   )}
                 </div>
@@ -293,41 +258,7 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
 
         {/* Tab 3: Mapeamento de Campos */}
         <TabsContent value="mapping">
-          <Card>
-            <CardContent className="p-0">
-              <div className="p-4 border-b border-border">
-                <h3 className="text-sm font-semibold text-foreground">Mapeamento de Campos LIS ↔ Sistema Externo</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Correspondência entre campos internos do LIS e segmentos/fields do protocolo ({currentType})
-                </p>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Campo LIS</TableHead>
-                    <TableHead>Campo Remoto</TableHead>
-                    <TableHead>Descrição</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {fieldMappings.map((m, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="font-mono text-xs">{m.lis}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="font-mono text-xs">{m.remote}</Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{m.desc}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <div className="p-4 border-t border-border">
-                <p className="text-xs text-muted-foreground">
-                  ⚠️ O mapeamento de campos customizado estará disponível em versão futura. Atualmente os campos seguem o padrão do protocolo selecionado.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <FieldMappingTab integrationId={integrationId} protocolType={currentType} />
         </TabsContent>
 
         {/* Tab 4: Logs / Histórico */}
@@ -341,5 +272,271 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
     </div>
   );
 };
+
+// ─── Field Mapping Tab (editable) ───────────────────────────────────
+
+interface MappingRow {
+  id?: string;
+  lis_field: string;
+  remote_field: string;
+  description: string;
+  sort_order: number;
+}
+
+function FieldMappingTab({ integrationId, protocolType }: { integrationId: string | null; protocolType: string }) {
+  const qc = useQueryClient();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<MappingRow>({ lis_field: "", remote_field: "", description: "", sort_order: 0 });
+  const [adding, setAdding] = useState(false);
+
+  const { data: mappings = [], isLoading } = useQuery({
+    queryKey: ["field-mappings", integrationId],
+    queryFn: async () => {
+      if (!integrationId) return [];
+      const { data, error } = await supabase
+        .from("integration_field_mappings" as any)
+        .select("*")
+        .eq("integration_id", integrationId)
+        .order("sort_order");
+      if (error) throw error;
+      return (data as any[]) || [];
+    },
+    enabled: !!integrationId,
+  });
+
+  const seedMutation = useMutation({
+    mutationFn: async () => {
+      if (!integrationId) return;
+      const rows = DEFAULT_MAPPINGS.map((m, i) => ({
+        integration_id: integrationId,
+        lis_field: m.lis_field,
+        remote_field: m.remote_field,
+        description: m.description,
+        sort_order: i,
+      }));
+      const { error } = await supabase.from("integration_field_mappings" as any).insert(rows);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["field-mappings", integrationId] });
+      toast.success("Mapeamento padrão carregado");
+    },
+    onError: () => toast.error("Erro ao carregar mapeamento padrão"),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (row: MappingRow) => {
+      if (row.id) {
+        const { error } = await supabase
+          .from("integration_field_mappings" as any)
+          .update({ lis_field: row.lis_field, remote_field: row.remote_field, description: row.description, sort_order: row.sort_order })
+          .eq("id", row.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("integration_field_mappings" as any)
+          .insert({ integration_id: integrationId, lis_field: row.lis_field, remote_field: row.remote_field, description: row.description, sort_order: row.sort_order });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["field-mappings", integrationId] });
+      setEditingId(null);
+      setAdding(false);
+      setDraft({ lis_field: "", remote_field: "", description: "", sort_order: 0 });
+      toast.success("Mapeamento salvo");
+    },
+    onError: () => toast.error("Erro ao salvar mapeamento"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("integration_field_mappings" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["field-mappings", integrationId] });
+      toast.success("Mapeamento removido");
+    },
+    onError: () => toast.error("Erro ao remover mapeamento"),
+  });
+
+  const startEdit = (m: any) => {
+    setEditingId(m.id);
+    setDraft({ id: m.id, lis_field: m.lis_field, remote_field: m.remote_field, description: m.description, sort_order: m.sort_order });
+    setAdding(false);
+  };
+
+  const startAdd = () => {
+    setAdding(true);
+    setEditingId(null);
+    setDraft({ lis_field: "", remote_field: "", description: "", sort_order: mappings.length });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setAdding(false);
+    setDraft({ lis_field: "", remote_field: "", description: "", sort_order: 0 });
+  };
+
+  if (!integrationId) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center text-muted-foreground text-sm">
+          Salve a integração primeiro para configurar o mapeamento de campos.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="p-0">
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Mapeamento de Campos LIS ↔ Sistema Externo</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Correspondência entre campos internos do LIS e segmentos do protocolo ({protocolType})
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {mappings.length === 0 && !adding && (
+              <Button size="sm" variant="outline" onClick={() => seedMutation.mutate()} disabled={seedMutation.isPending}>
+                Carregar Padrão
+              </Button>
+            )}
+            <Button size="sm" onClick={startAdd} disabled={adding}>
+              <Plus className="h-4 w-4 mr-1" /> Novo Campo
+            </Button>
+          </div>
+        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-8">#</TableHead>
+              <TableHead>Campo LIS</TableHead>
+              <TableHead>Campo Remoto</TableHead>
+              <TableHead>Descrição</TableHead>
+              <TableHead className="w-28">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Carregando...</TableCell></TableRow>
+            ) : mappings.length === 0 && !adding ? (
+              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                Nenhum mapeamento configurado. Clique em "Carregar Padrão" ou "Novo Campo".
+              </TableCell></TableRow>
+            ) : (
+              mappings.map((m: any, i: number) => (
+                editingId === m.id ? (
+                  <TableRow key={m.id} className="bg-muted/30">
+                    <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
+                    <TableCell>
+                      <Input
+                        value={draft.lis_field}
+                        onChange={(e) => setDraft(d => ({ ...d, lis_field: e.target.value }))}
+                        className="h-8 text-xs font-mono"
+                        placeholder="ex: patient_id"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        value={draft.remote_field}
+                        onChange={(e) => setDraft(d => ({ ...d, remote_field: e.target.value }))}
+                        className="h-8 text-xs font-mono"
+                        placeholder="ex: PID.3"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        value={draft.description}
+                        onChange={(e) => setDraft(d => ({ ...d, description: e.target.value }))}
+                        className="h-8 text-xs"
+                        placeholder="Descrição do campo"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="default" className="h-7 text-xs px-2" onClick={() => saveMutation.mutate(draft)} disabled={!draft.lis_field || !draft.remote_field}>
+                          <Save className="h-3 w-3 mr-1" />OK
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={cancelEdit}>
+                          Cancelar
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  <TableRow key={m.id} className="cursor-pointer hover:bg-muted/50" onClick={() => startEdit(m)}>
+                    <TableCell className="text-xs text-muted-foreground">
+                      <GripVertical className="h-3 w-3 text-muted-foreground/50" />
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">{m.lis_field}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="font-mono text-xs">{m.remote_field}</Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{m.description}</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(m.id); }}>
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              ))
+            )}
+            {/* Add new row */}
+            {adding && (
+              <TableRow className="bg-muted/30">
+                <TableCell className="text-xs text-muted-foreground">+</TableCell>
+                <TableCell>
+                  <Input
+                    value={draft.lis_field}
+                    onChange={(e) => setDraft(d => ({ ...d, lis_field: e.target.value }))}
+                    className="h-8 text-xs font-mono"
+                    placeholder="ex: patient_id"
+                    autoFocus
+                  />
+                </TableCell>
+                <TableCell>
+                  <Input
+                    value={draft.remote_field}
+                    onChange={(e) => setDraft(d => ({ ...d, remote_field: e.target.value }))}
+                    className="h-8 text-xs font-mono"
+                    placeholder="ex: PID.3"
+                  />
+                </TableCell>
+                <TableCell>
+                  <Input
+                    value={draft.description}
+                    onChange={(e) => setDraft(d => ({ ...d, description: e.target.value }))}
+                    className="h-8 text-xs"
+                    placeholder="Descrição do campo"
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="default" className="h-7 text-xs px-2" onClick={() => saveMutation.mutate(draft)} disabled={!draft.lis_field || !draft.remote_field}>
+                      <Save className="h-3 w-3 mr-1" />OK
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={cancelEdit}>
+                      Cancelar
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        <div className="p-3 border-t border-border">
+          <p className="text-xs text-muted-foreground">
+            💡 Clique em uma linha para editar. Os mapeamentos definem como os dados são traduzidos entre o LIS e o sistema externo.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default IntegrationDetailPage;
