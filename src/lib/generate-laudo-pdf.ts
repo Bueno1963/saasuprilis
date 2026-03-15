@@ -345,7 +345,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           const body5: any[][] = [];
           let lastSection = "";
           // Params that should be hidden when value is 0
-          const HIDE_WHEN_ZERO = ["mielocitos", "metamielocitos", "linfocitos atipicos"];
+          const HIDE_WHEN_ZERO = ["mielocitos", "metamielocitos", "linfocitos atipicos", "monocitos"];
           const shouldHideWhenZero = (name: string) => {
             const norm = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             return HIDE_WHEN_ZERO.some(h => norm === h || norm.startsWith(h));
