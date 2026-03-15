@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { navItems, NavItem } from "@/lib/navigation";
 import { ChevronDown, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { useTenantBranding } from "@/hooks/useTenantBranding";
@@ -14,16 +14,15 @@ const AppTopbar = () => {
   const { branding } = useTenantBranding();
 
   const filteredItems = useMemo(
-    () => navItems.filter(n => isRouteAllowed(n.href)),
+    () => navItems.filter((n) => isRouteAllowed(n.href)),
     [isRouteAllowed]
   );
 
   const isActive = (item: NavItem) =>
-    location.pathname === item.href || item.children?.some(c => location.pathname === c.href);
+    location.pathname === item.href || item.children?.some((c) => location.pathname === c.href);
 
   return (
     <header className="h-14 bg-sidebar text-sidebar-foreground border-b border-sidebar-border flex items-center px-5 shrink-0 relative z-50">
-      {/* Logo */}
       <Link to="/" className="flex items-center gap-2.5 mr-8 shrink-0">
         {branding?.logo_url && (
           <img src={branding.logo_url} alt={branding.name} className="h-8 w-8 object-contain" />
@@ -33,18 +32,18 @@ const AppTopbar = () => {
         </span>
       </Link>
 
-      {/* Nav items */}
-      <nav className="flex-1 flex items-center gap-1 overflow-x-auto scrollbar-none h-full">
-        {filteredItems.map(item => (
-          item.children && item.children.length > 0 ? (
-            <TopbarDropdown key={item.href} item={item} active={isActive(item)} pathname={location.pathname} />
-          ) : (
-            <TopbarLink key={item.href} item={item} active={location.pathname === item.href} />
-          )
-        ))}
-      </nav>
+      <div className="flex-1 min-w-0">
+        <nav className="flex items-center gap-1 h-full overflow-visible">
+          {filteredItems.map((item) =>
+            item.children && item.children.length > 0 ? (
+              <TopbarDropdown key={item.href} item={item} active={isActive(item)} pathname={location.pathname} />
+            ) : (
+              <TopbarLink key={item.href} item={item} active={location.pathname === item.href} />
+            )
+          )}
+        </nav>
+      </div>
 
-      {/* User */}
       <div className="flex items-center gap-3 ml-4 shrink-0">
         {profile && (
           <div className="flex items-center gap-2.5">
@@ -93,38 +92,20 @@ const TopbarDropdown = ({ item, active, pathname }: { item: NavItem; active: boo
   const Icon = item.icon;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const close = useCallback(() => {
-    timeoutRef.current = setTimeout(() => setOpen(false), 150);
-  }, []);
-
-  const cancelClose = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-  }, []);
-
-  useEffect(() => {
-    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
-  }, []);
-
-  // Close on click outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
+
     if (open) document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
   return (
-    <div
-      ref={ref}
-      className="relative h-full flex items-center"
-      onMouseEnter={() => { cancelClose(); setOpen(true); }}
-      onMouseLeave={close}
-    >
+    <div ref={ref} className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen((prev) => !prev)}
         className={cn(
           "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap",
           active
@@ -138,7 +119,7 @@ const TopbarDropdown = ({ item, active, pathname }: { item: NavItem; active: boo
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-0 min-w-[220px] bg-sidebar border border-sidebar-border rounded-lg shadow-xl py-1.5 z-[100]">
+        <div className="absolute top-[calc(100%+2px)] left-0 min-w-[220px] bg-sidebar border border-sidebar-border rounded-lg shadow-xl py-1.5 z-[200]">
           <Link
             to={item.href}
             onClick={() => setOpen(false)}
@@ -153,7 +134,7 @@ const TopbarDropdown = ({ item, active, pathname }: { item: NavItem; active: boo
             {item.title}
           </Link>
           <div className="h-px bg-sidebar-border mx-3 my-1" />
-          {item.children?.map(child => {
+          {item.children?.map((child) => {
             const ChildIcon = child.icon;
             return (
               <Link
