@@ -413,10 +413,12 @@ interface SampleItem {
 
 const SampleForm = ({
   orders,
+  examCatalog,
   onSubmit,
   loading,
 }: {
   orders: any[];
+  examCatalog: any[];
   onSubmit: (items: { order_id: string; sample_type: string; sector: string }[]) => void;
   loading: boolean;
 }) => {
@@ -425,6 +427,40 @@ const SampleForm = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const selectedOrder = orders.find(o => o.id === orderId);
+
+  // Auto-populate items based on order's exams and exam catalog sectors
+  const handleOrderChange = (id: string) => {
+    setOrderId(id);
+    setErrors(e => { const n = { ...e }; delete n.order; return n; });
+    
+    const order = orders.find(o => o.id === id);
+    if (order && order.exams?.length > 0) {
+      const catalogMap = new Map<string, { sector: string; material: string }>();
+      for (const ec of examCatalog) {
+        catalogMap.set(ec.name, { sector: ec.sector || "Bioquímica", material: ec.material || "Sangue" });
+      }
+
+      const sectorMaterialMap = new Map<string, string>();
+      for (const examName of order.exams) {
+        const info = catalogMap.get(examName);
+        const sector = info?.sector || "Bioquímica";
+        const material = info?.material || "Sangue";
+        if (!sectorMaterialMap.has(sector)) {
+          sectorMaterialMap.set(sector, material);
+        }
+      }
+
+      if (sectorMaterialMap.size > 0) {
+        const autoItems = Array.from(sectorMaterialMap.entries()).map(([sector, material]) => ({
+          sample_type: material,
+          sector,
+        }));
+        setItems(autoItems);
+        return;
+      }
+    }
+    setItems([{ sample_type: "Sangue", sector: "Hematologia" }]);
+  };
 
   const addItem = () => {
     setItems(prev => [...prev, { sample_type: "Sangue", sector: "Hematologia" }]);
