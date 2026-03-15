@@ -448,7 +448,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           // Simple result
           const outOfRange = isOutOfRange(r.value, r.referenceRange);
           const valCell = outOfRange
-            ? { content: r.value, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+            ? { content: r.value, styles: { textColor: RED_TEXT, fontStyle: "bold" as const } }
             : r.value;
           autoTable(doc, {
             startY: y,
