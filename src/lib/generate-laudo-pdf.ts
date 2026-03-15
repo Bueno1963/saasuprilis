@@ -34,6 +34,7 @@ function isOutOfRange(value: string, refRange: string): boolean {
 
 const RED_TEXT: [number, number, number] = [200, 30, 30];
 
+interface LaudoResult {
   exam: string;
   value: string;
   unit: string;
