@@ -151,6 +151,19 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   // Sectors that use the clean 4-column model (no Flag)
   const CLEAN_TABLE_SECTORS = ["bioquímica", "bioquimica", "hormônio", "hormonio", "hormonios", "hormônios", "imunologia", "hematologia", "equ", "eas", "urina", "urinálise", "urinalise", "uroanálise", "uroanalise"];
 
+  const URINE_SECTORS = ["equ", "eas", "urina", "urinálise", "urinalise", "uroanálise", "uroanalise"];
+  const URINE_REF_PARAMS = ["ph", "densidade", "leucócitos", "leucocitos", "hemácias", "hemacias"];
+
+  const isUrineSector = (sector: string) => {
+    const norm = sector.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    return URINE_SECTORS.includes(norm) || URINE_SECTORS.includes(sector.toLowerCase());
+  };
+
+  const shouldShowUrineRef = (paramName: string) => {
+    const norm = paramName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    return URINE_REF_PARAMS.some(p => norm.includes(p));
+  };
+
   const sectors = [...sectorMap.keys()].sort();
   const hasSectors = sectors.length > 1 || (sectors.length === 1 && sectors[0] !== "Geral");
 
@@ -158,6 +171,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     const sectorResults = sectorMap.get(sector)!;
     const isCleanTable = CLEAN_TABLE_SECTORS.includes(sector.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()) ||
       CLEAN_TABLE_SECTORS.includes(sector.toLowerCase());
+    const isUrine = isUrineSector(sector);
 
     // Determine per-sector column visibility
     const sectorHideRef = !isCleanTable && sectorResults.some(r => r.hideReferenceRange);
@@ -186,14 +200,14 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           }
           const row: any[] = ["   " + p.name, p.value];
           if (!sectorHideUnit) row.push(p.unit);
-          if (!sectorHideRef) row.push(r.hideReferenceRange ? "" : p.referenceRange);
+          if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
           if (!sectorHideFlag) row.push("");
           tableBody.push(row);
         }
       } else {
         const row: any[] = [r.exam, r.value];
         if (!sectorHideUnit) row.push(r.unit);
-        if (!sectorHideRef) row.push(r.hideReferenceRange ? "" : r.referenceRange);
+        if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(r.exam))) ? "" : r.referenceRange);
         if (!sectorHideFlag) row.push(FLAG_LABELS[r.flag] || "");
         tableBody.push(row);
       }
