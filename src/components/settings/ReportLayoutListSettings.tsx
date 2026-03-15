@@ -45,6 +45,38 @@ const ReportLayoutListSettings = ({ onBack }: Props) => {
     },
   });
 
+  const { data: sectorSettings = [] } = useQuery({
+    queryKey: ["report-sector-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("report_sector_settings").select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const historyToggleMutation = useMutation({
+    mutationFn: async ({ sector, showHistory }: { sector: string; showHistory: boolean }) => {
+      const existing = sectorSettings.find((s: any) => s.sector === sector);
+      if (existing) {
+        const { error } = await supabase
+          .from("report_sector_settings")
+          .update({ show_history: showHistory, updated_at: new Date().toISOString() })
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("report_sector_settings")
+          .insert({ sector, show_history: showHistory });
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["report-sector-settings"] });
+      toast.success(`Histórico ${vars.showHistory ? "ativado" : "desativado"} para ${vars.sector}`);
+    },
+    onError: () => toast.error("Erro ao atualizar configuração de histórico"),
+  });
+
   const layoutExamIds = new Set(layouts.map((l: any) => l.exam_id));
   const activeExams = exams.filter((e) => e.status === "active");
 
