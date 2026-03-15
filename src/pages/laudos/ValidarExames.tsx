@@ -381,7 +381,11 @@ const ValidarExames = () => {
       const params = examId ? examParamsByExamId.get(examId) : undefined;
       if (params && params.length > 0) {
         const vals = getParamValues(r);
-        const paramsFilled = params.every(p => vals[p.name] && vals[p.name].trim() !== "");
+        const OPTIONAL_PARAMS = [...DIFFERENTIAL_COUNT_PARAMS, "Observações"];
+        const paramsFilled = params.every(p => {
+          if (OPTIONAL_PARAMS.includes(p.name)) return true; // differential counts and observations are optional
+          return vals[p.name] && vals[p.name].trim() !== "";
+        });
         // Also check differential count sum = 100%
         const diffPs = params.filter(p => DIFFERENTIAL_COUNT_PARAMS.includes(p.name));
         if (diffPs.length > 0) {
