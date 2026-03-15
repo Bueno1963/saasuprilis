@@ -296,7 +296,7 @@ const ExamesLiberados = () => {
     }, null);
     const examNames = [...new Set(allResults.map((r: any) => r.exam as string))];
     const history = await fetchPatientHistory(group.patientCpf, examNames);
-    const doc = generateLaudoPDF({
+    const doc = await generateLaudoPDF({
       orderNumber: group.orders.map(o => o.orderNumber).join(", "),
       patientName: group.patientName, patientCpf: group.patientCpf,
       patientBirthDate: group.patientBirthDate ? new Date(group.patientBirthDate).toLocaleDateString("pt-BR") : "—",

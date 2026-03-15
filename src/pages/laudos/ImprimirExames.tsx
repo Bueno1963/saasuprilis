@@ -204,7 +204,7 @@ const ImprimirExames = () => {
       if (!r.released_at) return l; if (!l) return r.released_at;
       return r.released_at > l ? r.released_at : l;
     }, null);
-    const doc = generateLaudoPDF({
+    const doc = await generateLaudoPDF({
       orderNumber: order.orderNumber, patientName: order.patientName, patientCpf: order.patientCpf,
       patientBirthDate: order.patientBirthDate ? new Date(order.patientBirthDate).toLocaleDateString("pt-BR") : "—",
       patientGender: order.patientGender, doctorName: order.doctorName, insurance: order.insurance,
