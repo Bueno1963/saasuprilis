@@ -366,7 +366,7 @@ const LiberarExames = () => {
           referenceRange: hasParams ? "" : r.reference_range,
           flag: r.flag,
           hideReferenceRange: layout?.hide_reference_range ?? /equ|eas|urina/i.test(r.exam),
-          hideFlag: layout?.hide_flag ?? false,
+          hideFlag: true,
           hideUnit: layout?.hide_unit ?? false,
           headerText: layout?.header_text || undefined,
           footerText: layout?.footer_text || undefined,
