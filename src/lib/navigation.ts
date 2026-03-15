@@ -61,7 +61,7 @@ export const navItems: NavItem[] = [
       { title: "Pedidos Incompletos", href: "/laudos/incompletos", icon: AlertTriangle },
     ],
   },
-  { title: "Resultados", href: "/resultados", icon: FileCheck, phase: "post", allowedRoles: ["admin", "tecnico"] },
+  
   
   {
     title: "Financeiro",
