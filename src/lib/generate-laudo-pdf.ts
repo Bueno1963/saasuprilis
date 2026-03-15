@@ -345,10 +345,16 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             const normName = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             if (normName === "linfocitos tipicos") displayName = "Linfócitos";
 
-            const row: any[] = ["   " + displayName, displayValue, absoluto];
-            if (!sectorHideUnit) row.push(p.unit);
-            if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
-            body5.push(row);
+            // Observações: span value across remaining columns
+            if (p.name === "Observações") {
+              const remainingCols = colCount5 - 1;
+              body5.push(["   " + displayName, { content: displayValue || "", colSpan: remainingCols, styles: { fontStyle: "normal" } }]);
+            } else {
+              const row: any[] = ["   " + displayName, displayValue, absoluto];
+              if (!sectorHideUnit) row.push(p.unit);
+              if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
+              body5.push(row);
+            }
           }
 
           autoTable(doc, {
