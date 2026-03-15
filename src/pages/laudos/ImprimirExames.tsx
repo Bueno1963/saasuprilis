@@ -10,6 +10,7 @@ import { Search, Printer, ChevronDown, ChevronUp, User, ClipboardList, FlaskConi
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { useLaudoSignatures } from "@/hooks/useLaudoSignatures";
 
 interface ExamParam {
   id: string;
