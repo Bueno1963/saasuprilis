@@ -451,7 +451,11 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             tableBody.push(row);
           }
         } else {
-          const row: any[] = [r.exam, r.value];
+          const outOfRange = isOutOfRange(r.value, r.referenceRange);
+          const valCell = outOfRange
+            ? { content: r.value, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+            : r.value;
+          const row: any[] = [r.exam, valCell];
           if (!sectorHideUnit) row.push(r.unit);
           if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(r.exam))) ? "" : r.referenceRange);
           if (!sectorHideFlag) row.push(FLAG_LABELS[r.flag] || "");
