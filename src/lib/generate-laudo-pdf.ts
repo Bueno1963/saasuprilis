@@ -181,18 +181,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     // Check if any result in this sector has a LEUCOGRAMA section
     const sectorHasLeucograma = sectorResults.some(r => r.parameters?.some(p => p.section?.toUpperCase() === "LEUCOGRAMA"));
 
-    // Build dynamic columns for this sector
-    const headRow: string[] = ["Exame / Parâmetro", "Resultado"];
-    if (sectorHasLeucograma) headRow.push("Valor Absoluto");
-    if (!sectorHideUnit) headRow.push("Unidade");
-    if (!sectorHideRef) headRow.push("Valor de Referência");
-    if (!sectorHideFlag) headRow.push("Flag");
-    const colCount = headRow.length;
-
-    const tableBody: any[][] = [];
-
-    // Sector header row — disabled (user requested no sector headers in PDF)
-
     // Differential count params that need absolute value calculation
     const DIFFERENTIAL_PARAMS = [
       "basófilos", "basofilos", "eosinófilos", "eosinofilos",
@@ -207,100 +195,216 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       return DIFFERENTIAL_PARAMS.some(d => norm === d || norm.startsWith(d));
     };
 
-    for (const r of sectorResults) {
-      if (r.parameters && r.parameters.length > 0) {
+    // When sector has both ERITROGRAMA and LEUCOGRAMA, split into separate tables
+    if (sectorHasLeucograma) {
+      for (const r of sectorResults) {
+        if (!r.parameters || r.parameters.length === 0) {
+          // Simple result row — render as 4-col clean table
+          const headRow4 = ["Exame / Parâmetro", "Resultado"];
+          if (!sectorHideUnit) headRow4.push("Unidade");
+          if (!sectorHideRef) headRow4.push("Valor de Referência");
+          const colCount4 = headRow4.length;
+          const body4: any[][] = [];
+          const row4: any[] = [r.exam, r.value];
+          if (!sectorHideUnit) row4.push(r.unit);
+          if (!sectorHideRef) row4.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(r.exam))) ? "" : r.referenceRange);
+          body4.push(row4);
+          autoTable(doc, {
+            startY: y,
+            head: [headRow4],
+            body: body4,
+            theme: "grid",
+            headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
+            bodyStyles: { fontSize: 9, textColor: 40 },
+            alternateRowStyles: { fillColor: [245, 248, 252] },
+            columnStyles: {
+              0: { cellWidth: 'auto' },
+              1: { cellWidth: 28, fontStyle: "bold", halign: "center" },
+              ...((!sectorHideUnit) ? { 2: { cellWidth: 22, halign: "center" } } : {}),
+              ...((!sectorHideRef) ? { [(!sectorHideUnit) ? 3 : 2]: { cellWidth: 45, halign: "center" } } : {}),
+            },
+            margin: { left: 14, right: 14 },
+          });
+          y = (doc as any).lastAutoTable?.finalY + 4 || y + 20;
+          continue;
+        }
+
         // Find Leucócitos value for absolute calculation
         let leucocitosValue = 0;
-        if (sectorHasLeucograma) {
-          const leucParam = r.parameters.find(p => p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === "leucocitos");
-          if (leucParam && leucParam.value && leucParam.value !== "—") {
-            leucocitosValue = parseFloat(leucParam.value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
+        const leucParam = r.parameters.find(p => p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === "leucocitos");
+        if (leucParam && leucParam.value && leucParam.value !== "—") {
+          leucocitosValue = parseFloat(leucParam.value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
+        }
+
+        // Split parameters by section groups: non-LEUCOGRAMA vs LEUCOGRAMA
+        const nonLeucogramaParams: typeof r.parameters = [];
+        const leucogramaParams: typeof r.parameters = [];
+        let currentIsLeuco = false;
+        for (const p of r.parameters) {
+          if (p.section) {
+            currentIsLeuco = p.section.toUpperCase() === "LEUCOGRAMA";
+          }
+          if (currentIsLeuco) {
+            leucogramaParams.push(p);
+          } else {
+            nonLeucogramaParams.push(p);
           }
         }
 
-        tableBody.push([{ content: r.exam, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
-        let lastSection = "";
-        let inLeucogramaSection = false;
-        for (const p of r.parameters) {
-          if (p.section && p.section !== lastSection) {
-            lastSection = p.section;
-            inLeucogramaSection = p.section.toUpperCase() === "LEUCOGRAMA";
-            tableBody.push([{ content: p.section, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
+        // --- Render non-LEUCOGRAMA (e.g. ERITROGRAMA) as 4-col clean table ---
+        if (nonLeucogramaParams.length > 0) {
+          const headRow4 = ["Exame / Parâmetro", "Resultado"];
+          if (!sectorHideUnit) headRow4.push("Unidade");
+          if (!sectorHideRef) headRow4.push("Valor de Referência");
+          const colCount4 = headRow4.length;
+
+          const body4: any[][] = [];
+          body4.push([{ content: r.exam, colSpan: colCount4, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
+
+          let lastSection = "";
+          for (const p of nonLeucogramaParams) {
+            if (p.section && p.section !== lastSection) {
+              lastSection = p.section;
+              body4.push([{ content: p.section, colSpan: colCount4, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
+            }
+            const row: any[] = ["   " + p.name, p.value];
+            if (!sectorHideUnit) row.push(p.unit);
+            if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
+            body4.push(row);
           }
 
-          const row: any[] = ["   " + p.name, p.value];
+          autoTable(doc, {
+            startY: y,
+            head: [headRow4],
+            body: body4,
+            theme: "grid",
+            headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
+            bodyStyles: { fontSize: 9, textColor: 40 },
+            alternateRowStyles: { fillColor: [245, 248, 252] },
+            columnStyles: {
+              0: { cellWidth: 'auto' },
+              1: { cellWidth: 28, fontStyle: "bold", halign: "center" },
+              2: { cellWidth: 22, halign: "center" },
+              3: { cellWidth: 45, halign: "center" },
+            },
+            margin: { left: 14, right: 14 },
+          });
+          y = (doc as any).lastAutoTable?.finalY + 4 || y + 20;
+        }
 
-          if (sectorHasLeucograma) {
-            // Add absolute value for leucograma differential params
+        // --- Render LEUCOGRAMA as 5-col table with Valor Absoluto ---
+        if (leucogramaParams.length > 0) {
+          const headRow5 = ["Exame / Parâmetro", "Resultado", "Valor Absoluto"];
+          if (!sectorHideUnit) headRow5.push("Unidade");
+          if (!sectorHideRef) headRow5.push("Valor de Referência");
+          const colCount5 = headRow5.length;
+
+          const body5: any[][] = [];
+          let lastSection = "";
+          for (const p of leucogramaParams) {
+            if (p.section && p.section !== lastSection) {
+              lastSection = p.section;
+              body5.push([{ content: p.section, colSpan: colCount5, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
+            }
+
             let absoluto = "";
-            if (inLeucogramaSection && isDifferentialParam(p.name) && p.value && p.value !== "—" && leucocitosValue > 0) {
+            if (isDifferentialParam(p.name) && p.value && p.value !== "—" && leucocitosValue > 0) {
               const pct = parseFloat(p.value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
               absoluto = Math.round(pct * leucocitosValue / 100).toString();
             }
-            // For Leucócitos itself, show its value as absolute
-            if (inLeucogramaSection && p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === "leucocitos") {
+            if (p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === "leucocitos") {
               absoluto = p.value !== "—" ? p.value : "";
             }
-            row.push(absoluto);
+
+            const row: any[] = ["   " + p.name, p.value, absoluto];
+            if (!sectorHideUnit) row.push(p.unit);
+            if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
+            body5.push(row);
           }
 
-          if (!sectorHideUnit) row.push(p.unit);
-          if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
-          if (!sectorHideFlag) row.push("");
+          autoTable(doc, {
+            startY: y,
+            head: [headRow5],
+            body: body5,
+            theme: "grid",
+            headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
+            bodyStyles: { fontSize: 9, textColor: 40 },
+            alternateRowStyles: { fillColor: [245, 248, 252] },
+            columnStyles: {
+              0: { cellWidth: 'auto' },
+              1: { cellWidth: 24, fontStyle: "bold", halign: "center" },
+              2: { cellWidth: 28, fontStyle: "bold", halign: "center" },
+              3: { cellWidth: 20, halign: "center" },
+              4: { cellWidth: 42, halign: "center" },
+            },
+            margin: { left: 14, right: 14 },
+          });
+          y = (doc as any).lastAutoTable?.finalY + 6 || y + 40;
+        }
+      }
+    } else {
+      // Standard rendering for non-hemograma sectors
+      const headRow: string[] = ["Exame / Parâmetro", "Resultado"];
+      if (!sectorHideUnit) headRow.push("Unidade");
+      if (!sectorHideRef) headRow.push("Valor de Referência");
+      if (!sectorHideFlag) headRow.push("Flag");
+      const colCount = headRow.length;
+
+      const tableBody: any[][] = [];
+
+      for (const r of sectorResults) {
+        if (r.parameters && r.parameters.length > 0) {
+          tableBody.push([{ content: r.exam, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
+          let lastSection = "";
+          for (const p of r.parameters) {
+            if (p.section && p.section !== lastSection) {
+              lastSection = p.section;
+              tableBody.push([{ content: p.section, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
+            }
+            const row: any[] = ["   " + p.name, p.value];
+            if (!sectorHideUnit) row.push(p.unit);
+            if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
+            if (!sectorHideFlag) row.push("");
+            tableBody.push(row);
+          }
+        } else {
+          const row: any[] = [r.exam, r.value];
+          if (!sectorHideUnit) row.push(r.unit);
+          if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(r.exam))) ? "" : r.referenceRange);
+          if (!sectorHideFlag) row.push(FLAG_LABELS[r.flag] || "");
           tableBody.push(row);
         }
-      } else {
-        const row: any[] = [r.exam, r.value];
-        if (sectorHasLeucograma) row.push(""); // empty absoluto column
-        if (!sectorHideUnit) row.push(r.unit);
-        if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(r.exam))) ? "" : r.referenceRange);
-        if (!sectorHideFlag) row.push(FLAG_LABELS[r.flag] || "");
-        tableBody.push(row);
       }
-    }
 
-    // Build column styles dynamically — fit within page (210 - 28 margins = 182 usable)
-    const usableWidth = pageWidth - 28;
-    const columnStyles: Record<number, any> = {};
-    
-    if (isCleanTable) {
-      if (sectorHasLeucograma) {
-        // 5 columns: Exame | Resultado | Valor Absoluto | Unidade | Referência
-        columnStyles[0] = { cellWidth: 'auto' };
-        columnStyles[1] = { cellWidth: 24, fontStyle: "bold", halign: "center" };
-        columnStyles[2] = { cellWidth: 28, fontStyle: "bold", halign: "center" };
-        columnStyles[3] = { cellWidth: 20, halign: "center" };
-        columnStyles[4] = { cellWidth: 42, halign: "center" };
-      } else {
-        // 4 columns: Exame(auto) | Resultado | Unidade | Referência
+      const columnStyles: Record<number, any> = {};
+      if (isCleanTable) {
         columnStyles[0] = { cellWidth: 'auto' };
         columnStyles[1] = { cellWidth: 28, fontStyle: "bold", halign: "center" };
         columnStyles[2] = { cellWidth: 22, halign: "center" };
         columnStyles[3] = { cellWidth: 45, halign: "center" };
+      } else {
+        let colIdx = 0;
+        columnStyles[colIdx++] = { cellWidth: 'auto' };
+        columnStyles[colIdx++] = { cellWidth: 28, fontStyle: "bold", halign: "center" };
+        if (!sectorHideUnit) { columnStyles[colIdx++] = { cellWidth: 20, halign: "center" }; }
+        if (!sectorHideRef) { columnStyles[colIdx++] = { cellWidth: 42 }; }
+        if (!sectorHideFlag) { columnStyles[colIdx++] = { cellWidth: 22, halign: "center" }; }
       }
-    } else {
-      let colIdx = 0;
-      columnStyles[colIdx++] = { cellWidth: 'auto' }; // Exame
-      columnStyles[colIdx++] = { cellWidth: 28, fontStyle: "bold", halign: "center" }; // Resultado
-      if (sectorHasLeucograma) { columnStyles[colIdx++] = { cellWidth: 28, fontStyle: "bold", halign: "center" }; }
-      if (!sectorHideUnit) { columnStyles[colIdx++] = { cellWidth: 20, halign: "center" }; }
-      if (!sectorHideRef) { columnStyles[colIdx++] = { cellWidth: 42 }; }
-      if (!sectorHideFlag) { columnStyles[colIdx++] = { cellWidth: 22, halign: "center" }; }
+
+      autoTable(doc, {
+        startY: y,
+        head: [headRow],
+        body: tableBody,
+        theme: "grid",
+        headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
+        bodyStyles: { fontSize: 9, textColor: 40 },
+        alternateRowStyles: { fillColor: [245, 248, 252] },
+        columnStyles,
+        margin: { left: 14, right: 14 },
+      });
+
+      y = (doc as any).lastAutoTable?.finalY + 6 || y + 40;
     }
-
-    autoTable(doc, {
-      startY: y,
-      head: [headRow],
-      body: tableBody,
-      theme: "grid",
-      headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
-      bodyStyles: { fontSize: 9, textColor: 40 },
-      alternateRowStyles: { fillColor: [245, 248, 252] },
-      columnStyles,
-      margin: { left: 14, right: 14 },
-    });
-
-    y = (doc as any).lastAutoTable?.finalY + 6 || y + 40;
   }
 
   // Observations
