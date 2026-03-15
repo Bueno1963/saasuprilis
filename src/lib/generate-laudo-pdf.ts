@@ -528,7 +528,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
                   0: { cellWidth: 'auto' },
                   1: { cellWidth: 55, fontStyle: "bold", halign: "center" },
                 },
-            margin: { left: 14, right: 14 },
+            margin: { left: urineMarginLeft, right: urineMarginRight },
           });
           y = (doc as any).lastAutoTable?.finalY + 1 || y + 10;
         }
