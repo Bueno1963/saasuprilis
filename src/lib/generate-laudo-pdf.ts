@@ -209,54 +209,49 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
     for (const r of sectorResults) {
       if (r.parameters && r.parameters.length > 0) {
-        // Check if this exam has a LEUCOGRAMA section with differential counts
-        const hasLeucograma = r.parameters.some(p => p.section?.toUpperCase() === "LEUCOGRAMA");
         // Find Leucócitos value for absolute calculation
         let leucocitosValue = 0;
-        if (hasLeucograma) {
+        if (sectorHasLeucograma) {
           const leucParam = r.parameters.find(p => p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === "leucocitos");
           if (leucParam && leucParam.value && leucParam.value !== "—") {
             leucocitosValue = parseFloat(leucParam.value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
           }
         }
 
-        // Determine actual column count for this exam (may have extra "Valor Absoluto" column)
-        const examColCount = hasLeucograma ? colCount + 1 : colCount;
-
-        tableBody.push([{ content: r.exam, colSpan: examColCount, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
+        tableBody.push([{ content: r.exam, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
         let lastSection = "";
         let inLeucogramaSection = false;
         for (const p of r.parameters) {
           if (p.section && p.section !== lastSection) {
             lastSection = p.section;
             inLeucogramaSection = p.section.toUpperCase() === "LEUCOGRAMA";
-            tableBody.push([{ content: p.section, colSpan: examColCount, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
+            tableBody.push([{ content: p.section, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
           }
 
-          if (hasLeucograma && inLeucogramaSection) {
-            // Add "Valor Absoluto" column for leucograma differential params
+          const row: any[] = ["   " + p.name, p.value];
+
+          if (sectorHasLeucograma) {
+            // Add absolute value for leucograma differential params
             let absoluto = "";
-            if (isDifferentialParam(p.name) && p.value && p.value !== "—" && leucocitosValue > 0) {
+            if (inLeucogramaSection && isDifferentialParam(p.name) && p.value && p.value !== "—" && leucocitosValue > 0) {
               const pct = parseFloat(p.value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
               absoluto = Math.round(pct * leucocitosValue / 100).toString();
             }
-            const row: any[] = ["   " + p.name, p.value, absoluto];
-            if (!sectorHideUnit) row.push(p.unit);
-            if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
-            if (!sectorHideFlag) row.push("");
-            tableBody.push(row);
-          } else {
-            const row: any[] = ["   " + p.name, p.value];
-            if (hasLeucograma) row.push(""); // empty absoluto column for non-leucograma rows
-            if (!sectorHideUnit) row.push(p.unit);
-            if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
-            if (!sectorHideFlag) row.push("");
-            tableBody.push(row);
+            // For Leucócitos itself, show its value as absolute
+            if (inLeucogramaSection && p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === "leucocitos") {
+              absoluto = p.value !== "—" ? p.value : "";
+            }
+            row.push(absoluto);
           }
+
+          if (!sectorHideUnit) row.push(p.unit);
+          if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
+          if (!sectorHideFlag) row.push("");
+          tableBody.push(row);
         }
       } else {
         const row: any[] = [r.exam, r.value];
-        if (!sectorHideUnit) row.push(r.unit);
+        if (sectorHasLeucograma) row.push(""); // empty absoluto column
         if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(r.exam))) ? "" : r.referenceRange);
         if (!sectorHideFlag) row.push(FLAG_LABELS[r.flag] || "");
         tableBody.push(row);
