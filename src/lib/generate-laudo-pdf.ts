@@ -207,7 +207,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       } else {
         const row: any[] = [r.exam, r.value];
         if (!sectorHideUnit) row.push(r.unit);
-        if (!sectorHideRef) row.push(r.hideReferenceRange ? "" : r.referenceRange);
+        if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(r.exam))) ? "" : r.referenceRange);
         if (!sectorHideFlag) row.push(FLAG_LABELS[r.flag] || "");
         tableBody.push(row);
       }
