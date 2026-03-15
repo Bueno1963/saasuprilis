@@ -565,20 +565,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           y += 3;
         }
 
-        // Reference note for pH/Densidade/Leucócitos/Hemácias
-        const refParams = (r.parameters || []).filter(p => {
-          const norm = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-          return ["ph", "densidade", "leucocitos", "hemacias"].some(rp => norm.includes(rp)) && p.referenceRange;
-        });
-        if (refParams.length > 0) {
-          y += 1;
-          doc.setFontSize(5.5);
-          doc.setFont("helvetica", "italic");
-          doc.setTextColor(120, 125, 135);
-          const refText = "Ref.: " + refParams.map(p => `${p.name}: ${p.referenceRange}`).join("  |  ");
-          doc.text(refText, uMargin + 2, y);
-          y += 4;
-        }
 
         y += 3;
       }
