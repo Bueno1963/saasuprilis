@@ -267,10 +267,16 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               lastSection = p.section;
               body4.push([{ content: p.section, colSpan: colCount4, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
             }
-            const row: any[] = ["   " + p.name, p.value];
-            if (!sectorHideUnit) row.push(p.unit);
-            if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
-            body4.push(row);
+            // Observações: span value across remaining columns
+            if (p.name === "Observações") {
+              const remainingCols = colCount4 - 1;
+              body4.push(["   " + p.name, { content: p.value || "", colSpan: remainingCols, styles: { fontStyle: "normal" } }]);
+            } else {
+              const row: any[] = ["   " + p.name, p.value];
+              if (!sectorHideUnit) row.push(p.unit);
+              if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
+              body4.push(row);
+            }
           }
 
           autoTable(doc, {
