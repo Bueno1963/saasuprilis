@@ -436,12 +436,15 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         return URINE_ABNORMAL_VALUES.some(a => norm === a);
       };
 
+      const urineMarginLeft = 40;
+      const urineMarginRight = 40;
+
       for (const r of sectorResults) {
         // Title row
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
-        doc.text(`${r.exam} (Urina)`, 14, y);
+        doc.text(`${r.exam} (Urina)`, urineMarginLeft, y);
         y += 4;
 
         if (!r.parameters || r.parameters.length === 0) {
@@ -456,7 +459,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             theme: "grid",
             bodyStyles: { fontSize: 8, textColor: 40, cellPadding: 2 },
             columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 50, fontStyle: "bold", halign: "center" } },
-            margin: { left: 14, right: 14 },
+            margin: { left: urineMarginLeft, right: urineMarginRight },
           });
           y = (doc as any).lastAutoTable?.finalY + 3 || y + 10;
           continue;
@@ -525,7 +528,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
                   0: { cellWidth: 'auto' },
                   1: { cellWidth: 55, fontStyle: "bold", halign: "center" },
                 },
-            margin: { left: 14, right: 14 },
+            margin: { left: urineMarginLeft, right: urineMarginRight },
           });
           y = (doc as any).lastAutoTable?.finalY + 1 || y + 10;
         }
