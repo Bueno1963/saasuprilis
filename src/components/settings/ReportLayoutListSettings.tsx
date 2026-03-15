@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Search, LayoutTemplate, FlaskConical, ChevronRight, Plus, Tag } from "lucide-react";
+import { ArrowLeft, Search, LayoutTemplate, FlaskConical, ChevronRight, Plus, Tag, History } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import ReportLayoutSettings from "@/components/laudos/ReportLayoutSettings";
