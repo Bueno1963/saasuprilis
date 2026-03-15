@@ -17,7 +17,8 @@ interface SampleEditDialogProps {
 
 const STATUS_OPTIONS = [
   { value: "collected", label: "Coletada" },
-  { value: "in_analysis", label: "Em Análise" },
+  { value: "triaged", label: "Triada" },
+  { value: "processing", label: "Em Análise" },
   { value: "analyzed", label: "Analisada" },
   { value: "released", label: "Liberada" },
 ];
@@ -52,10 +53,12 @@ const SampleEditDialog = ({ open, onOpenChange, sample, sectors }: SampleEditDia
   const [editedResults, setEditedResults] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const map: Record<string, string> = {};
-    results.forEach((r: any) => { map[r.id] = r.value; });
-    setEditedResults(map);
-  }, [results]);
+    if (results.length > 0) {
+      const map: Record<string, string> = {};
+      results.forEach((r: any) => { map[r.id] = r.value; });
+      setEditedResults(map);
+    }
+  }, [results.length, sample?.id]);
 
   const updateSampleMutation = useMutation({
     mutationFn: async () => {
