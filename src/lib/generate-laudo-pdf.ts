@@ -334,7 +334,12 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               displayValue = "100";
             }
 
-            const row: any[] = ["   " + p.name, displayValue, absoluto];
+            // Rename "Linfócitos típicos" → "Linfócitos" for display
+            let displayName = p.name;
+            const normName = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            if (normName === "linfocitos tipicos") displayName = "Linfócitos";
+
+            const row: any[] = ["   " + displayName, displayValue, absoluto];
             if (!sectorHideUnit) row.push(p.unit);
             if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
             body5.push(row);
