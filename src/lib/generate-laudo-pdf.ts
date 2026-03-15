@@ -440,7 +440,11 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               lastSection = p.section;
               tableBody.push([{ content: p.section, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
             }
-            const row: any[] = ["   " + p.name, p.value];
+            const outOfRange = isOutOfRange(p.value, p.referenceRange);
+            const valCell = outOfRange
+              ? { content: p.value, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+              : p.value;
+            const row: any[] = ["   " + p.name, valCell];
             if (!sectorHideUnit) row.push(p.unit);
             if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
             if (!sectorHideFlag) row.push("");
