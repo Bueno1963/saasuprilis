@@ -159,6 +159,7 @@ const Orders = () => {
           order_id: orderData.id,
           sample_type: material,
           sector,
+          barcode: "TEMP",
         }));
         const { error: sampleError } = await supabase.from("samples").insert(sampleRows);
         if (sampleError) console.error("Erro ao criar amostras:", sampleError);
