@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { getParamKey, resolveParamValue } from "@/lib/param-key-utils";
 
 // Morphology options for Observações (ERITROGRAMA)
 const ERITROGRAMA_OBS_OPTIONS = [
@@ -370,9 +371,10 @@ const ValidarExames = () => {
       return {};
     };
 
-    const setParamValue = (resultId: string, paramName: string, val: string, currentResult: any) => {
+    const setParamValue = (resultId: string, paramName: string, val: string, currentResult: any, section?: string) => {
       const existing = getParamValues(currentResult);
-      const updated = { ...existing, [paramName]: val };
+      const key = getParamKey(paramName, section);
+      const updated = { ...existing, [key]: val };
       handleValueChange(resultId, JSON.stringify(updated));
     };
 
@@ -595,7 +597,7 @@ const ValidarExames = () => {
                           </TableRow>
                         )}
                         {sectionParams.map(param => {
-                          const val = paramValues[param.name] || "";
+                          const val = resolveParamValue(paramValues, param.name, sectionName) || "";
                           return (
                             <TableRow key={param.id} className={cn(!val.trim() && "bg-muted/20")}>
                               <TableCell className="font-medium text-sm">{param.name}</TableCell>
@@ -613,7 +615,7 @@ const ValidarExames = () => {
                                       const newItems = selectedItems.includes(item)
                                         ? selectedItems.filter(i => i !== item)
                                         : [...selectedItems, item];
-                                      setParamValue(r.id, param.name, newItems.join(", "), r);
+                                      setParamValue(r.id, param.name, newItems.join(", "), r, sectionName);
                                     };
                                     return (
                                       <Popover>
@@ -668,7 +670,7 @@ const ValidarExames = () => {
                                      return (
                                        <Input
                                          value={val}
-                                         onChange={e => setParamValue(r.id, param.name, e.target.value, r)}
+                                         onChange={e => setParamValue(r.id, param.name, e.target.value, r, sectionName)}
                                          onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
                                          placeholder="Observações..."
                                          className="max-w-[320px] text-sm"

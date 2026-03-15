@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
+import { resolveParamValue } from "@/lib/param-key-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -126,7 +127,7 @@ const ImprimirExames = () => {
     return {
       exam: r.exam, value: "", unit: "", referenceRange: "", flag: r.flag, sector,
       parameters: params.map(p => ({
-        section: p.section || "", name: p.name, value: paramValues[p.name] || "—",
+        section: p.section || "", name: p.name, value: resolveParamValue(paramValues, p.name, p.section) || "—",
         unit: p.unit || "", referenceRange: p.reference_range || "",
       })),
     };
@@ -361,7 +362,7 @@ const ImprimirExames = () => {
                                                   {params!.map((p, idx) => (
                                                     <TableRow key={p.id || idx} className="text-xs">
                                                       <TableCell className="py-1.5">{p.name}</TableCell>
-                                                      <TableCell className="py-1.5 font-mono font-semibold">{paramValues[p.name] || "—"}</TableCell>
+                                                      <TableCell className="py-1.5 font-mono font-semibold">{resolveParamValue(paramValues, p.name, p.section) || "—"}</TableCell>
                                                       <TableCell className="py-1.5 text-muted-foreground">{p.unit || ""}</TableCell>
                                                       <TableCell className="py-1.5 text-muted-foreground">{p.reference_range || ""}</TableCell>
                                                     </TableRow>

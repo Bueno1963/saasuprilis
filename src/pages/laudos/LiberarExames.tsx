@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
 import { resolveReferenceRange } from "@/lib/age-reference-utils";
+import { resolveParamValue } from "@/lib/param-key-utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface ExamParam {
@@ -251,7 +252,7 @@ const LiberarExames = () => {
       expandedParams = params!.map(p => ({
         section: p.section || "",
         name: p.name,
-        value: paramValues[p.name] || "—",
+        value: resolveParamValue(paramValues, p.name, p.section) || "—",
         unit: p.unit || "",
         referenceRange: resolveReferenceRange(p.id, p.reference_range || "", patient?.birth_date || null, patient?.gender || "", allRefRanges),
       }));
@@ -339,7 +340,7 @@ const LiberarExames = () => {
       expandedParams = params!.map(p => ({
         section: p.section || "",
         name: p.name,
-        value: paramValues[p.name] || "—",
+        value: resolveParamValue(paramValues, p.name, p.section) || "—",
         unit: p.unit || "",
         referenceRange: resolveReferenceRange(p.id, p.reference_range || "", patient?.birth_date || null, patient?.gender || "", allRefRanges),
       }));
@@ -735,7 +736,7 @@ const LiberarExames = () => {
                             return (
                             <TableRow key={param.id}>
                               <TableCell className="font-medium text-sm">{param.name}</TableCell>
-                              <TableCell className={cn("font-mono font-semibold text-sm", isOutOfRange(paramValues[param.name] || "", resolvedRef) && "text-destructive")}>{paramValues[param.name] || "—"}</TableCell>
+                              <TableCell className={cn("font-mono font-semibold text-sm", isOutOfRange(resolveParamValue(paramValues, param.name, sectionName) || "", resolvedRef) && "text-destructive")}>{resolveParamValue(paramValues, param.name, sectionName) || "—"}</TableCell>
                               <TableCell className="text-sm text-muted-foreground">{param.unit || ""}</TableCell>
                               <TableCell className="text-xs text-muted-foreground">{resolvedRef}</TableCell>
                             </TableRow>
