@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
 import { resolveReferenceRange } from "@/lib/age-reference-utils";
+import { resolveParamValue } from "@/lib/param-key-utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface ExamParam {
