@@ -435,8 +435,8 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       };
 
       const fullWidth = pageWidth - 28; // total usable width
-      const uWidth = fullWidth * 0.5; // 50% narrower
-      const uMargin = (pageWidth - uWidth) / 2; // centered
+      const uWidth = fullWidth * 0.5; // 50% of usable width
+      const uMargin = 14; // left-aligned, same margin as patient info
       const uRight = uMargin + uWidth;
 
       for (const r of sectorResults) {
