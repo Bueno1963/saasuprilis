@@ -24,12 +24,26 @@ import SampleStatusStepper from "@/components/samples/SampleStatusStepper";
 const SAMPLE_TYPES = ["Sangue", "Urina", "Soro", "Plasma"] as const;
 const SECTORS = ["Hematologia", "Bioquímica", "Imunologia", "Microbiologia"] as const;
 
-const SAMPLE_CONDITIONS = [
+const SAMPLE_CONDITIONS_DEFAULT = [
   { value: "de_acordo", label: "De acordo para análise", color: "text-success" },
   { value: "hemolisada", label: "Amostra hemolisada", color: "text-warning" },
   { value: "insuficiente", label: "Amostra Insuficiente", color: "text-critical" },
   { value: "nao_coletou", label: "Paciente Não coletou", color: "text-destructive" },
 ] as const;
+
+const SAMPLE_CONDITIONS_URINE = [
+  { value: "de_acordo", label: "De acordo para análise", color: "text-success" },
+  { value: "hematuria_visual", label: "Amostra com hematúria visual", color: "text-warning" },
+  { value: "insuficiente", label: "Amostra Insuficiente", color: "text-critical" },
+  { value: "nao_coletou", label: "Paciente Não coletou", color: "text-destructive" },
+] as const;
+
+const getConditionsForSector = (sector: string, material: string) => {
+  const isUrine = material?.toLowerCase().includes("urina") || sector?.toLowerCase().includes("urinálise") || sector?.toLowerCase().includes("equ") || sector?.toLowerCase().includes("eas");
+  return isUrine ? SAMPLE_CONDITIONS_URINE : SAMPLE_CONDITIONS_DEFAULT;
+};
+
+const ALL_CONDITIONS = [...SAMPLE_CONDITIONS_DEFAULT, ...SAMPLE_CONDITIONS_URINE];
 
 const STATUS_FLOW = [
   { value: "collected", label: "Coletado" },
