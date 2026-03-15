@@ -272,11 +272,16 @@ const AgendamentoPage = () => {
             </Button>
           </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2" disabled={isLimitReached}>
-              <Plus className="h-4 w-4" /> Novo Agendamento
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => navigate("/recepcao")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />Voltar à Recepção
             </Button>
-          </DialogTrigger>
+            <DialogTrigger asChild>
+              <Button className="gap-2" disabled={isLimitReached}>
+                <Plus className="h-4 w-4" /> Novo Agendamento
+              </Button>
+            </DialogTrigger>
+          </div>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Novo Agendamento</DialogTitle>
