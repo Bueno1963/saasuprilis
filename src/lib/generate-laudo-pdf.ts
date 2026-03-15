@@ -655,6 +655,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         y += rowH;
       }
       y += 4;
+    }
   }
 
   // Observations
