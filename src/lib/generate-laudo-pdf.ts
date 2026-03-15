@@ -78,6 +78,7 @@ interface LaudoData {
   analystName: string;
   analystCrm?: string;
   history?: HistoryEntry[];
+  showHistory?: boolean;
 }
 
 const FLAG_LABELS: Record<string, string> = {
