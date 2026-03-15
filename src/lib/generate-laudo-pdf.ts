@@ -598,22 +598,26 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       y += 16;
 
     } else {
-      // === Clinical Compact layout for Bioquímica (same style as EQU) ===
-      const fullWidth = pageWidth - 28;
-      const bWidth = fullWidth * 0.5;
-      const bMargin = (pageWidth - bWidth) / 2;
-      const bRight = bMargin + bWidth;
+      // === Clinical Compact layout for Bioquímica — full-width margins matching reference ===
+      const bMargin = 14;
+      const bRight = pageWidth - 14;
+      const bWidth = bRight - bMargin;
 
-      // Sector label — underlined title in dark blue
+      // Column positions (4 columns: Parâmetro | Resultado | Unid. | Referência)
+      const colResult = bMargin + bWidth * 0.38;
+      const colUnit = bMargin + bWidth * 0.54;
+      const colRef = bMargin + bWidth * 0.68;
+
+      // Sector label — bold, dark blue, underlined
       if (hasSectors) {
-        doc.setFontSize(9);
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
         doc.text(sector.toUpperCase(), bMargin, y);
         doc.setDrawColor(20, 55, 90);
-        doc.setLineWidth(0.4);
+        doc.setLineWidth(0.5);
         doc.line(bMargin, y + 1.5, bMargin + doc.getTextWidth(sector.toUpperCase()), y + 1.5);
-        y += 7;
+        y += 9;
       }
 
       // Build rows from all results in this sector
@@ -654,36 +658,36 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       }
 
       for (const group of sectionGroups) {
-        // Section title strip
+        // Section title — bold with background strip
         if (group.section) {
-          if (y + 12 > doc.internal.pageSize.getHeight() - 20) {
+          if (y + 14 > doc.internal.pageSize.getHeight() - 20) {
             doc.addPage();
             y = 20;
           }
           doc.setFillColor(235, 240, 248);
-          doc.rect(bMargin, y - 3.5, bWidth, 5, "F");
-          doc.setFontSize(6.5);
+          doc.rect(bMargin, y - 4, bWidth, 6.5, "F");
+          doc.setFontSize(9);
           doc.setFont("helvetica", "bold");
-          doc.setTextColor(40, 55, 80);
-          doc.text(group.section.toUpperCase(), bMargin + 2, y);
-          y += 4;
+          doc.setTextColor(20, 40, 70);
+          doc.text(group.section.toUpperCase(), bMargin + 3, y);
+          y += 6;
         }
 
-        // Column sub-headers
-        doc.setFontSize(5.5);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(100, 110, 125);
-        doc.text("Parâmetro", bMargin + 2, y);
-        doc.text("Resultado", bMargin + bWidth * 0.45, y, { align: "left" });
-        doc.text("Unid.", bMargin + bWidth * 0.65, y, { align: "left" });
-        doc.text("Referência", bRight - 2, y, { align: "right" });
-        y += 1;
-        doc.setDrawColor(190, 198, 210);
-        doc.setLineWidth(0.2);
+        // Column headers
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(100, 105, 115);
+        doc.text("Parâmetro", bMargin + 3, y);
+        doc.text("Resultado", colResult, y);
+        doc.text("Unid.", colUnit, y);
+        doc.text("Referência", colRef, y);
+        y += 1.5;
+        doc.setDrawColor(180, 185, 195);
+        doc.setLineWidth(0.3);
         doc.line(bMargin, y, bRight, y);
-        y += 3.5;
+        y += 5;
 
-        const rowH = 5.5;
+        const rowH = 7;
         for (let pi = 0; pi < group.params.length; pi++) {
           const p = group.params[pi];
 
@@ -695,43 +699,43 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           // Alternating row background
           if (pi % 2 === 0) {
             doc.setFillColor(250, 251, 253);
-            doc.rect(bMargin, y - 3.5, bWidth, rowH, "F");
+            doc.rect(bMargin, y - 4, bWidth, rowH, "F");
           }
 
-          // Parameter name
-          doc.setFontSize(7);
+          // Parameter name — 10pt
+          doc.setFontSize(10);
           doc.setFont("helvetica", "normal");
-          doc.setTextColor(35, 40, 50);
+          doc.setTextColor(30, 35, 45);
           doc.text(p.name, bMargin + 3, y);
 
-          // Result — bold, red if out of range
+          // Result — 10pt bold, red if out of range
           doc.setFont("helvetica", "bold");
           if (p.outOfRange) {
             doc.setTextColor(200, 30, 30);
           } else {
             doc.setTextColor(20, 25, 35);
           }
-          doc.text(p.value || "—", bMargin + bWidth * 0.45, y, { align: "left" });
+          doc.text(p.value || "—", colResult, y);
 
-          // Unit
+          // Unit — 9pt
+          doc.setFontSize(9);
           doc.setFont("helvetica", "normal");
-          doc.setTextColor(70, 75, 85);
-          doc.setFontSize(6.5);
-          doc.text(p.unit || "", bMargin + bWidth * 0.65, y, { align: "left" });
+          doc.setTextColor(60, 65, 75);
+          doc.text(p.unit || "", colUnit, y);
 
-          // Reference
-          doc.setFontSize(6);
-          doc.setTextColor(100, 105, 115);
-          doc.text(p.ref || "", bRight - 3, y, { align: "right" });
+          // Reference — 8pt
+          doc.setFontSize(8);
+          doc.setTextColor(80, 85, 95);
+          doc.text(p.ref || "", colRef, y);
 
           // Thin separator
-          doc.setDrawColor(238, 240, 245);
-          doc.setLineWidth(0.1);
-          doc.line(bMargin + 1, y + 1.5, bRight - 1, y + 1.5);
+          doc.setDrawColor(230, 232, 238);
+          doc.setLineWidth(0.15);
+          doc.line(bMargin, y + 2, bRight, y + 2);
 
           y += rowH;
         }
-        y += 3;
+        y += 5;
       }
 
       // Signature block inline (same page as results)
