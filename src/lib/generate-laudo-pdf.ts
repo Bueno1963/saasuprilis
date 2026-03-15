@@ -180,6 +180,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
   // Sectors that use the clean 4-column model (no Flag)
   const CLEAN_TABLE_SECTORS = ["bioquímica", "bioquimica", "hormônio", "hormonio", "hormonios", "hormônios", "imunologia", "hematologia", "equ", "eas", "urina", "urinálise", "urinalise", "uroanálise", "uroanalise"];
+  const BIOCHEM_SECTORS = ["bioquímica", "bioquimica"];
 
   const URINE_SECTORS = ["equ", "eas", "urina", "urinálise", "urinalise", "uroanálise", "uroanalise"];
   const URINE_REF_PARAMS = ["ph", "densidade", "leucócitos", "leucocitos", "hemácias", "hemacias"];
