@@ -149,7 +149,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   }
 
   // Sectors that use the clean 4-column model (no Flag)
-  const CLEAN_TABLE_SECTORS = ["bioquímica", "bioquimica", "hormônio", "hormonio", "hormonios", "hormônios", "imunologia", "hematologia"];
+  const CLEAN_TABLE_SECTORS = ["bioquímica", "bioquimica", "hormônio", "hormonio", "hormonios", "hormônios", "imunologia", "hematologia", "equ", "eas", "urina", "urinálise", "urinalise", "uroanálise", "uroanalise"];
 
   const sectors = [...sectorMap.keys()].sort();
   const hasSectors = sectors.length > 1 || (sectors.length === 1 && sectors[0] !== "Geral");
