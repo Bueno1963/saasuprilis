@@ -563,20 +563,16 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       doc.setFontSize(6);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(30, 35, 45);
-      const totalW = biochemRight - biochemMargin;
-      const headerY = y;
-      const colStarts = {
-        name: biochemMargin,
-        result: biochemMargin + colWidths.name,
-        unit: biochemMargin + colWidths.name + colWidths.result,
-        ref: biochemMargin + colWidths.name + colWidths.result + colWidths.unit,
-        bar: biochemMargin + colWidths.name + colWidths.result + colWidths.unit + colWidths.ref,
-      };
-      doc.text("PARÂMETRO", colStarts.name + colWidths.name / 2, headerY, { align: "center" });
-      doc.text("RESULTADO", colStarts.result + colWidths.result / 2, headerY, { align: "center" });
-      doc.text("UNID.", colStarts.unit + colWidths.unit / 2, headerY, { align: "center" });
-      doc.text("REFERÊNCIA", colStarts.ref + colWidths.ref / 2, headerY, { align: "center" });
-      doc.text("INTERVALO", colStarts.bar + colWidths.bar / 2, headerY, { align: "center" });
+      let hx = biochemMargin;
+      doc.text("PARÂMETRO", hx, y);
+      hx += colWidths.name;
+      doc.text("RESULTADO", hx, y, { align: "left" });
+      hx += colWidths.result;
+      doc.text("UNID.", hx, y, { align: "left" });
+      hx += colWidths.unit;
+      doc.text("REFERÊNCIA", hx, y, { align: "left" });
+      hx += colWidths.ref;
+      doc.text("INTERVALO", hx, y, { align: "left" });
       y += 3;
 
       // Thin header line
