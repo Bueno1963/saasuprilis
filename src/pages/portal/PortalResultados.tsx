@@ -371,7 +371,7 @@ const PortalResultados = () => {
   }
 
   // PDF download
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     const laudoData = {
       orderNumber: order.order_number,
       patientName: patient.name,
