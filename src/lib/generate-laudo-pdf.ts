@@ -87,11 +87,10 @@ const FLAG_LABELS: Record<string, string> = {
   critical: "⚠ Crítico",
 };
 
-/** Draw a laudo on an existing jsPDF doc (current page) */
-export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
+/** Draw the page header (title + patient info) and return the Y position after it */
+function drawPageHeader(doc: jsPDF, data: LaudoData): number {
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Header
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(20, 55, 90);
@@ -102,12 +101,10 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   doc.setTextColor(100);
   doc.text("Laboratório de Análises Clínicas", pageWidth / 2, 23, { align: "center" });
 
-  // Divider
   doc.setDrawColor(20, 55, 90);
   doc.setLineWidth(0.5);
   doc.line(14, 26, pageWidth - 14, 26);
 
-  // Patient info block
   let y = 32;
   doc.setFontSize(8);
   doc.setTextColor(40);
@@ -138,11 +135,21 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   addField("Liberação", data.releasedAt, leftCol, y);
   y += 3;
 
-  // Divider
   doc.setDrawColor(200);
   doc.setLineWidth(0.3);
   doc.line(14, y, pageWidth - 14, y);
   y += 4;
+
+  return y;
+}
+
+/** Draw a laudo on an existing jsPDF doc (current page) */
+export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const leftCol = 14;
+
+  // Draw initial header
+  let y = drawPageHeader(doc, data);
 
   // Collect per-exam header texts
   const examHeaderTexts: string[] = [];
