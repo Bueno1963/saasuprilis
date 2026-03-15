@@ -248,7 +248,7 @@ const ExamesLiberados = () => {
     const patient = order?.patients;
     const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
     const history = await fetchPatientHistory(patient?.cpf || "", [r.exam]);
-    const doc = generateLaudoPDF({
+    const doc = await generateLaudoPDF({
       orderNumber: order?.order_number || "", patientName: patient?.name || "",
       patientCpf: patient?.cpf || "",
       patientBirthDate: patient?.birth_date ? new Date(patient.birth_date).toLocaleDateString("pt-BR") : "—",
