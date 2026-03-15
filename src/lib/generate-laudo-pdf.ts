@@ -387,7 +387,14 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               const remainingCols = colCount5 - 1;
               body5.push(["   " + displayName, { content: displayValue || "", colSpan: remainingCols, styles: { fontStyle: "normal" } }]);
             } else {
-              const row: any[] = ["   " + displayName, displayValue, absoluto];
+              const outOfRange = isOutOfRange(displayValue, p.referenceRange);
+              const valCell = outOfRange
+                ? { content: displayValue, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+                : displayValue;
+              const absCell = outOfRange && absoluto
+                ? { content: absoluto, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+                : absoluto;
+              const row: any[] = ["   " + displayName, valCell, absCell];
               if (!sectorHideUnit) row.push(p.unit);
               if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
               body5.push(row);
