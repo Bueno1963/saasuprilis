@@ -70,6 +70,18 @@ const Samples = () => {
     },
   });
 
+  const { data: examCatalog = [] } = useQuery({
+    queryKey: ["exam-catalog-for-samples"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("exam_catalog")
+        .select("name, sector, material")
+        .eq("status", "active");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async (items: { order_id: string; sample_type: string; sector: string }[]) => {
       const { error } = await supabase.from("samples").insert(
