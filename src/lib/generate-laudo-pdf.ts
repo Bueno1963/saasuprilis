@@ -548,15 +548,15 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
       // Sector label — subtle, uppercase
       if (hasSectors) {
-        doc.setFontSize(9);
+        doc.setFontSize(8);
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(130, 140, 155);
+        doc.setTextColor(50, 55, 65);
         doc.text(sector.toUpperCase(), biochemMargin, y);
-        doc.setDrawColor(220, 225, 230);
+        doc.setDrawColor(180, 185, 195);
         doc.setLineWidth(0.2);
         const labelW = doc.getTextWidth(sector.toUpperCase());
         doc.line(biochemMargin + labelW + 3, y - 1.5, biochemRight, y - 1.5);
-        y += 5;
+        y += 6;
       }
 
       // Column headers — thin, light
