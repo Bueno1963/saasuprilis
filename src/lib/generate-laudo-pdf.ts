@@ -435,7 +435,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       };
 
       const fullWidth = pageWidth - 28; // total usable width
-      const uWidth = fullWidth * 0.7; // 30% narrower
+      const uWidth = fullWidth * 0.5; // 50% narrower
       const uMargin = (pageWidth - uWidth) / 2; // centered
       const uRight = uMargin + uWidth;
 
