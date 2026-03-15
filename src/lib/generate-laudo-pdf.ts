@@ -657,7 +657,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
       // Group by section
       const sectionGroups: { section: string; params: typeof allParams }[] = [];
-      let currentSection = "";
+      let currentSection: string | null = null;
       for (const p of allParams) {
         if (p.section !== currentSection) {
           currentSection = p.section;
