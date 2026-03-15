@@ -203,6 +203,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     const isCleanTable = CLEAN_TABLE_SECTORS.includes(sector.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()) ||
       CLEAN_TABLE_SECTORS.includes(sector.toLowerCase());
     const isUrine = isUrineSector(sector);
+    const isBiochem = BIOCHEM_SECTORS.includes(sector.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()) || BIOCHEM_SECTORS.includes(sector.toLowerCase());
 
     // Determine per-sector column visibility
     const sectorHideRef = !isCleanTable && sectorResults.some(r => r.hideReferenceRange);
