@@ -434,9 +434,10 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         return URINE_ABNORMAL_VALUES.some(a => norm === a);
       };
 
-      const uMargin = 30;
-      const uRight = pageWidth - 30;
-      const uWidth = uRight - uMargin;
+      const fullWidth = pageWidth - 28; // total usable width
+      const uWidth = fullWidth * 0.7; // 30% narrower
+      const uMargin = (pageWidth - uWidth) / 2; // centered
+      const uRight = uMargin + uWidth;
 
       for (const r of sectorResults) {
         // Exam title — clean, no heavy box
