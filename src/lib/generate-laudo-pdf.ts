@@ -582,6 +582,35 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
         y += 3;
       }
+
+      // Signature block inline for EQU (same page as results)
+      y += 8;
+      const pageHeight = doc.internal.pageSize.getHeight();
+      if (y + 22 > pageHeight - 10) {
+        doc.addPage();
+        y = 30;
+      }
+
+      doc.setDrawColor(100);
+      doc.setLineWidth(0.3);
+      const equSigLineX = (pageWidth / 2) - 30;
+      const equSigLineEnd = (pageWidth / 2) + 30;
+      doc.line(equSigLineX, y, equSigLineEnd, y);
+
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40, 40, 40);
+      doc.text(data.analystName, pageWidth / 2, y + 4, { align: "center" });
+
+      doc.setFontSize(6.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      if (data.analystCrm) {
+        doc.text(`CRM: ${data.analystCrm}`, pageWidth / 2, y + 7.5, { align: "center" });
+      }
+      doc.text("Assinatura Digital — Laudo emitido eletronicamente", pageWidth / 2, y + 11, { align: "center" });
+      y += 16;
+
     } else {
       // === MINIMALIST CLEAN layout for Bioquímica with reference bars ===
       const biochemMargin = 14;
