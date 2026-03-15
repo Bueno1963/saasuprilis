@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const Results = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   const { data: results = [], isLoading } = useQuery({
