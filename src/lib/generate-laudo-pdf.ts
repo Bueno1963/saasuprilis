@@ -314,6 +314,8 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               const numVal = parseFloat((p.value || "0").replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
               if (numVal === 0) continue;
             }
+
+            if (p.section && p.section !== lastSection) {
               lastSection = p.section;
               body5.push([{ content: p.section, colSpan: colCount5, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
             }
