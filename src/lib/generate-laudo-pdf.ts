@@ -560,9 +560,9 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       }
 
       // Column headers — thin, light
-      doc.setFontSize(6.5);
+      doc.setFontSize(6);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(160, 165, 175);
+      doc.setTextColor(80, 85, 95);
       let hx = biochemMargin;
       doc.text("PARÂMETRO", hx, y);
       hx += colWidths.name;
@@ -573,13 +573,13 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       doc.text("REFERÊNCIA", hx, y, { align: "left" });
       hx += colWidths.ref;
       doc.text("INTERVALO", hx, y, { align: "left" });
-      y += 2;
+      y += 3;
 
       // Thin header line
-      doc.setDrawColor(210, 215, 220);
+      doc.setDrawColor(160, 168, 178);
       doc.setLineWidth(0.3);
       doc.line(biochemMargin, y, biochemRight, y);
-      y += 4;
+      y += 5;
 
       // Helper: parse range "X a Y" / "X - Y"
       const parseRange = (ref: string): { low: number; high: number } | null => {
