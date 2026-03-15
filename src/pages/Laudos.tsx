@@ -180,16 +180,20 @@ const Laudos = () => {
       }));
     }
 
-    orderMap.get(r.order_id)!.results.push({
-      exam: r.exam,
-      value: r.value,
-      unit: r.unit,
-      referenceRange: r.reference_range,
-      flag: r.flag,
-      analystName: analyst?.full_name || "Analista",
-      analystCrm: analyst?.crm || undefined,
-      parameters: expandedParams,
-    });
+    const group = orderMap.get(r.order_id)!;
+    // Avoid duplicate exam entries in the same order
+    if (!group.results.some(existing => existing.exam === r.exam)) {
+      group.results.push({
+        exam: r.exam,
+        value: r.value,
+        unit: r.unit,
+        referenceRange: r.reference_range,
+        flag: r.flag,
+        analystName: analyst?.full_name || "Analista",
+        analystCrm: analyst?.crm || undefined,
+        parameters: expandedParams,
+      });
+    }
   }
 
   const filtered = grouped.filter(g =>
