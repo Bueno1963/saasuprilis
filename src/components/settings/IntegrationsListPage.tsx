@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,9 +13,10 @@ import IntegrationDetailPage from "./IntegrationDetailPage";
 
 interface Props {
   onBack: () => void;
+  docsSlot?: ReactNode;
 }
 
-const IntegrationsListPage = ({ onBack }: Props) => {
+const IntegrationsListPage = ({ onBack, docsSlot }: Props) => {
   const qc = useQueryClient();
   const [detailId, setDetailId] = useState<string | null | undefined>(undefined);
   const [search, setSearch] = useState("");
@@ -44,7 +45,6 @@ const IntegrationsListPage = ({ onBack }: Props) => {
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Show detail page (new or edit)
   if (detailId !== undefined) {
     return <IntegrationDetailPage integrationId={detailId} onBack={() => setDetailId(undefined)} />;
   }
@@ -64,7 +64,7 @@ const IntegrationsListPage = ({ onBack }: Props) => {
   const hasFilters = filterType !== "all" || filterProtocol !== "all" || filterStatus !== "all" || search !== "";
 
   return (
-    <div className="p-6 space-y-6 max-w-[80%] bg-foreground/10 min-h-screen">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -72,7 +72,7 @@ const IntegrationsListPage = ({ onBack }: Props) => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Integrações Cadastradas</h1>
+            <h1 className="text-2xl font-bold text-foreground">Integrações</h1>
             <p className="text-sm text-muted-foreground">
               {items.length} integraç{items.length !== 1 ? "ões" : "ão"} · Gerencie conexões com sistemas externos
             </p>
@@ -200,6 +200,9 @@ const IntegrationsListPage = ({ onBack }: Props) => {
           {" · "}<span className="text-emerald-500 font-medium">{items.filter(i => i.status === "active").length} ativa{items.filter(i => i.status === "active").length !== 1 ? "s" : ""}</span>
         </p>
       )}
+
+      {/* Docs slot */}
+      {docsSlot}
     </div>
   );
 };
