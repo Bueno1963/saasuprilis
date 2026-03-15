@@ -598,55 +598,31 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       y += 16;
 
     } else {
-      // === MINIMALIST CLEAN layout for Bioquímica with reference bars ===
-      const biochemMargin = 14;
-      const biochemRight = pageWidth - 14;
-      const colWidths = {
-        name: 60,
-        result: 32,
-        unit: 24,
-        ref: biochemRight - biochemMargin - 60 - 32 - 24,
-      };
+      // === Clinical Compact layout for Bioquímica (same style as EQU) ===
+      const fullWidth = pageWidth - 28;
+      const bWidth = fullWidth * 0.5;
+      const bMargin = (pageWidth - bWidth) / 2;
+      const bRight = bMargin + bWidth;
 
-      // Sector label — subtle, uppercase
+      // Sector label — underlined title in dark blue
       if (hasSectors) {
-        doc.setFontSize(8);
+        doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(50, 55, 65);
-        doc.text(sector.toUpperCase(), biochemMargin, y);
-        doc.setDrawColor(180, 185, 195);
-        doc.setLineWidth(0.2);
-        const labelW = doc.getTextWidth(sector.toUpperCase());
-        doc.line(biochemMargin + labelW + 3, y - 1.5, biochemRight, y - 1.5);
-        y += 6;
+        doc.setTextColor(20, 55, 90);
+        doc.text(sector.toUpperCase(), bMargin, y);
+        doc.setDrawColor(20, 55, 90);
+        doc.setLineWidth(0.4);
+        doc.line(bMargin, y + 1.5, bMargin + doc.getTextWidth(sector.toUpperCase()), y + 1.5);
+        y += 7;
       }
 
-      // Column headers
-      doc.setFontSize(6);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(30, 35, 45);
-      let hx = biochemMargin;
-      doc.text("PARÂMETRO", hx, y);
-      hx += colWidths.name;
-      doc.text("RESULTADO", hx, y, { align: "left" });
-      hx += colWidths.result;
-      doc.text("UNID.", hx, y, { align: "left" });
-      hx += colWidths.unit;
-      doc.text("REFERÊNCIA", hx, y, { align: "left" });
-      y += 3;
-
-      // Thin header line
-      doc.setDrawColor(160, 168, 178);
-      doc.setLineWidth(0.3);
-      doc.line(biochemMargin, y, biochemRight, y);
-      y += 5;
-
-      // Build rows
-      const allParams: { name: string; value: string; unit: string; ref: string; outOfRange: boolean }[] = [];
+      // Build rows from all results in this sector
+      const allParams: { section: string; name: string; value: string; unit: string; ref: string; outOfRange: boolean }[] = [];
       for (const r of sectorResults) {
         if (r.parameters && r.parameters.length > 0) {
           for (const p of r.parameters) {
             allParams.push({
+              section: p.section || "",
               name: p.name,
               value: p.value,
               unit: p.unit,
@@ -656,6 +632,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           }
         } else {
           allParams.push({
+            section: "",
             name: r.exam,
             value: r.value,
             unit: r.unit,
@@ -665,59 +642,124 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         }
       }
 
-      const rowH = 6.5;
-      for (let i = 0; i < allParams.length; i++) {
-        const param = allParams[i];
-
-        // Page break check
-        if (y + rowH > doc.internal.pageSize.getHeight() - 20) {
-          doc.addPage();
-          y = 20;
+      // Group by section
+      const sectionGroups: { section: string; params: typeof allParams }[] = [];
+      let currentSection = "";
+      for (const p of allParams) {
+        if (p.section !== currentSection) {
+          currentSection = p.section;
+          sectionGroups.push({ section: currentSection, params: [] });
         }
-
-        // Subtle alternating background
-        if (i % 2 === 0) {
-          doc.setFillColor(248, 249, 252);
-          doc.rect(biochemMargin, y - 4, biochemRight - biochemMargin, rowH, "F");
-        }
-
-        // Name
-        doc.setFontSize(7);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(35, 40, 50);
-        doc.text(param.name, biochemMargin + 1, y);
-
-        // Result — bold, red if out of range
-        let rx = biochemMargin + colWidths.name;
-        doc.setFont("helvetica", "bold");
-        if (param.outOfRange) {
-          doc.setTextColor(200, 30, 30);
-        } else {
-          doc.setTextColor(20, 25, 35);
-        }
-        doc.text(param.value || "—", rx, y);
-
-        // Unit
-        rx += colWidths.result;
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(70, 75, 85);
-        doc.setFontSize(6.5);
-        doc.text(param.unit || "", rx, y);
-
-        // Reference text
-        rx += colWidths.unit;
-        doc.setTextColor(70, 75, 85);
-        doc.setFontSize(6);
-        doc.text(param.ref || "", rx, y);
-
-        // Thin separator
-        doc.setDrawColor(235, 238, 242);
-        doc.setLineWidth(0.15);
-        doc.line(biochemMargin, y + 1.5, biochemRight, y + 1.5);
-
-        y += rowH;
+        sectionGroups[sectionGroups.length - 1].params.push(p);
       }
-      y += 4;
+
+      for (const group of sectionGroups) {
+        // Section title strip
+        if (group.section) {
+          if (y + 12 > doc.internal.pageSize.getHeight() - 20) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.setFillColor(235, 240, 248);
+          doc.rect(bMargin, y - 3.5, bWidth, 5, "F");
+          doc.setFontSize(6.5);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(40, 55, 80);
+          doc.text(group.section.toUpperCase(), bMargin + 2, y);
+          y += 4;
+        }
+
+        // Column sub-headers
+        doc.setFontSize(5.5);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 110, 125);
+        doc.text("Parâmetro", bMargin + 2, y);
+        doc.text("Resultado", bMargin + bWidth * 0.45, y, { align: "left" });
+        doc.text("Unid.", bMargin + bWidth * 0.65, y, { align: "left" });
+        doc.text("Referência", bRight - 2, y, { align: "right" });
+        y += 1;
+        doc.setDrawColor(190, 198, 210);
+        doc.setLineWidth(0.2);
+        doc.line(bMargin, y, bRight, y);
+        y += 3.5;
+
+        const rowH = 5.5;
+        for (let pi = 0; pi < group.params.length; pi++) {
+          const p = group.params[pi];
+
+          if (y + rowH > doc.internal.pageSize.getHeight() - 20) {
+            doc.addPage();
+            y = 20;
+          }
+
+          // Alternating row background
+          if (pi % 2 === 0) {
+            doc.setFillColor(250, 251, 253);
+            doc.rect(bMargin, y - 3.5, bWidth, rowH, "F");
+          }
+
+          // Parameter name
+          doc.setFontSize(7);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(35, 40, 50);
+          doc.text(p.name, bMargin + 3, y);
+
+          // Result — bold, red if out of range
+          doc.setFont("helvetica", "bold");
+          if (p.outOfRange) {
+            doc.setTextColor(200, 30, 30);
+          } else {
+            doc.setTextColor(20, 25, 35);
+          }
+          doc.text(p.value || "—", bMargin + bWidth * 0.45, y, { align: "left" });
+
+          // Unit
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(70, 75, 85);
+          doc.setFontSize(6.5);
+          doc.text(p.unit || "", bMargin + bWidth * 0.65, y, { align: "left" });
+
+          // Reference
+          doc.setFontSize(6);
+          doc.setTextColor(100, 105, 115);
+          doc.text(p.ref || "", bRight - 3, y, { align: "right" });
+
+          // Thin separator
+          doc.setDrawColor(238, 240, 245);
+          doc.setLineWidth(0.1);
+          doc.line(bMargin + 1, y + 1.5, bRight - 1, y + 1.5);
+
+          y += rowH;
+        }
+        y += 3;
+      }
+
+      // Signature block inline (same page as results)
+      y += 8;
+      if (y + 22 > doc.internal.pageSize.getHeight() - 10) {
+        doc.addPage();
+        y = 30;
+      }
+
+      doc.setDrawColor(100);
+      doc.setLineWidth(0.3);
+      const bSigX = (pageWidth / 2) - 30;
+      const bSigEnd = (pageWidth / 2) + 30;
+      doc.line(bSigX, y, bSigEnd, y);
+
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40, 40, 40);
+      doc.text(data.analystName, pageWidth / 2, y + 4, { align: "center" });
+
+      doc.setFontSize(6.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      if (data.analystCrm) {
+        doc.text(`CRM: ${data.analystCrm}`, pageWidth / 2, y + 7.5, { align: "center" });
+      }
+      doc.text("Assinatura Digital — Laudo emitido eletronicamente", pageWidth / 2, y + 11, { align: "center" });
+      y += 16;
     }
   }
 
