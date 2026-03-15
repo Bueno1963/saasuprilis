@@ -205,7 +205,16 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   const sectors = [...sectorMap.keys()].sort();
   const hasSectors = sectors.length > 1 || (sectors.length === 1 && sectors[0] !== "Geral");
 
-  for (const sector of sectors) {
+  for (let sectorIdx = 0; sectorIdx < sectors.length; sectorIdx++) {
+    const sector = sectors[sectorIdx];
+
+    // Each sector starts on a new page (except the first)
+    if (sectorIdx > 0) {
+      doc.addPage();
+      y = drawPageHeader(doc, data);
+      y += 16;
+    }
+
     const sectorResults = sectorMap.get(sector)!;
     const isCleanTable = CLEAN_TABLE_SECTORS.includes(sector.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()) ||
       CLEAN_TABLE_SECTORS.includes(sector.toLowerCase());
