@@ -646,6 +646,15 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         }
       }
 
+      // Reorder: move "Colesterol Total" right after "Triglicerídeos"
+      const ctIdx = allParams.findIndex(p => p.name.toLowerCase().includes("colesterol total"));
+      const tgIdx = allParams.findIndex(p => p.name.toLowerCase().includes("triglicerídeos") || p.name.toLowerCase().includes("triglicerideos") || p.name.toLowerCase().includes("triglicerides"));
+      if (ctIdx !== -1 && tgIdx !== -1 && ctIdx < tgIdx) {
+        const [ct] = allParams.splice(ctIdx, 1);
+        const newTgIdx = allParams.findIndex(p => p.name.toLowerCase().includes("triglicerídeos") || p.name.toLowerCase().includes("triglicerideos") || p.name.toLowerCase().includes("triglicerides"));
+        allParams.splice(newTgIdx + 1, 0, ct);
+      }
+
       // Group by section
       const sectionGroups: { section: string; params: typeof allParams }[] = [];
       let currentSection = "";
