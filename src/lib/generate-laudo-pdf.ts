@@ -436,6 +436,9 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           tableBody.push([{ content: r.exam, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
           let lastSection = "";
           for (const p of r.parameters) {
+            // Hide "Ausentes" params in urine sectors (Cilindros, Cristais, etc.)
+            if (isUrine && p.value && p.value.trim().toLowerCase() === "ausentes") continue;
+
             if (p.section && p.section !== lastSection) {
               lastSection = p.section;
               tableBody.push([{ content: p.section, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
