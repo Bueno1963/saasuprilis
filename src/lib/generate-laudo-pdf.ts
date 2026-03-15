@@ -690,30 +690,29 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             y = 20;
           }
 
-          // Parameter name — 10pt regular
-          doc.setFontSize(10);
+          // Parameter name — 7pt regular (matching EQU)
+          doc.setFontSize(7);
           doc.setFont("helvetica", "normal");
-          doc.setTextColor(30, 35, 45);
+          doc.setTextColor(35, 40, 50);
           doc.text(p.name, bMargin + 4, y);
 
-          // Result — 10pt bold
+          // Result — 7pt bold
           doc.setFont("helvetica", "bold");
           if (p.outOfRange) {
-            doc.setTextColor(180, 20, 20);
+            doc.setTextColor(200, 30, 30);
           } else {
             doc.setTextColor(20, 25, 35);
           }
           doc.text(p.value || "—", colResult, y);
 
-          // Unit — 9pt
-          doc.setFontSize(9);
+          // Unit — 6.5pt
+          doc.setFontSize(6.5);
           doc.setFont("helvetica", "normal");
-          doc.setTextColor(60, 65, 75);
+          doc.setTextColor(100, 105, 115);
           doc.text(p.unit || "", colUnit, y);
 
-          // Reference — 8.5pt
-          doc.setFontSize(8.5);
-          doc.setTextColor(80, 85, 95);
+          // Reference — 6.5pt
+          doc.setTextColor(100, 105, 115);
           doc.text(p.ref || "", colRef, y);
 
           y += rowH;
