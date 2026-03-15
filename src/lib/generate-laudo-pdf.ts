@@ -308,15 +308,20 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             }
 
             let absoluto = "";
+            let displayValue = p.value;
+            const isLeucocitoParam = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === "leucocitos";
+
             if (isDifferentialParam(p.name) && p.value && p.value !== "—" && leucocitosValue > 0) {
               const pct = parseFloat(p.value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
               absoluto = Math.round(pct * leucocitosValue / 100).toString();
             }
-            if (p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === "leucocitos") {
+            if (isLeucocitoParam) {
+              // Leucócitos: Result = 100 (sum of differentials), Valor Absoluto = actual count
               absoluto = p.value !== "—" ? p.value : "";
+              displayValue = "100";
             }
 
-            const row: any[] = ["   " + p.name, p.value, absoluto];
+            const row: any[] = ["   " + p.name, displayValue, absoluto];
             if (!sectorHideUnit) row.push(p.unit);
             if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
             body5.push(row);
