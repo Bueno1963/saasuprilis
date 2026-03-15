@@ -344,13 +344,13 @@ const Samples = () => {
                               <TableCell>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1", SAMPLE_CONDITIONS.find(c => c.value === ((sample as any).condition || "de_acordo"))?.color)}>
-                                      {SAMPLE_CONDITIONS.find(c => c.value === ((sample as any).condition || "de_acordo"))?.label || "De acordo"}
+                                    <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1", getConditionsForSector(sample.sector, sample.sample_type).find(c => c.value === ((sample as any).condition || "de_acordo"))?.color || ALL_CONDITIONS.find(c => c.value === ((sample as any).condition || "de_acordo"))?.color)}>
+                                      {getConditionsForSector(sample.sector, sample.sample_type).find(c => c.value === ((sample as any).condition || "de_acordo"))?.label || ALL_CONDITIONS.find(c => c.value === ((sample as any).condition || "de_acordo"))?.label || "De acordo"}
                                       <ChevronDown className="w-3 h-3" />
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="start">
-                                    {SAMPLE_CONDITIONS.map(cond => (
+                                    {getConditionsForSector(sample.sector, sample.sample_type).map(cond => (
                                       <DropdownMenuItem
                                         key={cond.value}
                                         className={cn("text-xs", cond.color)}
