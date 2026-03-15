@@ -640,7 +640,7 @@ const LiberarExames = () => {
                           <TableHead>Exame</TableHead>
                           <TableHead>Resultado</TableHead>
                           <TableHead>Ref.</TableHead>
-                          <TableHead>Flag</TableHead>
+                          
                           <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                       </TableHeader>
