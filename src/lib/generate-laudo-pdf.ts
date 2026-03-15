@@ -483,14 +483,14 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         head: [headRow],
         body: tableBody,
         theme: "grid",
-        headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
-        bodyStyles: { fontSize: 9, textColor: 40 },
+        headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 7.5, fontStyle: "bold", cellPadding: 1.5 },
+        bodyStyles: { fontSize: 7.5, textColor: 40, cellPadding: 1.5 },
         alternateRowStyles: { fillColor: [245, 248, 252] },
         columnStyles,
         margin: { left: 14, right: 14 },
       });
 
-      y = (doc as any).lastAutoTable?.finalY + 6 || y + 40;
+      y = (doc as any).lastAutoTable?.finalY + 4 || y + 40;
     }
   }
 
