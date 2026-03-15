@@ -1,7 +1,39 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-interface LaudoResult {
+/**
+ * Checks if a numeric value is outside the reference range.
+ * Supports formats: "X a Y", "X - Y", "< X", "> X", "Até X", etc.
+ */
+function isOutOfRange(value: string, refRange: string): boolean {
+  if (!value || !refRange || value === "—") return false;
+  const num = parseFloat(value.replace(/[^\d.,\-]/g, "").replace(",", "."));
+  if (isNaN(num)) return false;
+
+  const rangeMatch = refRange.match(/([\d.,]+)\s*(?:a|à|-|–)\s*([\d.,]+)/i);
+  if (rangeMatch) {
+    const low = parseFloat(rangeMatch[1].replace(",", "."));
+    const high = parseFloat(rangeMatch[2].replace(",", "."));
+    if (!isNaN(low) && !isNaN(high)) return num < low || num > high;
+  }
+
+  const ltMatch = refRange.match(/(?:<|até|menor\s*que)\s*([\d.,]+)/i);
+  if (ltMatch) {
+    const limit = parseFloat(ltMatch[1].replace(",", "."));
+    if (!isNaN(limit)) return num > limit;
+  }
+
+  const gtMatch = refRange.match(/(?:>|maior\s*que|acima\s*de)\s*([\d.,]+)/i);
+  if (gtMatch) {
+    const limit = parseFloat(gtMatch[1].replace(",", "."));
+    if (!isNaN(limit)) return num < limit;
+  }
+
+  return false;
+}
+
+const RED_TEXT: [number, number, number] = [200, 30, 30];
+
   exam: string;
   value: string;
   unit: string;
