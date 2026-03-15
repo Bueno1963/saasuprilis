@@ -495,7 +495,7 @@ const SampleForm = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1">
         <Label>Pedido <span className="text-destructive">*</span></Label>
-        <Select value={orderId} onValueChange={v => { setOrderId(v); setErrors(e => { const n = { ...e }; delete n.order; return n; }); }}>
+        <Select value={orderId} onValueChange={handleOrderChange}>
           <SelectTrigger className={errors.order ? "border-destructive" : ""}>
             <SelectValue placeholder="Selecionar pedido" />
           </SelectTrigger>
