@@ -598,14 +598,15 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       y += 16;
 
     } else {
-      // === Clinical Compact layout for Bioquímica — full-width margins matching reference ===
+      // === Bioquímica layout — matching reference exactly ===
       const bMargin = 14;
       const bRight = pageWidth - 14;
       const bWidth = bRight - bMargin;
 
-      // Column positions (4 columns: Parâmetro | Resultado | Unid. | Referência)
-      const colResult = bMargin + bWidth * 0.38;
-      const colUnit = bMargin + bWidth * 0.54;
+      // Column positions
+      const colParamRight = bMargin + bWidth * 0.35;
+      const colResult = bMargin + bWidth * 0.40;
+      const colUnit = bMargin + bWidth * 0.55;
       const colRef = bMargin + bWidth * 0.68;
 
       // Sector label — bold, dark blue, underlined
@@ -615,12 +616,12 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         doc.setTextColor(20, 55, 90);
         doc.text(sector.toUpperCase(), bMargin, y);
         doc.setDrawColor(20, 55, 90);
-        doc.setLineWidth(0.5);
+        doc.setLineWidth(0.6);
         doc.line(bMargin, y + 1.5, bMargin + doc.getTextWidth(sector.toUpperCase()), y + 1.5);
-        y += 9;
+        y += 12;
       }
 
-      // Build rows from all results in this sector
+      // Build rows
       const allParams: { section: string; name: string; value: string; unit: string; ref: string; outOfRange: boolean }[] = [];
       for (const r of sectorResults) {
         if (r.parameters && r.parameters.length > 0) {
@@ -667,22 +668,20 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       }
 
       for (const group of sectionGroups) {
-
-        // Column headers
-        doc.setFontSize(8);
+        // Column headers — italic, no "Parâmetro" label (empty first column like reference)
+        doc.setFontSize(8.5);
         doc.setFont("helvetica", "italic");
         doc.setTextColor(100, 105, 115);
-        doc.text("Parâmetro", bMargin + 3, y);
         doc.text("Resultado", colResult, y);
         doc.text("Unid.", colUnit, y);
         doc.text("Referência", colRef, y);
-        y += 1.5;
-        doc.setDrawColor(180, 185, 195);
-        doc.setLineWidth(0.3);
+        y += 2;
+        doc.setDrawColor(200, 205, 212);
+        doc.setLineWidth(0.2);
         doc.line(bMargin, y, bRight, y);
-        y += 5;
+        y += 6;
 
-        const rowH = 7;
+        const rowH = 8;
         for (let pi = 0; pi < group.params.length; pi++) {
           const p = group.params[pi];
 
@@ -691,22 +690,21 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             y = 20;
           }
 
-          // Alternating row background
-          if (pi % 2 === 0) {
-            doc.setFillColor(250, 251, 253);
-            doc.rect(bMargin, y - 4, bWidth, rowH, "F");
-          }
+          // Left vertical border line for each row
+          doc.setDrawColor(200, 205, 212);
+          doc.setLineWidth(0.3);
+          doc.line(bMargin, y - 4.5, bMargin, y + 3);
 
-          // Parameter name — 10pt
+          // Parameter name — 10pt regular
           doc.setFontSize(10);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(30, 35, 45);
-          doc.text(p.name, bMargin + 3, y);
+          doc.text(p.name, bMargin + 4, y);
 
-          // Result — 10pt bold, red if out of range
+          // Result — 10pt bold
           doc.setFont("helvetica", "bold");
           if (p.outOfRange) {
-            doc.setTextColor(200, 30, 30);
+            doc.setTextColor(180, 20, 20);
           } else {
             doc.setTextColor(20, 25, 35);
           }
@@ -718,15 +716,15 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           doc.setTextColor(60, 65, 75);
           doc.text(p.unit || "", colUnit, y);
 
-          // Reference — 8pt
-          doc.setFontSize(8);
+          // Reference — 8.5pt
+          doc.setFontSize(8.5);
           doc.setTextColor(80, 85, 95);
           doc.text(p.ref || "", colRef, y);
 
-          // Thin separator
-          doc.setDrawColor(230, 232, 238);
+          // Bottom separator
+          doc.setDrawColor(220, 225, 230);
           doc.setLineWidth(0.15);
-          doc.line(bMargin, y + 2, bRight, y + 2);
+          doc.line(bMargin, y + 3, bRight, y + 3);
 
           y += rowH;
         }
