@@ -555,7 +555,7 @@ const SampleForm = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {SAMPLE_CONDITIONS.map(c => (
+                      {getConditionsForSector(item.sector, item.sample_type).map(c => (
                         <SelectItem key={c.value} value={c.value}>
                           <span className={c.color}>{c.label}</span>
                         </SelectItem>
