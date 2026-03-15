@@ -681,7 +681,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       y += 6;
 
       for (const group of sectionGroups) {
-        const rowH = 8;
+        const rowH = 5.5;
         for (let pi = 0; pi < group.params.length; pi++) {
           const p = group.params[pi];
 
