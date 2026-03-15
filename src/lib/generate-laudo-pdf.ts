@@ -301,8 +301,19 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
           const body5: any[][] = [];
           let lastSection = "";
+          // Params that should be hidden when value is 0
+          const HIDE_WHEN_ZERO = ["mielocitos", "metamielocitos", "linfocitos atipicos"];
+          const shouldHideWhenZero = (name: string) => {
+            const norm = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            return HIDE_WHEN_ZERO.some(h => norm === h || norm.startsWith(h));
+          };
+
           for (const p of leucogramaParams) {
-            if (p.section && p.section !== lastSection) {
+            // Skip zero-value params that should be hidden
+            if (shouldHideWhenZero(p.name)) {
+              const numVal = parseFloat((p.value || "0").replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
+              if (numVal === 0) continue;
+            }
               lastSection = p.section;
               body5.push([{ content: p.section, colSpan: colCount5, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
             }
