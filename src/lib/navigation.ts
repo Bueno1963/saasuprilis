@@ -57,6 +57,7 @@ export const navItems: NavItem[] = [
       { title: "Validar Exames", href: "/laudos/validar", icon: ShieldCheck },
       { title: "Liberar Exames", href: "/laudos/liberar", icon: Unlock },
       { title: "Pacientes Liberados", href: "/laudos/liberados", icon: FileCheck },
+      { title: "Impressão por Setor", href: "/laudos/imprimir", icon: Printer },
       { title: "Pedidos Incompletos", href: "/laudos/incompletos", icon: AlertTriangle },
     ],
   },
