@@ -496,7 +496,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             const abnormal = isUrineAbnormal(p.value || "");
             const shouldHighlight = outOfRange || abnormal;
             const valCell = shouldHighlight
-              ? { content: p.value, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+              ? { content: p.value, styles: { textColor: RED_TEXT, fontStyle: "bold" as const } }
               : { content: p.value, styles: { fontStyle: "bold" as const } };
 
             if (isSedimento) {
