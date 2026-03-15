@@ -305,7 +305,11 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               const remainingCols = colCount4 - 1;
               body4.push(["   " + p.name, { content: p.value || "", colSpan: remainingCols, styles: { fontStyle: "normal" } }]);
             } else {
-              const row: any[] = ["   " + p.name, p.value];
+              const outOfRange = isOutOfRange(p.value, p.referenceRange);
+              const valCell = outOfRange
+                ? { content: p.value, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+                : p.value;
+              const row: any[] = ["   " + p.name, valCell];
               if (!sectorHideUnit) row.push(p.unit);
               if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
               body4.push(row);
