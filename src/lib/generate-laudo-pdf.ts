@@ -534,7 +534,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         }
         y += 3;
       }
-    } else if (isBiochem) {
+    } else {
       // === MINIMALIST CLEAN layout for Bioquímica with reference bars ===
       const biochemMargin = 14;
       const biochemRight = pageWidth - 14;
