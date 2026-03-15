@@ -526,34 +526,34 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   }
 
   // Digital signature
-  const sigY = afterTableY + 20;
+  const sigY = afterTableY + 12;
 
   // Check if signature fits on current page
   const pageHeight = doc.internal.pageSize.getHeight();
   let currentSigY = sigY;
-  if (sigY + 25 > pageHeight - 15) {
+  if (sigY + 20 > pageHeight - 10) {
     doc.addPage();
     currentSigY = 30;
   }
 
   doc.setDrawColor(100);
   doc.setLineWidth(0.3);
-  const sigLineX = pageWidth / 2 - 40;
-  const sigLineEnd = pageWidth / 2 + 40;
+  const sigLineX = pageWidth / 2 - 35;
+  const sigLineEnd = pageWidth / 2 + 35;
   doc.line(sigLineX, currentSigY, sigLineEnd, currentSigY);
 
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(40);
-  doc.text(data.analystName, pageWidth / 2, currentSigY + 5, { align: "center" });
+  doc.text(data.analystName, pageWidth / 2, currentSigY + 4, { align: "center" });
 
-  doc.setFontSize(8);
+  doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100);
   if (data.analystCrm) {
-    doc.text(`CRM: ${data.analystCrm}`, pageWidth / 2, currentSigY + 10, { align: "center" });
+    doc.text(`CRM: ${data.analystCrm}`, pageWidth / 2, currentSigY + 8, { align: "center" });
   }
-  doc.text("Assinatura Digital — Laudo emitido eletronicamente", pageWidth / 2, currentSigY + 15, { align: "center" });
+  doc.text("Assinatura Digital — Laudo emitido eletronicamente", pageWidth / 2, currentSigY + 12, { align: "center" });
 
   // History section
   if (data.history && data.history.length > 0) {
