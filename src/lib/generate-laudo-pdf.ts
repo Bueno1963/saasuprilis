@@ -539,11 +539,10 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       const biochemMargin = 14;
       const biochemRight = pageWidth - 14;
       const colWidths = {
-        name: 52,
-        result: 28,
-        unit: 20,
-        ref: 40,
-        bar: biochemRight - biochemMargin - 52 - 28 - 20 - 40 - 4,
+        name: 60,
+        result: 32,
+        unit: 24,
+        ref: biochemRight - biochemMargin - 60 - 32 - 24,
       };
 
       // Sector label — subtle, uppercase
@@ -559,7 +558,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         y += 6;
       }
 
-      // Column headers — thin, light
+      // Column headers
       doc.setFontSize(6);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(30, 35, 45);
@@ -571,8 +570,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       doc.text("UNID.", hx, y, { align: "left" });
       hx += colWidths.unit;
       doc.text("REFERÊNCIA", hx, y, { align: "left" });
-      hx += colWidths.ref;
-      doc.text("INTERVALO", hx, y, { align: "left" });
       y += 3;
 
       // Thin header line
@@ -580,51 +577,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       doc.setLineWidth(0.3);
       doc.line(biochemMargin, y, biochemRight, y);
       y += 5;
-
-      // Helper: parse range "X a Y" / "X - Y"
-      const parseRange = (ref: string): { low: number; high: number } | null => {
-        if (!ref) return null;
-        const m = ref.match(/([\d.,]+)\s*(?:a|à|-|–)\s*([\d.,]+)/i);
-        if (!m) return null;
-        const low = parseFloat(m[1].replace(",", "."));
-        const high = parseFloat(m[2].replace(",", "."));
-        if (isNaN(low) || isNaN(high)) return null;
-        return { low, high };
-      };
-
-      // Draw reference bar
-      const drawRefBar = (barX: number, barY: number, barW: number, barH: number, val: number, range: { low: number; high: number }) => {
-        const spread = range.high - range.low;
-        const margin20 = spread * 0.2;
-        const displayLow = range.low - margin20;
-        const displayHigh = range.high + margin20;
-        const displaySpread = displayHigh - displayLow;
-
-        // Track background — very light gray
-        doc.setFillColor(240, 242, 245);
-        doc.roundedRect(barX, barY, barW, barH, 1.5, 1.5, "F");
-
-        // Normal zone — soft green
-        const normalStartPx = ((range.low - displayLow) / displaySpread) * barW;
-        const normalEndPx = ((range.high - displayLow) / displaySpread) * barW;
-        const normalW = normalEndPx - normalStartPx;
-        doc.setFillColor(200, 235, 210);
-        doc.roundedRect(barX + normalStartPx, barY, normalW, barH, 1, 1, "F");
-
-        // Value marker
-        const clampedVal = Math.max(displayLow, Math.min(displayHigh, val));
-        const markerPx = ((clampedVal - displayLow) / displaySpread) * barW;
-        const isNormal = val >= range.low && val <= range.high;
-
-        // Marker dot
-        const dotRadius = 1.8;
-        if (isNormal) {
-          doc.setFillColor(40, 160, 80);
-        } else {
-          doc.setFillColor(200, 50, 50);
-        }
-        doc.circle(barX + markerPx, barY + barH / 2, dotRadius, "F");
-      };
 
       // Build rows
       const allParams: { name: string; value: string; unit: string; ref: string; outOfRange: boolean }[] = [];
@@ -694,14 +646,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         doc.setTextColor(70, 75, 85);
         doc.setFontSize(6);
         doc.text(param.ref || "", rx, y);
-
-        // Reference bar
-        rx += colWidths.ref;
-        const range = parseRange(param.ref);
-        const numVal = parseFloat((param.value || "").replace(/[^\d.,\-]/g, "").replace(",", "."));
-        if (range && !isNaN(numVal)) {
-          drawRefBar(rx, y - 3, colWidths.bar, 3.5, numVal, range);
-        }
 
         // Thin separator
         doc.setDrawColor(235, 238, 242);
