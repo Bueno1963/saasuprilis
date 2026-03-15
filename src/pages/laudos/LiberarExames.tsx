@@ -651,7 +651,7 @@ const LiberarExames = () => {
                           <TableCell>{r.exam}</TableCell>
                           <TableCell className={cn("font-mono font-semibold", r.flag !== "normal" && "text-destructive")}>{r.value} {r.unit}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
-                          <TableCell><StatusBadge status={r.flag} /></TableCell>
+                          
                            <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                               {!isSampleDeAcordo(r) && (
