@@ -436,12 +436,15 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         return URINE_ABNORMAL_VALUES.some(a => norm === a);
       };
 
+      const urineMarginLeft = 40;
+      const urineMarginRight = 40;
+
       for (const r of sectorResults) {
         // Title row
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
-        doc.text(`${r.exam} (Urina)`, 14, y);
+        doc.text(`${r.exam} (Urina)`, urineMarginLeft, y);
         y += 4;
 
         if (!r.parameters || r.parameters.length === 0) {
