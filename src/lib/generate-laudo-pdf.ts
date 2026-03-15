@@ -668,9 +668,9 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       }
 
       // Column headers — only once before all groups
-      doc.setFontSize(8.5);
-      doc.setFont("helvetica", "italic");
-      doc.setTextColor(100, 105, 115);
+      doc.setFontSize(5.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 110, 125);
       doc.text("Resultado", colResult, y);
       doc.text("Unid.", colUnit, y);
       doc.text("Referência", colRef, y);
