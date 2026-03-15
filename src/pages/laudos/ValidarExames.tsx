@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { getParamKey, resolveParamValue } from "@/lib/param-key-utils";
 
 // Morphology options for Observações (ERITROGRAMA)
 const ERITROGRAMA_OBS_OPTIONS = [
