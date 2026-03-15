@@ -605,8 +605,8 @@ const ValidarExames = () => {
                                 {(() => {
                                   const refRange = param.reference_range || "";
                                   const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
-                                   const isObsMultiSelect = param.name === "Observações" && (sectionName === "ERITROGRAMA" || sectionName === "LEUCOGRAMA");
-                                   const isObsFreeText = param.name === "Observações" && sectionName === "SEDIMENTOSCOPIA";
+                                   const isObsMultiSelect = param.name === "Observações" && sectionName === "LEUCOGRAMA";
+                                   const isObsFreeText = param.name === "Observações" && (sectionName === "SEDIMENTOSCOPIA" || sectionName === "ERITROGRAMA");
 
                                   // Multi-select for Observações in ERITROGRAMA/LEUCOGRAMA
                                   if (isObsMultiSelect) {
