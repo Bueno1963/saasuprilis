@@ -17,7 +17,8 @@ interface SampleEditDialogProps {
 
 const STATUS_OPTIONS = [
   { value: "collected", label: "Coletada" },
-  { value: "in_analysis", label: "Em Análise" },
+  { value: "triaged", label: "Triada" },
+  { value: "processing", label: "Em Análise" },
   { value: "analyzed", label: "Analisada" },
   { value: "released", label: "Liberada" },
 ];
