@@ -278,7 +278,7 @@ const LiberarExames = () => {
           referenceRange: hasParams ? "" : r.reference_range,
           flag: r.flag,
           hideReferenceRange: layout?.hide_reference_range ?? /equ|eas|urina/i.test(r.exam),
-          hideFlag: layout?.hide_flag ?? false,
+          hideFlag: true,
           hideUnit: layout?.hide_unit ?? false,
           headerText: layout?.header_text || undefined,
           footerText: layout?.footer_text || undefined,
@@ -366,7 +366,7 @@ const LiberarExames = () => {
           referenceRange: hasParams ? "" : r.reference_range,
           flag: r.flag,
           hideReferenceRange: layout?.hide_reference_range ?? /equ|eas|urina/i.test(r.exam),
-          hideFlag: layout?.hide_flag ?? false,
+          hideFlag: true,
           hideUnit: layout?.hide_unit ?? false,
           headerText: layout?.header_text || undefined,
           footerText: layout?.footer_text || undefined,
@@ -640,7 +640,7 @@ const LiberarExames = () => {
                           <TableHead>Exame</TableHead>
                           <TableHead>Resultado</TableHead>
                           <TableHead>Ref.</TableHead>
-                          <TableHead>Flag</TableHead>
+                          
                           <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -651,7 +651,7 @@ const LiberarExames = () => {
                           <TableCell>{r.exam}</TableCell>
                           <TableCell className={cn("font-mono font-semibold", r.flag !== "normal" && "text-destructive")}>{r.value} {r.unit}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{r.reference_range}</TableCell>
-                          <TableCell><StatusBadge status={r.flag} /></TableCell>
+                          
                            <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                               {!isSampleDeAcordo(r) && (
