@@ -690,11 +690,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             y = 20;
           }
 
-          // Left vertical border line for each row
-          doc.setDrawColor(200, 205, 212);
-          doc.setLineWidth(0.3);
-          doc.line(bMargin, y - 4.5, bMargin, y + 3);
-
           // Parameter name — 10pt regular
           doc.setFontSize(10);
           doc.setFont("helvetica", "normal");
