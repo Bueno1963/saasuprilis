@@ -764,66 +764,35 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     }
   }
 
-  // Observations
-  let afterTableY = (doc as any).lastAutoTable?.finalY || y + 40;
+  // Observations (on last page)
   if (examObservations.length > 0) {
-    afterTableY += 6;
+    y += 6;
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(20, 55, 90);
-    doc.text("OBSERVAÇÕES", leftCol, afterTableY);
-    afterTableY += 5;
+    doc.text("OBSERVAÇÕES", leftCol, y);
+    y += 5;
     doc.setFont("helvetica", "normal");
     doc.setTextColor(60);
     doc.setFontSize(8);
     for (const obs of examObservations) {
       const lines = doc.splitTextToSize(obs, pageWidth - 28);
-      doc.text(lines, leftCol, afterTableY);
-      afterTableY += lines.length * 4 + 2;
+      doc.text(lines, leftCol, y);
+      y += lines.length * 4 + 2;
     }
   }
 
   // Exam footer texts
   if (examFooterTexts.length > 0) {
-    afterTableY += 4;
+    y += 4;
     doc.setFontSize(8);
     doc.setFont("helvetica", "italic");
     doc.setTextColor(100);
     for (const ft of examFooterTexts) {
-      doc.text(ft, leftCol, afterTableY);
-      afterTableY += 4;
+      doc.text(ft, leftCol, y);
+      y += 4;
     }
   }
-
-  // Digital signature
-  const sigY = afterTableY + 12;
-
-  // Check if signature fits on current page
-  const pageHeight = doc.internal.pageSize.getHeight();
-  let currentSigY = sigY;
-  if (sigY + 20 > pageHeight - 10) {
-    doc.addPage();
-    currentSigY = 30;
-  }
-
-  doc.setDrawColor(100);
-  doc.setLineWidth(0.3);
-  const sigLineX = pageWidth / 2 - 35;
-  const sigLineEnd = pageWidth / 2 + 35;
-  doc.line(sigLineX, currentSigY, sigLineEnd, currentSigY);
-
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(40);
-  doc.text(data.analystName, pageWidth / 2, currentSigY + 4, { align: "center" });
-
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100);
-  if (data.analystCrm) {
-    doc.text(`CRM: ${data.analystCrm}`, pageWidth / 2, currentSigY + 8, { align: "center" });
-  }
-  doc.text("Assinatura Digital — Laudo emitido eletronicamente", pageWidth / 2, currentSigY + 12, { align: "center" });
 
   // History section
   if (data.history && data.history.length > 0) {
