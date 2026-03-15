@@ -78,6 +78,7 @@ interface LaudoData {
   analystName: string;
   analystCrm?: string;
   history?: HistoryEntry[];
+  showHistory?: boolean;
 }
 
 const FLAG_LABELS: Record<string, string> = {
@@ -824,6 +825,60 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     }
   }
 
+  // History section (only if enabled via sector settings)
+  if (data.showHistory && data.history && data.history.length > 0) {
+    doc.addPage();
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(20, 55, 90);
+    doc.text("HISTÓRICO DE RESULTADOS ANTERIORES", pageWidth / 2, 20, { align: "center" });
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100);
+    doc.text(`Paciente: ${data.patientName}`, pageWidth / 2, 27, { align: "center" });
+
+    doc.setDrawColor(20, 55, 90);
+    doc.setLineWidth(0.5);
+    doc.line(14, 30, pageWidth - 14, 30);
+
+    const historyByExam = new Map<string, HistoryEntry[]>();
+    for (const h of data.history) {
+      if (!historyByExam.has(h.exam)) historyByExam.set(h.exam, []);
+      historyByExam.get(h.exam)!.push(h);
+    }
+
+    const historyBody: any[][] = [];
+    for (const [exam, entries] of historyByExam) {
+      historyBody.push([{
+        content: exam,
+        colSpan: 4,
+        styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 },
+      }]);
+      entries.sort((a, b) => b.date.localeCompare(a.date));
+      for (const entry of entries) {
+        historyBody.push([entry.date, entry.value, entry.unit, FLAG_LABELS[entry.flag] || ""]);
+      }
+    }
+
+    autoTable(doc, {
+      startY: 35,
+      head: [["Data", "Resultado", "Unidade", "Flag"]],
+      body: historyBody,
+      theme: "grid",
+      headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
+      bodyStyles: { fontSize: 9, textColor: 40 },
+      alternateRowStyles: { fillColor: [245, 248, 252] },
+      columnStyles: {
+        0: { cellWidth: 40 },
+        1: { cellWidth: 50, fontStyle: "bold", halign: "center" },
+        2: { cellWidth: 30, halign: "center" },
+        3: { cellWidth: 30, halign: "center" },
+      },
+      margin: { left: 14, right: 14 },
+    });
+  }
 
   // Footer on all pages
   const totalPages = doc.getNumberOfPages();
