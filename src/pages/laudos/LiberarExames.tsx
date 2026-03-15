@@ -259,7 +259,7 @@ const LiberarExames = () => {
     }
 
     const now = new Date().toISOString();
-    const doc = generateLaudoPDF({
+    const doc = await generateLaudoPDF({
       orderNumber: order?.order_number || "",
       patientName: patient?.name || "",
       patientCpf: formatCpf(patient?.cpf || ""),
