@@ -6,7 +6,7 @@ const AppLayout = () => {
   useTenantBranding();
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen">
       <AppTopbar />
       <main className="flex-1 overflow-y-auto">
         <Outlet />
