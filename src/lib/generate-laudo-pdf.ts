@@ -92,24 +92,24 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Header
-  doc.setFontSize(18);
+  doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(20, 55, 90);
-  doc.text("LAUDO DE EXAMES LABORATORIAIS", pageWidth / 2, 22, { align: "center" });
+  doc.text("LAUDO DE EXAMES LABORATORIAIS", pageWidth / 2, 18, { align: "center" });
 
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100);
-  doc.text("Laboratório de Análises Clínicas", pageWidth / 2, 28, { align: "center" });
+  doc.text("Laboratório de Análises Clínicas", pageWidth / 2, 23, { align: "center" });
 
   // Divider
   doc.setDrawColor(20, 55, 90);
   doc.setLineWidth(0.5);
-  doc.line(14, 32, pageWidth - 14, 32);
+  doc.line(14, 26, pageWidth - 14, 26);
 
   // Patient info block
-  let y = 40;
-  doc.setFontSize(10);
+  let y = 32;
+  doc.setFontSize(8);
   doc.setTextColor(40);
 
   const leftCol = 14;
@@ -125,24 +125,24 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
   addField("Paciente", data.patientName, leftCol, y);
   addField("Pedido", data.orderNumber, rightCol, y);
-  y += 6;
+  y += 4.5;
   addField("CPF", data.patientCpf, leftCol, y);
   addField("Sexo", data.patientGender === "M" ? "Masculino" : data.patientGender === "F" ? "Feminino" : data.patientGender, rightCol, y);
-  y += 6;
+  y += 4.5;
   addField("Data de Nascimento", data.patientBirthDate, leftCol, y);
   addField("Convênio", data.insurance, rightCol, y);
-  y += 6;
+  y += 4.5;
   addField("Médico Solicitante", data.doctorName, leftCol, y);
-  y += 6;
-  addField("Coleta", data.collectedAt, leftCol, y);
-  addField("Liberação", data.releasedAt, rightCol, y);
-  y += 4;
+  addField("Coleta", data.collectedAt, rightCol, y);
+  y += 4.5;
+  addField("Liberação", data.releasedAt, leftCol, y);
+  y += 3;
 
   // Divider
   doc.setDrawColor(200);
   doc.setLineWidth(0.3);
   doc.line(14, y, pageWidth - 14, y);
-  y += 6;
+  y += 4;
 
   // Collect per-exam header texts
   const examHeaderTexts: string[] = [];
