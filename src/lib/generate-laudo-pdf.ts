@@ -650,7 +650,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         }
       }
 
-      const rowH = 5.5;
+      const rowH = 6.5;
       for (let i = 0; i < allParams.length; i++) {
         const param = allParams[i];
 
@@ -662,14 +662,14 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
         // Subtle alternating background
         if (i % 2 === 0) {
-          doc.setFillColor(250, 251, 253);
-          doc.rect(biochemMargin, y - 3.5, biochemRight - biochemMargin, rowH, "F");
+          doc.setFillColor(248, 249, 252);
+          doc.rect(biochemMargin, y - 4, biochemRight - biochemMargin, rowH, "F");
         }
 
         // Name
-        doc.setFontSize(7.5);
+        doc.setFontSize(7);
         doc.setFont("helvetica", "normal");
-        doc.setTextColor(60, 65, 75);
+        doc.setTextColor(35, 40, 50);
         doc.text(param.name, biochemMargin + 1, y);
 
         // Result — bold, red if out of range
@@ -678,21 +678,21 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         if (param.outOfRange) {
           doc.setTextColor(200, 30, 30);
         } else {
-          doc.setTextColor(30, 35, 45);
+          doc.setTextColor(20, 25, 35);
         }
         doc.text(param.value || "—", rx, y);
 
         // Unit
         rx += colWidths.result;
         doc.setFont("helvetica", "normal");
-        doc.setTextColor(140, 145, 155);
-        doc.setFontSize(7);
+        doc.setTextColor(70, 75, 85);
+        doc.setFontSize(6.5);
         doc.text(param.unit || "", rx, y);
 
         // Reference text
         rx += colWidths.unit;
-        doc.setTextColor(140, 145, 155);
-        doc.setFontSize(6.5);
+        doc.setTextColor(70, 75, 85);
+        doc.setFontSize(6);
         doc.text(param.ref || "", rx, y);
 
         // Reference bar
