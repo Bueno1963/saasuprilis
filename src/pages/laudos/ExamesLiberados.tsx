@@ -479,7 +479,7 @@ const ExamesLiberados = () => {
                                                   {params!.map((p, idx) => (
                                                     <TableRow key={p.id || idx} className="text-xs">
                                                       <TableCell className="py-1.5">{p.name}</TableCell>
-                                                      <TableCell className="py-1.5 font-mono font-semibold">{paramValues[p.name] || "—"}</TableCell>
+                                                      <TableCell className="py-1.5 font-mono font-semibold">{resolveParamValue(paramValues, p.name, p.section) || "—"}</TableCell>
                                                       <TableCell className="py-1.5 text-muted-foreground">{p.unit || ""}</TableCell>
                                                       <TableCell className="py-1.5 text-muted-foreground">{p.reference_range || ""}</TableCell>
                                                     </TableRow>
