@@ -3,7 +3,6 @@ import autoTable from "jspdf-autotable";
 
 /**
  * Checks if a numeric value is outside the reference range.
- * Supports formats: "X a Y", "X - Y", "< X", "> X", "Até X", etc.
  */
 function isOutOfRange(value: string, refRange: string): boolean {
   if (!value || !refRange || value === "—") return false;
@@ -64,6 +63,14 @@ interface HistoryEntry {
   flag: string;
 }
 
+export interface SectorSigner {
+  sector: string;
+  signer_name: string;
+  registration_type: string;
+  registration_number: string;
+  signature_url?: string;
+}
+
 interface LaudoData {
   orderNumber: string;
   patientName: string;
@@ -77,6 +84,10 @@ interface LaudoData {
   results: LaudoResult[];
   analystName: string;
   analystCrm?: string;
+  analystRegistrationType?: string;
+  analystSignatureUrl?: string;
+  logoUrl?: string;
+  sectorSigners?: SectorSigner[];
   history?: HistoryEntry[];
   showHistory?: boolean;
 }
@@ -87,6 +98,137 @@ const FLAG_LABELS: Record<string, string> = {
   low: "↓ Baixo",
   critical: "⚠ Crítico",
 };
+
+// Cache for loaded images (base64)
+const imageCache = new Map<string, string | null>();
+
+async function loadImageAsBase64(url: string): Promise<string | null> {
+  if (!url) return null;
+  if (imageCache.has(url)) return imageCache.get(url)!;
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        imageCache.set(url, result);
+        resolve(result);
+      };
+      reader.onerror = () => {
+        imageCache.set(url, null);
+        resolve(null);
+      };
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    imageCache.set(url, null);
+    return null;
+  }
+}
+
+/** Preload all images needed for the PDF */
+async function preloadImages(data: LaudoData): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const urls: string[] = [];
+  
+  if (data.logoUrl) urls.push(data.logoUrl);
+  if (data.analystSignatureUrl) urls.push(data.analystSignatureUrl);
+  if (data.sectorSigners) {
+    for (const s of data.sectorSigners) {
+      if (s.signature_url) urls.push(s.signature_url);
+    }
+  }
+
+  const results = await Promise.all(urls.map(u => loadImageAsBase64(u)));
+  urls.forEach((url, i) => {
+    if (results[i]) map.set(url, results[i]!);
+  });
+  return map;
+}
+
+/** Draw signature block with optional logo, handwritten signature, and registration type */
+function drawSignatureBlock(
+  doc: jsPDF,
+  y: number,
+  pageWidth: number,
+  signerName: string,
+  registrationType: string,
+  registrationNumber: string,
+  imageMap: Map<string, string>,
+  logoUrl?: string,
+  signatureUrl?: string,
+): number {
+  const centerX = pageWidth / 2;
+
+  // Logo above signature
+  if (logoUrl && imageMap.has(logoUrl)) {
+    try {
+      const imgData = imageMap.get(logoUrl)!;
+      doc.addImage(imgData, "PNG", centerX - 15, y - 2, 30, 12);
+      y += 14;
+    } catch { /* ignore */ }
+  }
+
+  // Handwritten signature image
+  if (signatureUrl && imageMap.has(signatureUrl)) {
+    try {
+      const imgData = imageMap.get(signatureUrl)!;
+      doc.addImage(imgData, "PNG", centerX - 20, y - 2, 40, 15);
+      y += 16;
+    } catch { /* ignore */ }
+  }
+
+  // Signature line
+  doc.setDrawColor(100);
+  doc.setLineWidth(0.3);
+  doc.line(centerX - 30, y, centerX + 30, y);
+
+  // Name
+  doc.setFontSize(7.5);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(40, 40, 40);
+  doc.text(signerName, centerX, y + 4, { align: "center" });
+
+  // Registration (CRBM/CRM/etc.)
+  doc.setFontSize(6.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 100, 100);
+  if (registrationNumber) {
+    doc.text(`${registrationType}: ${registrationNumber}`, centerX, y + 7.5, { align: "center" });
+  }
+  doc.text("Assinatura Digital — Laudo emitido eletronicamente", centerX, y + 11, { align: "center" });
+
+  return y + 16;
+}
+
+/** Get signer for a sector, fallback to default analyst */
+function getSignerForSector(
+  sector: string,
+  data: LaudoData,
+): { name: string; regType: string; regNumber: string; sigUrl?: string } {
+  if (data.sectorSigners && data.sectorSigners.length > 0) {
+    const norm = sector.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const match = data.sectorSigners.find(s => {
+      const sNorm = s.sector.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      return sNorm === norm;
+    });
+    if (match && match.signer_name) {
+      return {
+        name: match.signer_name,
+        regType: match.registration_type || "CRBM",
+        regNumber: match.registration_number || "",
+        sigUrl: match.signature_url,
+      };
+    }
+  }
+  return {
+    name: data.analystName,
+    regType: data.analystRegistrationType || "CRBM",
+    regNumber: data.analystCrm || "",
+    sigUrl: data.analystSignatureUrl,
+  };
+}
 
 /** Draw the page header (title + patient info) and return the Y position after it */
 function drawPageHeader(doc: jsPDF, data: LaudoData): number {
@@ -145,7 +287,8 @@ function drawPageHeader(doc: jsPDF, data: LaudoData): number {
 }
 
 /** Draw a laudo on an existing jsPDF doc (current page) */
-export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
+export async function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
+  const imageMap = await preloadImages(data);
   const pageWidth = doc.internal.pageSize.getWidth();
   const leftCol = 14;
 
@@ -244,14 +387,16 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       return DIFFERENTIAL_PARAMS.some(d => norm === d || norm.startsWith(d));
     };
 
+    // Get the signer for this sector
+    const signer = getSignerForSector(sector, data);
+
     // When sector has both ERITROGRAMA and LEUCOGRAMA — Clinical Compact style (like EQU)
     if (sectorHasLeucograma) {
       const hMargin = 14;
       const fullWidth = pageWidth - 28;
-      const hWidth = fullWidth; // full width for hemograma
+      const hWidth = fullWidth;
       const hRight = hMargin + hWidth;
 
-      // Params that should be hidden when value is 0
       const HIDE_WHEN_ZERO = ["mielocitos", "metamielocitos", "linfocitos atipicos", "monocitos"];
       const shouldHideWhenZero = (name: string) => {
         const norm = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -260,7 +405,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
       for (const r of sectorResults) {
         if (!r.parameters || r.parameters.length === 0) {
-          // Simple result — single line
           doc.setFontSize(7);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(35, 40, 50);
@@ -273,14 +417,12 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           continue;
         }
 
-        // Find Leucócitos value for absolute calculation
         let leucocitosValue = 0;
         const leucParam = r.parameters.find(p => p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === "leucocitos");
         if (leucParam && leucParam.value && leucParam.value !== "—") {
           leucocitosValue = parseFloat(leucParam.value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
         }
 
-        // Split parameters by section
         const sectionGroups: { section: string; params: typeof r.parameters; isLeuco: boolean }[] = [];
         let currentIsLeuco = false;
         let currentSec = "";
@@ -296,7 +438,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           sectionGroups[sectionGroups.length - 1].params.push(p);
         }
 
-        // Exam title — bold, dark blue, underlined (like EQU)
         doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
@@ -310,14 +451,12 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           if (group.params.length === 0) continue;
           const isLeuco = group.isLeuco;
 
-          // Column positions
           const colParam = hMargin + 3;
           const colResult = hMargin + hWidth * 0.35;
-          const colAbsoluto = hMargin + hWidth * 0.50; // only for leucograma
+          const colAbsoluto = hMargin + hWidth * 0.50;
           const colUnit = isLeuco ? hMargin + hWidth * 0.62 : hMargin + hWidth * 0.50;
           const colRef = isLeuco ? hMargin + hWidth * 0.75 : hMargin + hWidth * 0.65;
 
-          // Section title — subtle background strip (like EQU)
           doc.setFillColor(235, 240, 248);
           doc.rect(hMargin, y - 3.5, hWidth, 5, "F");
           doc.setFontSize(6.5);
@@ -326,7 +465,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           doc.text(group.section.toUpperCase(), hMargin + 2, y);
           y += 4;
 
-          // Column sub-headers — once per section (like EQU)
           doc.setFontSize(5.5);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(100, 110, 125);
@@ -344,19 +482,16 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           const rowH = 5.5;
           let rowIdx = 0;
           for (const p of group.params) {
-            // Skip zero-value params in leucograma
             if (isLeuco && shouldHideWhenZero(p.name)) {
               const numVal = parseFloat((p.value || "0").replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
               if (numVal === 0) continue;
             }
 
-            // Page break
             if (y + rowH > doc.internal.pageSize.getHeight() - 20) {
               doc.addPage();
               y = 20;
             }
 
-            // Alternating row background
             if (rowIdx % 2 === 0) {
               doc.setFillColor(250, 251, 253);
               doc.rect(hMargin, y - 3.5, hWidth, rowH, "F");
@@ -364,12 +499,10 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
             const isLeucocitoParam = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === "leucocitos";
 
-            // Display name
             let displayName = p.name;
             const normName = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             if (normName === "linfocitos tipicos") displayName = "Linfócitos";
 
-            // Display value and absolute
             let displayValue = p.value;
             let absoluto = "";
             if (isLeuco) {
@@ -384,7 +517,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
             const outOfRange = !isLeucocitoParam && isOutOfRange(displayValue, p.referenceRange);
 
-            // Observações: full width
             if (p.name === "Observações") {
               doc.setFontSize(7);
               doc.setFont("helvetica", "normal");
@@ -400,20 +532,17 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               continue;
             }
 
-            // Param name
             doc.setFontSize(7);
             doc.setFont("helvetica", "normal");
             doc.setTextColor(35, 40, 50);
             doc.text(displayName, colParam, y);
 
-            // Result — bold
             doc.setFont("helvetica", "bold");
             if (outOfRange) doc.setTextColor(200, 30, 30);
             else if (isLeucocitoParam) doc.setTextColor(20, 25, 35);
             else doc.setTextColor(20, 25, 35);
             doc.text(displayValue || "—", colResult, y);
 
-            // Absolute value (leucograma only)
             if (isLeuco) {
               if (outOfRange && absoluto) doc.setTextColor(200, 30, 30);
               else doc.setTextColor(20, 25, 35);
@@ -421,16 +550,12 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               doc.text(absoluto, colAbsoluto, y);
             }
 
-            // Unit
             doc.setFontSize(6.5);
             doc.setFont("helvetica", "normal");
             doc.setTextColor(100, 105, 115);
             doc.text(p.unit || "", colUnit, y);
-
-            // Reference
             doc.text(p.referenceRange || "", colRef, y);
 
-            // Separator line
             doc.setDrawColor(238, 240, 245);
             doc.setLineWidth(0.1);
             doc.line(hMargin + 1, y + 1.5, hRight - 1, y + 1.5);
@@ -443,30 +568,15 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         y += 3;
       }
 
-      // Signature block inline (like EQU)
+      // Signature block
       y += 8;
       const pageHeightH = doc.internal.pageSize.getHeight();
-      if (y + 22 > pageHeightH - 10) {
+      if (y + 35 > pageHeightH - 10) {
         doc.addPage();
         y = 30;
       }
-      doc.setDrawColor(100);
-      doc.setLineWidth(0.3);
-      const hSigX = (pageWidth / 2) - 30;
-      const hSigEnd = (pageWidth / 2) + 30;
-      doc.line(hSigX, y, hSigEnd, y);
-      doc.setFontSize(7.5);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(40, 40, 40);
-      doc.text(data.analystName, pageWidth / 2, y + 4, { align: "center" });
-      doc.setFontSize(6.5);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(100, 100, 100);
-      if (data.analystCrm) {
-        doc.text(`CRM: ${data.analystCrm}`, pageWidth / 2, y + 7.5, { align: "center" });
-      }
-      doc.text("Assinatura Digital — Laudo emitido eletronicamente", pageWidth / 2, y + 11, { align: "center" });
-      y += 16;
+      y = drawSignatureBlock(doc, y, pageWidth, signer.name, signer.regType, signer.regNumber, imageMap, data.logoUrl, signer.sigUrl);
+
     } else if (isUrine) {
       // === Clinical Compact layout for EQU/Urina ===
       const SEDIMENTO_SECTIONS = ["sedimentoscopia", "sedimento", "microscopia"];
@@ -481,13 +591,12 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         return URINE_ABNORMAL_VALUES.some(a => norm === a);
       };
 
-      const fullWidth = pageWidth - 28; // total usable width
-      const uWidth = fullWidth * 0.5; // 50% of usable width
-      const uMargin = 14; // left-aligned, same margin as patient info
+      const fullWidth = pageWidth - 28;
+      const uWidth = fullWidth * 0.5;
+      const uMargin = 14;
       const uRight = uMargin + uWidth;
 
       for (const r of sectorResults) {
-        // Exam title — clean, no heavy box
         doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
@@ -512,7 +621,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           continue;
         }
 
-        // Group parameters by section
         const sectionGroups: { section: string; params: typeof r.parameters }[] = [];
         let currentSection = "";
         for (const p of r.parameters) {
@@ -531,7 +639,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           if (group.params.length === 0) continue;
           const isSedimento = isSedimentoSection(group.section);
 
-          // Section title — uppercase, subtle background strip
           doc.setFillColor(235, 240, 248);
           doc.rect(uMargin, y - 3.5, uWidth, 5, "F");
           doc.setFontSize(6.5);
@@ -540,7 +647,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           doc.text(group.section.toUpperCase(), uMargin + 2, y);
           y += 4;
 
-          // Column sub-headers
           doc.setFontSize(5.5);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(100, 110, 125);
@@ -561,25 +667,21 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           for (let pi = 0; pi < group.params.length; pi++) {
             const p = group.params[pi];
 
-            // Page break
             if (y + rowH > doc.internal.pageSize.getHeight() - 20) {
               doc.addPage();
               y = 20;
             }
 
-            // Alternating row
             if (pi % 2 === 0) {
               doc.setFillColor(250, 251, 253);
               doc.rect(uMargin, y - 3.5, uWidth, rowH, "F");
             }
 
-            // Param name
             doc.setFontSize(7);
             doc.setFont("helvetica", "normal");
             doc.setTextColor(35, 40, 50);
             doc.text(p.name, uMargin + 3, y);
 
-            // Value — right aligned, bold
             const outOfRange = isOutOfRange(p.value, p.referenceRange);
             const abnormal = isUrineAbnormal(p.value || "");
             const shouldHighlight = outOfRange || abnormal;
@@ -593,7 +695,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
             if (isSedimento) {
               doc.text(p.value || "—", uMargin + uWidth * 0.45, y, { align: "left" });
-              // Fixed "por campo 40x" column
               doc.setFont("helvetica", "normal");
               doc.setTextColor(100, 105, 115);
               doc.setFontSize(6.5);
@@ -602,7 +703,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               doc.text(p.value || "—", uRight - 3, y, { align: "right" });
             }
 
-            // Separator
             doc.setDrawColor(238, 240, 245);
             doc.setLineWidth(0.1);
             doc.line(uMargin + 1, y + 1.5, uRight - 1, y + 1.5);
@@ -612,51 +712,29 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           y += 3;
         }
 
-
         y += 3;
       }
 
-      // Signature block inline for EQU (same page as results)
+      // Signature block
       y += 8;
       const pageHeight = doc.internal.pageSize.getHeight();
-      if (y + 22 > pageHeight - 10) {
+      if (y + 35 > pageHeight - 10) {
         doc.addPage();
         y = 30;
       }
-
-      doc.setDrawColor(100);
-      doc.setLineWidth(0.3);
-      const equSigLineX = (pageWidth / 2) - 30;
-      const equSigLineEnd = (pageWidth / 2) + 30;
-      doc.line(equSigLineX, y, equSigLineEnd, y);
-
-      doc.setFontSize(7.5);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(40, 40, 40);
-      doc.text(data.analystName, pageWidth / 2, y + 4, { align: "center" });
-
-      doc.setFontSize(6.5);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(100, 100, 100);
-      if (data.analystCrm) {
-        doc.text(`CRM: ${data.analystCrm}`, pageWidth / 2, y + 7.5, { align: "center" });
-      }
-      doc.text("Assinatura Digital — Laudo emitido eletronicamente", pageWidth / 2, y + 11, { align: "center" });
-      y += 16;
+      y = drawSignatureBlock(doc, y, pageWidth, signer.name, signer.regType, signer.regNumber, imageMap, data.logoUrl, signer.sigUrl);
 
     } else {
-      // === Bioquímica layout — matching reference exactly ===
+      // === Bioquímica layout ===
       const bMargin = 14;
       const bRight = pageWidth - 14;
       const bWidth = bRight - bMargin;
 
-      // Column positions
       const colParamRight = bMargin + bWidth * 0.35;
       const colResult = bMargin + bWidth * 0.40;
       const colUnit = bMargin + bWidth * 0.55;
       const colRef = bMargin + bWidth * 0.68;
 
-      // Sector label — bold, dark blue, underlined
       if (hasSectors) {
         doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
@@ -668,7 +746,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         y += 9;
       }
 
-      // Build rows
       const allParams: { section: string; name: string; value: string; unit: string; ref: string; outOfRange: boolean }[] = [];
       for (const r of sectorResults) {
         if (r.parameters && r.parameters.length > 0) {
@@ -703,7 +780,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         allParams.splice(newTgIdx + 1, 0, ct);
       }
 
-      // Group by section
       const sectionGroups: { section: string; params: typeof allParams }[] = [];
       let currentSection: string | null = null;
       for (const p of allParams) {
@@ -714,7 +790,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         sectionGroups[sectionGroups.length - 1].params.push(p);
       }
 
-      // Column headers — only once before all groups
       doc.setFontSize(5.5);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(100, 110, 125);
@@ -737,13 +812,11 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             y = 20;
           }
 
-          // Parameter name — 7pt regular (matching EQU)
           doc.setFontSize(7);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(35, 40, 50);
           doc.text(p.name, bMargin + 4, y);
 
-          // Result — 7pt bold
           doc.setFont("helvetica", "bold");
           if (p.outOfRange) {
             doc.setTextColor(200, 30, 30);
@@ -752,13 +825,10 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           }
           doc.text(p.value || "—", colResult, y);
 
-          // Unit — 6.5pt
           doc.setFontSize(6.5);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(100, 105, 115);
           doc.text(p.unit || "", colUnit, y);
-
-          // Reference — 6.5pt
           doc.setTextColor(100, 105, 115);
           doc.text(p.ref || "", colRef, y);
 
@@ -766,32 +836,13 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         }
       }
 
-      // Signature block inline (same page as results)
+      // Signature block
       y += 8;
-      if (y + 22 > doc.internal.pageSize.getHeight() - 10) {
+      if (y + 35 > doc.internal.pageSize.getHeight() - 10) {
         doc.addPage();
         y = 30;
       }
-
-      doc.setDrawColor(100);
-      doc.setLineWidth(0.3);
-      const bSigX = (pageWidth / 2) - 30;
-      const bSigEnd = (pageWidth / 2) + 30;
-      doc.line(bSigX, y, bSigEnd, y);
-
-      doc.setFontSize(7.5);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(40, 40, 40);
-      doc.text(data.analystName, pageWidth / 2, y + 4, { align: "center" });
-
-      doc.setFontSize(6.5);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(100, 100, 100);
-      if (data.analystCrm) {
-        doc.text(`CRM: ${data.analystCrm}`, pageWidth / 2, y + 7.5, { align: "center" });
-      }
-      doc.text("Assinatura Digital — Laudo emitido eletronicamente", pageWidth / 2, y + 11, { align: "center" });
-      y += 16;
+      y = drawSignatureBlock(doc, y, pageWidth, signer.name, signer.regType, signer.regNumber, imageMap, data.logoUrl, signer.sigUrl);
     }
   }
 
@@ -843,7 +894,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     doc.setLineWidth(0.5);
     doc.line(14, 30, pageWidth - 14, 30);
 
-    // Check if this is a Hemograma history (has hemograma-specific params)
     const HEMOGRAMA_PARAMS = [
       "Hemácias", "Hemoglobina", "Hematócrito", "VCM", "HCM", "CHCM", "RDW",
       "Leucócitos", "Basófilos", "Eosinófilos", "Mielócitos", "Metamielócitos",
@@ -857,20 +907,14 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     const isHemogramaHistory = HEMOGRAMA_NORM.some(hp => normExamNames.some(en => en === hp || en.includes(hp)));
 
     if (isHemogramaHistory) {
-      // === Hemograma-specific history: landscape-style pivot table ===
-      // Group 1: ERITROGRAMA
       const ERITRO_COLS = ["Hemácias", "Hemoglobina", "Hematócrito", "VCM", "HCM", "CHCM", "RDW"];
-      // Group 2: LEUCOGRAMA
       const LEUCO_COLS = ["Leucócitos", "Basófilos", "Eosinófilos", "Mielócitos", "Metamielócitos", "Bastões", "Segmentados", "Linfócitos típicos", "Linfócitos atípicos", "Monócitos"];
-      // Group 3: PLAQUETAS
       const PLAQ_COLS = ["Plaquetas", "VPM", "PDW"];
 
-      // Collect all unique dates
       const dateSet = new Set<string>();
       for (const h of data.history) dateSet.add(h.date);
       const dates = [...dateSet].sort((a, b) => b.localeCompare(a));
 
-      // Build a lookup: date → paramName → value
       const lookup = new Map<string, Map<string, string>>();
       for (const h of data.history) {
         if (!lookup.has(h.date)) lookup.set(h.date, new Map());
@@ -883,9 +927,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         return lookup.get(date)?.get(normP) || "";
       };
 
-      // Helper to render a section table
       const renderHemoSection = (title: string, cols: string[], startY: number): number => {
-        // Section title
         doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
@@ -912,30 +954,19 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       };
 
       let curY = 35;
-
-      // ERITROGRAMA
       curY = renderHemoSection("ERITROGRAMA", ERITRO_COLS, curY);
-
-      // Page break if needed
       if (curY + 40 > doc.internal.pageSize.getHeight() - 20) {
         doc.addPage();
         curY = 20;
       }
-
-      // LEUCOGRAMA
       curY = renderHemoSection("LEUCOGRAMA", LEUCO_COLS, curY);
-
-      // Page break if needed
       if (curY + 30 > doc.internal.pageSize.getHeight() - 20) {
         doc.addPage();
         curY = 20;
       }
-
-      // PLAQUETAS
       curY = renderHemoSection("PLAQUETAS", PLAQ_COLS, curY);
 
     } else {
-      // === Generic history layout ===
       const historyByExam = new Map<string, HistoryEntry[]>();
       for (const h of data.history) {
         if (!historyByExam.has(h.exam)) historyByExam.set(h.exam, []);
@@ -990,8 +1021,8 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   }
 }
 
-export function generateLaudoPDF(data: LaudoData) {
+export async function generateLaudoPDF(data: LaudoData) {
   const doc = new jsPDF();
-  drawLaudoOnDoc(doc, data);
+  await drawLaudoOnDoc(doc, data);
   return doc;
 }

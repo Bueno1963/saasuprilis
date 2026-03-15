@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { useLaudoSignatures } from "@/hooks/useLaudoSignatures";
 import { resolveReferenceRange } from "@/lib/age-reference-utils";
 import { resolveParamValue } from "@/lib/param-key-utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -77,6 +78,7 @@ const LiberarExames = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [confirmRelease, setConfirmRelease] = useState<{ type: "single" | "all" | "next"; result?: any; ids?: string[] } | null>(null);
+  const { logoUrl, sectorSigners } = useLaudoSignatures();
   const queryClient = useQueryClient();
   const { user, profile: authProfile } = useAuth();
 
@@ -237,7 +239,7 @@ const LiberarExames = () => {
   };
 
   // Generate PDF for a single result
-  const generatePdfForResult = useCallback((r: any) => {
+  const generatePdfForResult = useCallback(async (r: any) => {
     const order = r.orders as any;
     const patient = order?.patients;
     const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
@@ -259,7 +261,7 @@ const LiberarExames = () => {
     }
 
     const now = new Date().toISOString();
-    const doc = generateLaudoPDF({
+    const doc = await generateLaudoPDF({
       orderNumber: order?.order_number || "",
       patientName: patient?.name || "",
       patientCpf: formatCpf(patient?.cpf || ""),
@@ -288,9 +290,12 @@ const LiberarExames = () => {
       })()],
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM",
+      logoUrl,
+      sectorSigners,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
-  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout, logoUrl, sectorSigners]);
 
   // Generate PDF with history for a result
   const generatePdfWithHistory = useCallback(async (r: any) => {
@@ -347,7 +352,7 @@ const LiberarExames = () => {
     }
 
     const now = new Date().toISOString();
-    const doc = generateLaudoPDF({
+    const doc = await generateLaudoPDF({
       orderNumber: order?.order_number || "",
       patientName: patient?.name || "",
       patientCpf: formatCpf(patient?.cpf || ""),
@@ -376,6 +381,9 @@ const LiberarExames = () => {
       })()],
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM",
+      logoUrl,
+      sectorSigners,
       history: historyEntries.length > 0 ? historyEntries : undefined,
     });
     doc.save(`Laudo_Historico_${order?.order_number || "exame"}_${r.exam}.pdf`);
@@ -385,7 +393,7 @@ const LiberarExames = () => {
     } else {
       toast.success(`PDF gerado com ${historyEntries.length} resultado(s) anterior(es)`);
     }
-  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout, logoUrl, sectorSigners]);
 
   const releaseMutation = useMutation({
     mutationFn: async (id: string) => {

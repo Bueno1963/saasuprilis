@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug, Printer, FlaskRound, LayoutTemplate, ListTree, ShieldCheck } from "lucide-react";
+import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug, Printer, FlaskRound, LayoutTemplate, ListTree, ShieldCheck, PenTool } from "lucide-react";
 import LabSettings from "@/components/settings/LabSettings";
 import EquipmentSettings from "@/components/settings/EquipmentSettings";
 import ExamCatalogSettings from "@/components/settings/ExamCatalogSettings";
@@ -12,8 +12,9 @@ import SupportLabSettings from "@/components/settings/SupportLabSettings";
 import ReportLayoutListSettings from "@/components/settings/ReportLayoutListSettings";
 import CadastroParametrosSettings from "@/components/settings/CadastroParametrosSettings";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
+import SectorSignersSettings from "@/components/settings/SectorSignersSettings";
 
-type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "qc_management";
+type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "qc_management" | "sector_signers";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
@@ -21,6 +22,7 @@ const sections = [
   { key: "exams" as Section, title: "Exames", desc: "Catálogo de exames, valores de referência e regras de decisão", icon: FlaskConical },
   { key: "insurance" as Section, title: "Convênios", desc: "Tabelas de preços, regras de faturamento e glosas", icon: HeartHandshake },
   { key: "users" as Section, title: "Usuários", desc: "Controle de acesso, perfis e permissões do sistema", icon: Users },
+  { key: "sector_signers" as Section, title: "Assinantes por Setor", desc: "Responsável técnico e assinatura manuscrita por setor do laudo", icon: PenTool },
   { key: "integrations" as Section, title: "Integrações", desc: "HL7, ASTM, API externas e portal de resultados", icon: Plug },
   { key: "printers" as Section, title: "Impressoras", desc: "Cadastro de impressoras para impressão de laudos e etiquetas", icon: Printer },
   { key: "support_lab" as Section, title: "Lab. de Apoio", desc: "Integração com laboratórios terceirizados para exames encaminhados", icon: FlaskRound },
@@ -45,6 +47,7 @@ const SettingsPage = () => {
   if (section === "report_layouts") return <ReportLayoutListSettings onBack={goBack} />;
   if (section === "cadastro_parametros") return <CadastroParametrosSettings onBack={goBack} />;
   if (section === "qc_management") return <QCManagementSettings onBack={goBack} />;
+  if (section === "sector_signers") return <SectorSignersSettings onBack={goBack} />;
 
   return (
     <div className="p-6 space-y-6">

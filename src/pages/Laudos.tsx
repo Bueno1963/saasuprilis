@@ -227,18 +227,18 @@ const Laudos = () => {
     };
   }, []);
 
-  const handleDownload = (group: OrderGroup) => {
-    const doc = generateLaudoPDF(buildLaudoData(group));
+  const handleDownload = async (group: OrderGroup) => {
+    const doc = await generateLaudoPDF(buildLaudoData(group));
     doc.save(`Laudo_${group.orderNumber}.pdf`);
   };
 
   // Batch download selected laudos
-  const handleBatchDownload = useCallback(() => {
+  const handleBatchDownload = useCallback(async () => {
     const selected = filtered.filter(g => selectedIds.has(g.orderId));
     if (selected.length === 0) return;
 
     for (const group of selected) {
-      const doc = generateLaudoPDF(buildLaudoData(group));
+      const doc = await generateLaudoPDF(buildLaudoData(group));
       doc.save(`Laudo_${group.orderNumber}.pdf`);
     }
 

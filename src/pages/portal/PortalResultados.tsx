@@ -371,7 +371,7 @@ const PortalResultados = () => {
   }
 
   // PDF download
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     const laudoData = {
       orderNumber: order.order_number,
       patientName: patient.name,
@@ -396,7 +396,7 @@ const PortalResultados = () => {
       analystCrm: lab?.crm_responsible || "",
       history: history,
     };
-    const doc = generateLaudoPDF(laudoData);
+    const doc = await generateLaudoPDF(laudoData);
     doc.save(`laudo-${order.order_number}.pdf`);
   };
 

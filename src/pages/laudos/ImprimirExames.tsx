@@ -10,6 +10,7 @@ import { Search, Printer, ChevronDown, ChevronUp, User, ClipboardList, FlaskConi
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { useLaudoSignatures } from "@/hooks/useLaudoSignatures";
 
 interface ExamParam {
   id: string;
@@ -42,6 +43,7 @@ const ImprimirExames = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedSectors, setExpandedSectors] = useState<Set<string>>(new Set());
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+  const { logoUrl, sectorSigners } = useLaudoSignatures();
 
   const { data: results = [], isLoading } = useQuery({
     queryKey: ["laudos-released-print"],
@@ -204,7 +206,7 @@ const ImprimirExames = () => {
       if (!r.released_at) return l; if (!l) return r.released_at;
       return r.released_at > l ? r.released_at : l;
     }, null);
-    const doc = generateLaudoPDF({
+    const doc = await generateLaudoPDF({
       orderNumber: order.orderNumber, patientName: order.patientName, patientCpf: order.patientCpf,
       patientBirthDate: order.patientBirthDate ? new Date(order.patientBirthDate).toLocaleDateString("pt-BR") : "—",
       patientGender: order.patientGender, doctorName: order.doctorName, insurance: order.insurance,
@@ -212,10 +214,11 @@ const ImprimirExames = () => {
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
       results: relevantResults.map((r: any) => buildResultWithParams(r)),
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM", logoUrl, sectorSigners,
     });
     const suffix = sectorFilter ? `_${sectorFilter.replace(/\s/g, "_")}` : "";
     doc.save(`Laudo_${order.orderNumber}${suffix}.pdf`);
-  }, [profileMap, buildResultWithParams, examNameToSector]);
+  }, [profileMap, buildResultWithParams, examNameToSector, logoUrl, sectorSigners]);
 
   const handlePrintSector = useCallback(async (sectorGroup: GroupedSector) => {
     for (const order of sectorGroup.orders) {

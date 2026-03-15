@@ -10,6 +10,7 @@ import { CheckCircle2, Search, Printer, ChevronDown, ChevronUp, User, Undo2, Cli
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { generateLaudoPDF } from "@/lib/generate-laudo-pdf";
+import { useLaudoSignatures } from "@/hooks/useLaudoSignatures";
 import { useUserRole } from "@/hooks/useUserRole";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ interface GroupedPatient {
 
 const ExamesLiberados = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { logoUrl, sectorSigners } = useLaudoSignatures();
   const [expandedPatients, setExpandedPatients] = useState<Set<string>>(new Set());
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
   const { role } = useUserRole();
@@ -248,7 +250,7 @@ const ExamesLiberados = () => {
     const patient = order?.patients;
     const analyst = r.analyst_id ? profileMap.get(r.analyst_id) : null;
     const history = await fetchPatientHistory(patient?.cpf || "", [r.exam]);
-    const doc = generateLaudoPDF({
+    const doc = await generateLaudoPDF({
       orderNumber: order?.order_number || "", patientName: patient?.name || "",
       patientCpf: patient?.cpf || "",
       patientBirthDate: patient?.birth_date ? new Date(patient.birth_date).toLocaleDateString("pt-BR") : "—",
@@ -258,6 +260,7 @@ const ExamesLiberados = () => {
       releasedAt: r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—",
       results: [buildResultWithParams(r)],
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM", logoUrl, sectorSigners,
       history,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
@@ -272,7 +275,7 @@ const ExamesLiberados = () => {
     }, null);
     const examNames = [...new Set(order.results.map((r: any) => r.exam as string))];
     const history = await fetchPatientHistory(group.patientCpf, examNames);
-    const doc = generateLaudoPDF({
+    const doc = await generateLaudoPDF({
       orderNumber: order.orderNumber, patientName: group.patientName, patientCpf: group.patientCpf,
       patientBirthDate: group.patientBirthDate ? new Date(group.patientBirthDate).toLocaleDateString("pt-BR") : "—",
       patientGender: group.patientGender, doctorName: order.doctorName, insurance: order.insurance,
@@ -280,10 +283,11 @@ const ExamesLiberados = () => {
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
       results: order.results.map((r: any) => buildResultWithParams(r)),
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM", logoUrl, sectorSigners,
       history,
     });
     doc.save(`Laudo_${order.orderNumber}.pdf`);
-  }, [profileMap, buildResultWithParams, fetchPatientHistory]);
+  }, [profileMap, buildResultWithParams, fetchPatientHistory, logoUrl, sectorSigners]);
 
   const handlePrintAll = useCallback(async (group: GroupedPatient) => {
     const allResults = group.orders.flatMap(o => o.results);
@@ -296,7 +300,7 @@ const ExamesLiberados = () => {
     }, null);
     const examNames = [...new Set(allResults.map((r: any) => r.exam as string))];
     const history = await fetchPatientHistory(group.patientCpf, examNames);
-    const doc = generateLaudoPDF({
+    const doc = await generateLaudoPDF({
       orderNumber: group.orders.map(o => o.orderNumber).join(", "),
       patientName: group.patientName, patientCpf: group.patientCpf,
       patientBirthDate: group.patientBirthDate ? new Date(group.patientBirthDate).toLocaleDateString("pt-BR") : "—",
@@ -306,10 +310,11 @@ const ExamesLiberados = () => {
       releasedAt: latestRelease ? format(new Date(latestRelease), "dd/MM/yyyy HH:mm") : "—",
       results: allResults.map((r: any) => buildResultWithParams(r)),
       analystName: analyst?.full_name || "Analista", analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM", logoUrl, sectorSigners,
       history,
     });
     doc.save(`Laudo_${group.patientName.replace(/\s+/g, "_")}_completo.pdf`);
-  }, [profileMap, buildResultWithParams, fetchPatientHistory]);
+  }, [profileMap, buildResultWithParams, fetchPatientHistory, logoUrl, sectorSigners]);
 
   const totalExams = grouped.reduce((sum, g) => sum + g.totalExams, 0);
   const totalOrders = grouped.reduce((sum, g) => sum + g.orders.length, 0);

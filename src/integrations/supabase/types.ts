@@ -1365,8 +1365,10 @@ export type Database = {
           crm: string | null
           full_name: string
           id: string
+          registration_type: string | null
           role_display: string
           sector: string | null
+          signature_url: string | null
           updated_at: string
           user_id: string
         }
@@ -1375,8 +1377,10 @@ export type Database = {
           crm?: string | null
           full_name?: string
           id?: string
+          registration_type?: string | null
           role_display?: string
           sector?: string | null
+          signature_url?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1385,8 +1389,10 @@ export type Database = {
           crm?: string | null
           full_name?: string
           id?: string
+          registration_type?: string | null
           role_display?: string
           sector?: string | null
+          signature_url?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -2162,6 +2168,50 @@ export type Database = {
           },
           {
             foreignKeyName: "samples_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sector_signers: {
+        Row: {
+          created_at: string
+          id: string
+          registration_number: string
+          registration_type: string
+          sector: string
+          signature_url: string | null
+          signer_name: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          registration_number?: string
+          registration_type?: string
+          sector: string
+          signature_url?: string | null
+          signer_name?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          registration_number?: string
+          registration_type?: string
+          sector?: string
+          signature_url?: string | null
+          signer_name?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sector_signers_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
