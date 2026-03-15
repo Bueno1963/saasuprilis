@@ -499,8 +499,8 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           doc.setTextColor(100, 110, 125);
           doc.text("Parâmetro", uMargin + 2, y);
           if (isSedimento) {
-            doc.text("Resultado", uMargin + uWidth * 0.55, y, { align: "left" });
-            doc.text("Unidade", uRight - 2, y, { align: "right" });
+            doc.text("Resultado", uMargin + uWidth * 0.45, y, { align: "left" });
+            doc.text("por campo 40x", uRight - 2, y, { align: "right" });
           } else {
             doc.text("Resultado", uRight - 2, y, { align: "right" });
           }
