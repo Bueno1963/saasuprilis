@@ -667,20 +667,20 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         sectionGroups[sectionGroups.length - 1].params.push(p);
       }
 
-      for (const group of sectionGroups) {
-        // Column headers — italic, no "Parâmetro" label (empty first column like reference)
-        doc.setFontSize(8.5);
-        doc.setFont("helvetica", "italic");
-        doc.setTextColor(100, 105, 115);
-        doc.text("Resultado", colResult, y);
-        doc.text("Unid.", colUnit, y);
-        doc.text("Referência", colRef, y);
-        y += 2;
-        doc.setDrawColor(200, 205, 212);
-        doc.setLineWidth(0.2);
-        doc.line(bMargin, y, bRight, y);
-        y += 6;
+      // Column headers — only once before all groups
+      doc.setFontSize(8.5);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(100, 105, 115);
+      doc.text("Resultado", colResult, y);
+      doc.text("Unid.", colUnit, y);
+      doc.text("Referência", colRef, y);
+      y += 2;
+      doc.setDrawColor(200, 205, 212);
+      doc.setLineWidth(0.2);
+      doc.line(bMargin, y, bRight, y);
+      y += 6;
 
+      for (const group of sectionGroups) {
         const rowH = 8;
         for (let pi = 0; pi < group.params.length; pi++) {
           const p = group.params[pi];
@@ -721,14 +721,8 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           doc.setTextColor(80, 85, 95);
           doc.text(p.ref || "", colRef, y);
 
-          // Bottom separator
-          doc.setDrawColor(220, 225, 230);
-          doc.setLineWidth(0.15);
-          doc.line(bMargin, y + 3, bRight, y + 3);
-
           y += rowH;
         }
-        y += 5;
       }
 
       // Signature block inline (same page as results)
