@@ -1,13 +1,13 @@
 import { Outlet } from "react-router-dom";
-import AppTopbar from "./AppTopbar";
+import AppSidebar from "./AppSidebar";
 import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 const AppLayout = () => {
   useTenantBranding();
 
   return (
-    <div className="flex flex-col h-screen">
-      <AppTopbar />
+    <div className="flex h-screen">
+      <AppSidebar />
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
