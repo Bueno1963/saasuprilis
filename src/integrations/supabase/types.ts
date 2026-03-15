@@ -1711,6 +1711,41 @@ export type Database = {
           },
         ]
       }
+      report_sector_settings: {
+        Row: {
+          created_at: string
+          id: string
+          sector: string
+          show_history: boolean
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sector: string
+          show_history?: boolean
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sector?: string
+          show_history?: boolean
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_sector_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       results: {
         Row: {
           analyst_id: string | null
