@@ -168,10 +168,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
 
   // Results table — grouped by sector
   doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(20, 55, 90);
-  doc.text("RESULTADOS", leftCol, y);
-  y += 3;
+   y += 1;
 
   // Group results by sector
   const sectorMap = new Map<string, LaudoResult[]>();
