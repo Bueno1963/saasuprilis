@@ -1,6 +1,39 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+/**
+ * Checks if a numeric value is outside the reference range.
+ * Supports formats: "X a Y", "X - Y", "< X", "> X", "Até X", etc.
+ */
+function isOutOfRange(value: string, refRange: string): boolean {
+  if (!value || !refRange || value === "—") return false;
+  const num = parseFloat(value.replace(/[^\d.,\-]/g, "").replace(",", "."));
+  if (isNaN(num)) return false;
+
+  const rangeMatch = refRange.match(/([\d.,]+)\s*(?:a|à|-|–)\s*([\d.,]+)/i);
+  if (rangeMatch) {
+    const low = parseFloat(rangeMatch[1].replace(",", "."));
+    const high = parseFloat(rangeMatch[2].replace(",", "."));
+    if (!isNaN(low) && !isNaN(high)) return num < low || num > high;
+  }
+
+  const ltMatch = refRange.match(/(?:<|até|menor\s*que)\s*([\d.,]+)/i);
+  if (ltMatch) {
+    const limit = parseFloat(ltMatch[1].replace(",", "."));
+    if (!isNaN(limit)) return num > limit;
+  }
+
+  const gtMatch = refRange.match(/(?:>|maior\s*que|acima\s*de)\s*([\d.,]+)/i);
+  if (gtMatch) {
+    const limit = parseFloat(gtMatch[1].replace(",", "."));
+    if (!isNaN(limit)) return num < limit;
+  }
+
+  return false;
+}
+
+const RED_TEXT: [number, number, number] = [200, 30, 30];
+
 interface LaudoResult {
   exam: string;
   value: string;
@@ -272,7 +305,11 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               const remainingCols = colCount4 - 1;
               body4.push(["   " + p.name, { content: p.value || "", colSpan: remainingCols, styles: { fontStyle: "normal" } }]);
             } else {
-              const row: any[] = ["   " + p.name, p.value];
+              const outOfRange = isOutOfRange(p.value, p.referenceRange);
+              const valCell = outOfRange
+                ? { content: p.value, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+                : p.value;
+              const row: any[] = ["   " + p.name, valCell];
               if (!sectorHideUnit) row.push(p.unit);
               if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
               body4.push(row);
@@ -350,7 +387,14 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               const remainingCols = colCount5 - 1;
               body5.push(["   " + displayName, { content: displayValue || "", colSpan: remainingCols, styles: { fontStyle: "normal" } }]);
             } else {
-              const row: any[] = ["   " + displayName, displayValue, absoluto];
+              const outOfRange = isOutOfRange(displayValue, p.referenceRange);
+              const valCell = outOfRange
+                ? { content: displayValue, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+                : displayValue;
+              const absCell = outOfRange && absoluto
+                ? { content: absoluto, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+                : absoluto;
+              const row: any[] = ["   " + displayName, valCell, absCell];
               if (!sectorHideUnit) row.push(p.unit);
               if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
               body5.push(row);
@@ -396,14 +440,22 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               lastSection = p.section;
               tableBody.push([{ content: p.section, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
             }
-            const row: any[] = ["   " + p.name, p.value];
+            const outOfRange = isOutOfRange(p.value, p.referenceRange);
+            const valCell = outOfRange
+              ? { content: p.value, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+              : p.value;
+            const row: any[] = ["   " + p.name, valCell];
             if (!sectorHideUnit) row.push(p.unit);
             if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
             if (!sectorHideFlag) row.push("");
             tableBody.push(row);
           }
         } else {
-          const row: any[] = [r.exam, r.value];
+          const outOfRange = isOutOfRange(r.value, r.referenceRange);
+          const valCell = outOfRange
+            ? { content: r.value, styles: { textColor: RED_TEXT, fontStyle: "bold" } }
+            : r.value;
+          const row: any[] = [r.exam, valCell];
           if (!sectorHideUnit) row.push(r.unit);
           if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(r.exam))) ? "" : r.referenceRange);
           if (!sectorHideFlag) row.push(FLAG_LABELS[r.flag] || "");
