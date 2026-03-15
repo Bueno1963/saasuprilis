@@ -178,8 +178,12 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     const sectorHideFlag = isCleanTable || sectorResults.some(r => r.hideFlag);
     const sectorHideUnit = !isCleanTable && sectorResults.some(r => r.hideUnit);
 
+    // Check if any result in this sector has a LEUCOGRAMA section
+    const sectorHasLeucograma = sectorResults.some(r => r.parameters?.some(p => p.section?.toUpperCase() === "LEUCOGRAMA"));
+
     // Build dynamic columns for this sector
     const headRow: string[] = ["Exame / Parâmetro", "Resultado"];
+    if (sectorHasLeucograma) headRow.push("Valor Absoluto");
     if (!sectorHideUnit) headRow.push("Unidade");
     if (!sectorHideRef) headRow.push("Valor de Referência");
     if (!sectorHideFlag) headRow.push("Flag");
