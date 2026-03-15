@@ -533,8 +533,185 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         }
         y += 3;
       }
+    } else if (isBiochem) {
+      // === MINIMALIST CLEAN layout for Bioquímica with reference bars ===
+      const biochemMargin = 14;
+      const biochemRight = pageWidth - 14;
+      const colWidths = {
+        name: 52,
+        result: 28,
+        unit: 20,
+        ref: 40,
+        bar: biochemRight - biochemMargin - 52 - 28 - 20 - 40 - 4,
+      };
+
+      // Sector label — subtle, uppercase
+      if (hasSectors) {
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(130, 140, 155);
+        doc.text(sector.toUpperCase(), biochemMargin, y);
+        doc.setDrawColor(220, 225, 230);
+        doc.setLineWidth(0.2);
+        const labelW = doc.getTextWidth(sector.toUpperCase());
+        doc.line(biochemMargin + labelW + 3, y - 1.5, biochemRight, y - 1.5);
+        y += 5;
+      }
+
+      // Column headers — thin, light
+      doc.setFontSize(6.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(160, 165, 175);
+      let hx = biochemMargin;
+      doc.text("PARÂMETRO", hx, y);
+      hx += colWidths.name;
+      doc.text("RESULTADO", hx, y, { align: "left" });
+      hx += colWidths.result;
+      doc.text("UNID.", hx, y, { align: "left" });
+      hx += colWidths.unit;
+      doc.text("REFERÊNCIA", hx, y, { align: "left" });
+      hx += colWidths.ref;
+      doc.text("INTERVALO", hx, y, { align: "left" });
+      y += 2;
+
+      // Thin header line
+      doc.setDrawColor(210, 215, 220);
+      doc.setLineWidth(0.3);
+      doc.line(biochemMargin, y, biochemRight, y);
+      y += 4;
+
+      // Helper: parse range "X a Y" / "X - Y"
+      const parseRange = (ref: string): { low: number; high: number } | null => {
+        if (!ref) return null;
+        const m = ref.match(/([\d.,]+)\s*(?:a|à|-|–)\s*([\d.,]+)/i);
+        if (!m) return null;
+        const low = parseFloat(m[1].replace(",", "."));
+        const high = parseFloat(m[2].replace(",", "."));
+        if (isNaN(low) || isNaN(high)) return null;
+        return { low, high };
+      };
+
+      // Draw reference bar
+      const drawRefBar = (barX: number, barY: number, barW: number, barH: number, val: number, range: { low: number; high: number }) => {
+        const spread = range.high - range.low;
+        const margin20 = spread * 0.2;
+        const displayLow = range.low - margin20;
+        const displayHigh = range.high + margin20;
+        const displaySpread = displayHigh - displayLow;
+
+        // Track background — very light gray
+        doc.setFillColor(240, 242, 245);
+        doc.roundedRect(barX, barY, barW, barH, 1.5, 1.5, "F");
+
+        // Normal zone — soft green
+        const normalStartPx = ((range.low - displayLow) / displaySpread) * barW;
+        const normalEndPx = ((range.high - displayLow) / displaySpread) * barW;
+        const normalW = normalEndPx - normalStartPx;
+        doc.setFillColor(200, 235, 210);
+        doc.roundedRect(barX + normalStartPx, barY, normalW, barH, 1, 1, "F");
+
+        // Value marker
+        const clampedVal = Math.max(displayLow, Math.min(displayHigh, val));
+        const markerPx = ((clampedVal - displayLow) / displaySpread) * barW;
+        const isNormal = val >= range.low && val <= range.high;
+
+        // Marker dot
+        const dotRadius = 1.8;
+        if (isNormal) {
+          doc.setFillColor(40, 160, 80);
+        } else {
+          doc.setFillColor(200, 50, 50);
+        }
+        doc.circle(barX + markerPx, barY + barH / 2, dotRadius, "F");
+      };
+
+      // Build rows
+      const allParams: { name: string; value: string; unit: string; ref: string; outOfRange: boolean }[] = [];
+      for (const r of sectorResults) {
+        if (r.parameters && r.parameters.length > 0) {
+          for (const p of r.parameters) {
+            allParams.push({
+              name: p.name,
+              value: p.value,
+              unit: p.unit,
+              ref: (r.hideReferenceRange) ? "" : p.referenceRange,
+              outOfRange: isOutOfRange(p.value, p.referenceRange),
+            });
+          }
+        } else {
+          allParams.push({
+            name: r.exam,
+            value: r.value,
+            unit: r.unit,
+            ref: (r.hideReferenceRange) ? "" : r.referenceRange,
+            outOfRange: isOutOfRange(r.value, r.referenceRange),
+          });
+        }
+      }
+
+      const rowH = 5.5;
+      for (let i = 0; i < allParams.length; i++) {
+        const param = allParams[i];
+
+        // Page break check
+        if (y + rowH > doc.internal.pageSize.getHeight() - 20) {
+          doc.addPage();
+          y = 20;
+        }
+
+        // Subtle alternating background
+        if (i % 2 === 0) {
+          doc.setFillColor(250, 251, 253);
+          doc.rect(biochemMargin, y - 3.5, biochemRight - biochemMargin, rowH, "F");
+        }
+
+        // Name
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(60, 65, 75);
+        doc.text(param.name, biochemMargin + 1, y);
+
+        // Result — bold, red if out of range
+        let rx = biochemMargin + colWidths.name;
+        doc.setFont("helvetica", "bold");
+        if (param.outOfRange) {
+          doc.setTextColor(200, 30, 30);
+        } else {
+          doc.setTextColor(30, 35, 45);
+        }
+        doc.text(param.value || "—", rx, y);
+
+        // Unit
+        rx += colWidths.result;
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(140, 145, 155);
+        doc.setFontSize(7);
+        doc.text(param.unit || "", rx, y);
+
+        // Reference text
+        rx += colWidths.unit;
+        doc.setTextColor(140, 145, 155);
+        doc.setFontSize(6.5);
+        doc.text(param.ref || "", rx, y);
+
+        // Reference bar
+        rx += colWidths.ref;
+        const range = parseRange(param.ref);
+        const numVal = parseFloat((param.value || "").replace(/[^\d.,\-]/g, "").replace(",", "."));
+        if (range && !isNaN(numVal)) {
+          drawRefBar(rx, y - 3, colWidths.bar, 3.5, numVal, range);
+        }
+
+        // Thin separator
+        doc.setDrawColor(235, 238, 242);
+        doc.setLineWidth(0.15);
+        doc.line(biochemMargin, y + 1.5, biochemRight, y + 1.5);
+
+        y += rowH;
+      }
+      y += 4;
     } else {
-      // Standard rendering for non-hemograma, non-urine sectors
+      // Standard rendering for non-hemograma, non-urine, non-biochem sectors
       const headRow: string[] = ["Exame / Parâmetro", "Resultado"];
       if (!sectorHideUnit) headRow.push("Unidade");
       if (!sectorHideRef) headRow.push("Valor de Referência");
