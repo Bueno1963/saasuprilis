@@ -32,7 +32,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Clock, User, CalendarDays, Trash2, LayoutGrid, List } from "lucide-react";
+import { Plus, Clock, User, CalendarDays, Trash2, LayoutGrid, List, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import WeeklyCalendarView from "@/components/recepcao/WeeklyCalendarView";
