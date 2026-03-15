@@ -600,7 +600,7 @@ const ValidarExames = () => {
                           const val = resolveParamValue(paramValues, param.name, sectionName) || "";
                           return (
                             <TableRow key={param.id} className={cn(!val.trim() && "bg-muted/20")}>
-                              <TableCell className="font-medium text-sm">{param.name}</TableCell>
+                              <TableCell className="font-medium text-sm">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
                               <TableCell>
                                 {(() => {
                                   const refRange = param.reference_range || "";
