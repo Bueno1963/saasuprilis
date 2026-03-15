@@ -252,6 +252,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       } else {
         const row: any[] = [r.exam, r.value];
         if (sectorHasLeucograma) row.push(""); // empty absoluto column
+        if (!sectorHideUnit) row.push(r.unit);
         if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(r.exam))) ? "" : r.referenceRange);
         if (!sectorHideFlag) row.push(FLAG_LABELS[r.flag] || "");
         tableBody.push(row);
