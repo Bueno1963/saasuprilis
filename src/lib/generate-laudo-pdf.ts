@@ -421,8 +421,118 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           y = (doc as any).lastAutoTable?.finalY + 3 || y + 40;
         }
       }
+    } else if (isUrine) {
+      // === Special EQU/Urina layout matching reference: sections as separate tables ===
+      const SEDIMENTO_SECTIONS = ["sedimentoscopia", "sedimento", "microscopia"];
+      const isSedimentoSection = (s: string) => {
+        const norm = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        return SEDIMENTO_SECTIONS.some(ss => norm.includes(ss));
+      };
+
+      // Positive/abnormal urine qualitative values
+      const URINE_ABNORMAL_VALUES = ["positivo", "presente", "turvo", "ligeiramente turvo"];
+      const isUrineAbnormal = (val: string) => {
+        const norm = val.trim().toLowerCase();
+        return URINE_ABNORMAL_VALUES.some(a => norm === a);
+      };
+
+      for (const r of sectorResults) {
+        // Title row
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(20, 55, 90);
+        doc.text(`${r.exam} (Urina)`, 14, y);
+        y += 4;
+
+        if (!r.parameters || r.parameters.length === 0) {
+          // Simple result
+          const outOfRange = isOutOfRange(r.value, r.referenceRange);
+          const valCell = outOfRange
+            ? { content: r.value, styles: { textColor: RED_TEXT, fontStyle: "bold" as const } }
+            : r.value;
+          autoTable(doc, {
+            startY: y,
+            body: [[r.exam, valCell]],
+            theme: "grid",
+            bodyStyles: { fontSize: 8, textColor: 40, cellPadding: 2 },
+            columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 50, fontStyle: "bold", halign: "center" } },
+            margin: { left: 14, right: 14 },
+          });
+          y = (doc as any).lastAutoTable?.finalY + 3 || y + 10;
+          continue;
+        }
+
+        // Group parameters by section
+        const sectionGroups: { section: string; params: typeof r.parameters }[] = [];
+        let currentSection = "";
+        for (const p of r.parameters) {
+          if (p.section && p.section !== currentSection) {
+            currentSection = p.section;
+            sectionGroups.push({ section: p.section, params: [] });
+          }
+          if (sectionGroups.length === 0) {
+            sectionGroups.push({ section: "CARACTERES GERAIS", params: [] });
+          }
+          // Skip "Ausentes" values
+          if (p.value && p.value.trim().toLowerCase() === "ausentes") continue;
+          sectionGroups[sectionGroups.length - 1].params.push(p);
+        }
+
+        for (const group of sectionGroups) {
+          if (group.params.length === 0) continue;
+          const isSedimento = isSedimentoSection(group.section);
+
+          const tableBody: any[][] = [];
+          // Section header row
+          const sectionColCount = isSedimento ? 3 : 2;
+          tableBody.push([{
+            content: group.section,
+            colSpan: sectionColCount,
+            styles: { fontStyle: "bold", fillColor: [230, 236, 244], textColor: [40, 50, 70], fontSize: 8 },
+          }]);
+
+          for (const p of group.params) {
+            const outOfRange = isOutOfRange(p.value, p.referenceRange);
+            const abnormal = isUrineAbnormal(p.value || "");
+            const shouldHighlight = outOfRange || abnormal;
+            const valCell = shouldHighlight
+              ? { content: p.value, styles: { textColor: RED_TEXT, fontStyle: "bold" as const } }
+              : { content: p.value, styles: { fontStyle: "bold" as const } };
+
+            if (isSedimento) {
+              // 3 columns: param, value, unit (/campo)
+              tableBody.push(["   " + p.name, valCell, p.unit || ""]);
+            } else {
+              // 2 columns: param, value
+              tableBody.push(["   " + p.name, valCell]);
+            }
+          }
+
+          autoTable(doc, {
+            startY: y,
+            body: tableBody,
+            theme: "grid",
+            showHead: false,
+            bodyStyles: { fontSize: 8, textColor: 40, cellPadding: 2 },
+            alternateRowStyles: { fillColor: [248, 250, 253] },
+            columnStyles: isSedimento
+              ? {
+                  0: { cellWidth: 'auto' },
+                  1: { cellWidth: 45, fontStyle: "bold", halign: "center" },
+                  2: { cellWidth: 30, halign: "center" },
+                }
+              : {
+                  0: { cellWidth: 'auto' },
+                  1: { cellWidth: 55, fontStyle: "bold", halign: "center" },
+                },
+            margin: { left: 14, right: 14 },
+          });
+          y = (doc as any).lastAutoTable?.finalY + 1 || y + 10;
+        }
+        y += 3;
+      }
     } else {
-      // Standard rendering for non-hemograma sectors
+      // Standard rendering for non-hemograma, non-urine sectors
       const headRow: string[] = ["Exame / Parâmetro", "Resultado"];
       if (!sectorHideUnit) headRow.push("Unidade");
       if (!sectorHideRef) headRow.push("Valor de Referência");
@@ -436,9 +546,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           tableBody.push([{ content: r.exam, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [230, 240, 250], textColor: [20, 55, 90], fontSize: 9 } }]);
           let lastSection = "";
           for (const p of r.parameters) {
-            // Hide "Ausentes" params in urine sectors (Cilindros, Cristais, etc.)
-            if (isUrine && p.value && p.value.trim().toLowerCase() === "ausentes") continue;
-
             if (p.section && p.section !== lastSection) {
               lastSection = p.section;
               tableBody.push([{ content: p.section, colSpan: colCount, styles: { fontStyle: "bold", fillColor: [240, 242, 245], textColor: [80, 80, 80], fontSize: 8 } }]);
@@ -449,7 +556,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
               : p.value;
             const row: any[] = ["   " + p.name, valCell];
             if (!sectorHideUnit) row.push(p.unit);
-            if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(p.name))) ? "" : p.referenceRange);
+            if (!sectorHideRef) row.push(r.hideReferenceRange ? "" : p.referenceRange);
             if (!sectorHideFlag) row.push("");
             tableBody.push(row);
           }
@@ -460,7 +567,7 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             : r.value;
           const row: any[] = [r.exam, valCell];
           if (!sectorHideUnit) row.push(r.unit);
-          if (!sectorHideRef) row.push((r.hideReferenceRange || (isUrine && !shouldShowUrineRef(r.exam))) ? "" : r.referenceRange);
+          if (!sectorHideRef) row.push(r.hideReferenceRange ? "" : r.referenceRange);
           if (!sectorHideFlag) row.push(FLAG_LABELS[r.flag] || "");
           tableBody.push(row);
         }
