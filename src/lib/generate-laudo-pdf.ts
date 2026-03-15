@@ -406,19 +406,19 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
             head: [headRow5],
             body: body5,
             theme: "grid",
-            headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 9, fontStyle: "bold" },
-            bodyStyles: { fontSize: 9, textColor: 40 },
+            headStyles: { fillColor: [20, 55, 90], textColor: 255, fontSize: 7.5, fontStyle: "bold", cellPadding: 1.5 },
+            bodyStyles: { fontSize: 7.5, textColor: 40, cellPadding: 1.5 },
             alternateRowStyles: { fillColor: [245, 248, 252] },
             columnStyles: {
               0: { cellWidth: 'auto' },
-              1: { cellWidth: 24, fontStyle: "bold", halign: "center" },
-              2: { cellWidth: 28, fontStyle: "bold", halign: "center" },
-              3: { cellWidth: 20, halign: "center" },
-              4: { cellWidth: 42, halign: "center" },
+              1: { cellWidth: 20, fontStyle: "bold", halign: "center" },
+              2: { cellWidth: 24, fontStyle: "bold", halign: "center" },
+              3: { cellWidth: 18, halign: "center" },
+              4: { cellWidth: 38, halign: "center" },
             },
             margin: { left: 14, right: 14 },
           });
-          y = (doc as any).lastAutoTable?.finalY + 6 || y + 40;
+          y = (doc as any).lastAutoTable?.finalY + 3 || y + 40;
         }
       }
     } else {
