@@ -441,7 +441,8 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
-        doc.text(`${r.exam} (Urina)`, urineMarginLeft, y);
+        const examTitle = /urin[aá]/i.test(r.exam) ? r.exam : `${r.exam} (Urina)`;
+        doc.text(examTitle, urineMarginLeft, y);
         y += 4;
 
         if (!r.parameters || r.parameters.length === 0) {
