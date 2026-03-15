@@ -65,14 +65,15 @@ const Results = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Resultados</h1>
-        <p className="text-sm text-muted-foreground">Liberação e validação de laudos laboratoriais</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Resultados</h1>
+          <p className="text-sm text-muted-foreground">Liberação e validação de laudos laboratoriais</p>
+        </div>
+        <Button variant="outline" onClick={() => navigate("/recepcao")}>
+          <ArrowLeft className="h-4 w-4 mr-2" />Voltar à Recepção
+        </Button>
       </div>
-      <Button variant="outline" onClick={() => navigate("/recepcao")}>
-        <ArrowLeft className="h-4 w-4 mr-2" />Voltar à Recepção
-      </Button>
-    </div>
 
       {results.length === 0 ? (
         <Card>
