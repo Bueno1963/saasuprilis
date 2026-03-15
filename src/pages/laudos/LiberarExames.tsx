@@ -290,9 +290,12 @@ const LiberarExames = () => {
       })()],
       analystName: analyst?.full_name || "Analista",
       analystCrm: analyst?.crm || undefined,
+      analystRegistrationType: "CRBM",
+      logoUrl,
+      sectorSigners,
     });
     doc.save(`Laudo_${order?.order_number || "exame"}_${r.exam}.pdf`);
-  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout]);
+  }, [profileMap, examNameToId, examParamsByExamId, allRefRanges, getExamLayout, logoUrl, sectorSigners]);
 
   // Generate PDF with history for a result
   const generatePdfWithHistory = useCallback(async (r: any) => {
