@@ -658,20 +658,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       }
 
       for (const group of sectionGroups) {
-        // Section title — bold with background strip
-        if (group.section) {
-          if (y + 14 > doc.internal.pageSize.getHeight() - 20) {
-            doc.addPage();
-            y = 20;
-          }
-          doc.setFillColor(235, 240, 248);
-          doc.rect(bMargin, y - 4, bWidth, 6.5, "F");
-          doc.setFontSize(9);
-          doc.setFont("helvetica", "bold");
-          doc.setTextColor(20, 40, 70);
-          doc.text(group.section.toUpperCase(), bMargin + 3, y);
-          y += 6;
-        }
 
         // Column headers
         doc.setFontSize(8);
