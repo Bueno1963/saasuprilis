@@ -148,7 +148,7 @@ const UsersSettings = ({ onBack }: Props) => {
                       <TableCell className="font-medium">{p.full_name || "—"}</TableCell>
                       <TableCell>{p.role_display}</TableCell>
                       <TableCell>{p.sector || "—"}</TableCell>
-                      <TableCell>{p.crm || "—"}</TableCell>
+                      <TableCell>{p.crm ? `CRBM: ${p.crm}` : "—"}</TableCell>
                       <TableCell>
                         <Select value={getRoleForUser(p.user_id)} onValueChange={(v) => updateRole.mutate({ userId: p.user_id, role: v })}>
                           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
