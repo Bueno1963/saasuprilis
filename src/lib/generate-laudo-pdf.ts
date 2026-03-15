@@ -263,15 +263,25 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     const columnStyles: Record<number, any> = {};
     
     if (isCleanTable) {
-      // 4 columns: Exame(auto) | Resultado | Unidade | Referência
-      columnStyles[0] = { cellWidth: 'auto' };
-      columnStyles[1] = { cellWidth: 28, fontStyle: "bold", halign: "center" };
-      columnStyles[2] = { cellWidth: 22, halign: "center" };
-      columnStyles[3] = { cellWidth: 45, halign: "center" };
+      if (sectorHasLeucograma) {
+        // 5 columns: Exame | Resultado | Valor Absoluto | Unidade | Referência
+        columnStyles[0] = { cellWidth: 'auto' };
+        columnStyles[1] = { cellWidth: 24, fontStyle: "bold", halign: "center" };
+        columnStyles[2] = { cellWidth: 28, fontStyle: "bold", halign: "center" };
+        columnStyles[3] = { cellWidth: 20, halign: "center" };
+        columnStyles[4] = { cellWidth: 42, halign: "center" };
+      } else {
+        // 4 columns: Exame(auto) | Resultado | Unidade | Referência
+        columnStyles[0] = { cellWidth: 'auto' };
+        columnStyles[1] = { cellWidth: 28, fontStyle: "bold", halign: "center" };
+        columnStyles[2] = { cellWidth: 22, halign: "center" };
+        columnStyles[3] = { cellWidth: 45, halign: "center" };
+      }
     } else {
       let colIdx = 0;
       columnStyles[colIdx++] = { cellWidth: 'auto' }; // Exame
       columnStyles[colIdx++] = { cellWidth: 28, fontStyle: "bold", halign: "center" }; // Resultado
+      if (sectorHasLeucograma) { columnStyles[colIdx++] = { cellWidth: 28, fontStyle: "bold", halign: "center" }; }
       if (!sectorHideUnit) { columnStyles[colIdx++] = { cellWidth: 20, halign: "center" }; }
       if (!sectorHideRef) { columnStyles[colIdx++] = { cellWidth: 42 }; }
       if (!sectorHideFlag) { columnStyles[colIdx++] = { cellWidth: 22, halign: "center" }; }
