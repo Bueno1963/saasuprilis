@@ -409,6 +409,8 @@ const Samples = () => {
 interface SampleItem {
   sample_type: string;
   sector: string;
+  exams: string[];
+  condition: string;
 }
 
 const SampleForm = ({
@@ -423,16 +425,15 @@ const SampleForm = ({
   loading: boolean;
 }) => {
   const [orderId, setOrderId] = useState("");
-  const [items, setItems] = useState<SampleItem[]>([{ sample_type: "Sangue", sector: "Hematologia" }]);
+  const [items, setItems] = useState<SampleItem[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const selectedOrder = orders.find(o => o.id === orderId);
 
-  // Auto-populate items based on order's exams and exam catalog sectors
   const handleOrderChange = (id: string) => {
     setOrderId(id);
     setErrors(e => { const n = { ...e }; delete n.order; return n; });
-    
+
     const order = orders.find(o => o.id === id);
     if (order && order.exams?.length > 0) {
       const catalogMap = new Map<string, { sector: string; material: string }>();
@@ -440,55 +441,43 @@ const SampleForm = ({
         catalogMap.set(ec.name, { sector: ec.sector || "Bioquímica", material: ec.material || "Sangue" });
       }
 
-      const sectorMaterialMap = new Map<string, string>();
+      // Group exams by sector
+      const sectorMap = new Map<string, { material: string; exams: string[] }>();
       for (const examName of order.exams) {
         const info = catalogMap.get(examName);
         const sector = info?.sector || "Bioquímica";
         const material = info?.material || "Sangue";
-        if (!sectorMaterialMap.has(sector)) {
-          sectorMaterialMap.set(sector, material);
+        if (!sectorMap.has(sector)) {
+          sectorMap.set(sector, { material, exams: [] });
         }
+        sectorMap.get(sector)!.exams.push(examName);
       }
 
-      if (sectorMaterialMap.size > 0) {
-        const autoItems = Array.from(sectorMaterialMap.entries()).map(([sector, material]) => ({
-          sample_type: material,
+      if (sectorMap.size > 0) {
+        const autoItems: SampleItem[] = Array.from(sectorMap.entries()).map(([sector, info]) => ({
+          sample_type: info.material,
           sector,
+          exams: info.exams,
+          condition: "de_acordo",
         }));
         setItems(autoItems);
         return;
       }
     }
-    setItems([{ sample_type: "Sangue", sector: "Hematologia" }]);
+    setItems([]);
   };
 
-  const addItem = () => {
-    setItems(prev => [...prev, { sample_type: "Sangue", sector: "Hematologia" }]);
-  };
-
-  const removeItem = (index: number) => {
-    if (items.length > 1) {
-      setItems(prev => prev.filter((_, i) => i !== index));
-    }
-  };
-
-  const updateItem = (index: number, field: keyof SampleItem, value: string) => {
-    setItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
+  const updateCondition = (index: number, value: string) => {
+    setItems(prev => prev.map((item, i) => i === index ? { ...item, condition: value } : item));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
-
     if (!orderId) newErrors.order = "Selecione um pedido";
-    if (items.length === 0) newErrors.items = "Adicione pelo menos uma amostra";
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    onSubmit(items.map(item => ({ order_id: orderId, ...item })));
+    if (items.length === 0) newErrors.items = "Selecione um pedido com exames";
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    onSubmit(items.map(item => ({ order_id: orderId, sample_type: item.sample_type, sector: item.sector })));
   };
 
   return (
@@ -518,49 +507,68 @@ const SampleForm = ({
       {selectedOrder && (
         <div className="rounded-md bg-muted/50 p-3 space-y-1">
           <p className="text-xs font-medium text-muted-foreground">Paciente: <span className="text-foreground">{(selectedOrder.patients as any)?.name}</span></p>
-          <p className="text-xs font-medium text-muted-foreground">Exames: <span className="text-foreground">{selectedOrder.exams?.join(", ")}</span></p>
+          <p className="text-xs font-medium text-muted-foreground">Total de Exames: <span className="text-foreground">{selectedOrder.exams?.length || 0}</span></p>
         </div>
       )}
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label>Tubos / Amostras <span className="text-destructive">*</span></Label>
-          <Button type="button" variant="outline" size="sm" onClick={addItem} className="h-7 text-xs">
-            <Plus className="w-3 h-3 mr-1" /> Adicionar Tubo
-          </Button>
-        </div>
+      {items.length > 0 && (
+        <div className="space-y-3">
+          <Label>Tubos por Setor</Label>
+          {items.map((item, index) => (
+            <div key={index} className="rounded-md border bg-card p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <TestTubes className="w-4 h-4 text-primary shrink-0" />
+                <span className="font-semibold text-sm text-foreground">{item.sector}</span>
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full ml-auto">{item.sample_type}</span>
+              </div>
 
-        {items.map((item, index) => (
-          <div key={index} className="flex items-center gap-2 p-3 rounded-md border bg-card">
-            <TestTubes className="w-4 h-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 grid grid-cols-2 gap-2">
-              <Select value={item.sample_type} onValueChange={v => updateItem(index, "sample_type", v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {SAMPLE_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={item.sector} onValueChange={v => updateItem(index, "sector", v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {SECTORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div className="pl-6 space-y-1.5">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Exames:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {item.exams.map((exam, i) => (
+                      <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium">
+                        {exam}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <p className="text-xs font-medium text-muted-foreground whitespace-nowrap">Condição:</p>
+                  <Select value={item.condition} onValueChange={v => updateCondition(index, v)}>
+                    <SelectTrigger className="h-7 text-xs flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SAMPLE_CONDITIONS.map(c => (
+                        <SelectItem key={c.value} value={c.value}>
+                          <span className={c.color}>{c.label}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
-            {items.length > 1 && (
-              <button type="button" onClick={() => removeItem(index)} className="text-muted-foreground hover:text-destructive transition-colors text-sm px-1">×</button>
-            )}
-          </div>
-        ))}
+          ))}
 
-        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <Barcode className="w-3.5 h-3.5" />
-          Códigos de barras serão gerados automaticamente para cada tubo
-        </p>
-      </div>
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <Barcode className="w-3.5 h-3.5" />
+            Códigos de barras serão gerados automaticamente para cada tubo
+          </p>
+        </div>
+      )}
 
-      <Button type="submit" className="w-full" disabled={loading || !orderId}>
-        {loading ? "Registrando..." : `Registrar ${items.length} Amostra${items.length > 1 ? "s" : ""}`}
+      {items.length === 0 && orderId && (
+        <div className="text-center py-6 text-muted-foreground text-sm">
+          <TestTubes className="w-6 h-6 mx-auto mb-2 opacity-40" />
+          Nenhum exame encontrado neste pedido
+        </div>
+      )}
+
+      <Button type="submit" className="w-full" disabled={loading || !orderId || items.length === 0}>
+        {loading ? "Registrando..." : `Registrar ${items.length} Amostra${items.length !== 1 ? "s" : ""}`}
       </Button>
     </form>
   );
