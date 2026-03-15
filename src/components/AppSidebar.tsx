@@ -121,8 +121,20 @@ const AppSidebar = () => {
 
         {otherItems.length > 0 && (
           <>
-            {!collapsed && <div className="h-px bg-sidebar-border mx-2 my-3" />}
-            {collapsed && <div className="h-px bg-sidebar-border mx-2 my-2" />}
+            {!collapsed && (
+              <div className="flex items-center gap-2 px-3 pt-5 pb-1.5">
+                <span className="w-2 h-2 rounded-full bg-sidebar-primary shrink-0" />
+                <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-sidebar-primary">
+                  Gestão
+                </p>
+                <div className="flex-1 h-px bg-sidebar-primary opacity-30" />
+              </div>
+            )}
+            {collapsed && (
+              <div className="flex justify-center py-2">
+                <span className="w-2 h-2 rounded-full bg-sidebar-primary" />
+              </div>
+            )}
             {otherItems.map(item =>
               item.children && item.children.length > 0 ? (
                 <SidebarGroup
