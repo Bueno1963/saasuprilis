@@ -61,48 +61,80 @@ const AppSidebar = () => {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
         {dashboardItem && <SidebarLink item={dashboardItem} active={location.pathname === "/"} collapsed={collapsed} />}
 
-        <div className="pt-2" />
+        {phases.map(phase => {
+          const phaseColors: Record<string, string> = {
+            "Pré-Analítica": "bg-[hsl(var(--phase-pre))]",
+            "Analítica": "bg-[hsl(var(--phase-analytical))]",
+            "Pós-Analítica": "bg-[hsl(var(--phase-post))]",
+          };
+          const phaseTextColors: Record<string, string> = {
+            "Pré-Analítica": "text-[hsl(var(--phase-pre))]",
+            "Analítica": "text-[hsl(var(--phase-analytical))]",
+            "Pós-Analítica": "text-[hsl(var(--phase-post))]",
+          };
+          const dotColor = phaseColors[phase.label] || "bg-sidebar-primary";
+          const textColor = phaseTextColors[phase.label] || "text-sidebar-primary-foreground";
 
-        {phases.map(phase => (
-          <div key={phase.label}>
-            {!collapsed && (
-              <div className="flex items-center gap-2 px-3 pt-4 pb-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-sidebar-primary-foreground" />
-                <p className="text-xs font-semibold uppercase tracking-widest text-sidebar-primary-foreground">
-                  {phase.label}
-                </p>
-              </div>
-            )}
-            {collapsed && <div className="h-px bg-sidebar-border mx-2 my-2" />}
-            {phase.items.map(item =>
-              item.children && item.children.length > 0 ? (
-                <SidebarGroup
-                  key={item.href}
-                  item={item}
-                  collapsed={collapsed}
-                  open={openMenus.has(item.href) || !!item.children.some(c => location.pathname === c.href)}
-                  onToggle={() => toggleMenu(item.href)}
-                  pathname={location.pathname}
-                />
-              ) : (
-                <SidebarLink
-                  key={item.href}
-                  item={item}
-                  active={location.pathname === item.href}
-                  collapsed={collapsed}
-                />
-              )
-            )}
-          </div>
-        ))}
+          if (phase.items.length === 0) return null;
+
+          return (
+            <div key={phase.label}>
+              {!collapsed && (
+                <div className="flex items-center gap-2 px-3 pt-5 pb-1.5">
+                  <span className={cn("w-2 h-2 rounded-full shrink-0", dotColor)} />
+                  <p className={cn("text-[11px] font-bold uppercase tracking-[0.15em]", textColor)}>
+                    {phase.label}
+                  </p>
+                  <div className={cn("flex-1 h-px opacity-30", dotColor)} />
+                </div>
+              )}
+              {collapsed && (
+                <div className="flex justify-center py-2">
+                  <span className={cn("w-2 h-2 rounded-full", dotColor)} />
+                </div>
+              )}
+              {phase.items.map(item =>
+                item.children && item.children.length > 0 ? (
+                  <SidebarGroup
+                    key={item.href}
+                    item={item}
+                    collapsed={collapsed}
+                    open={openMenus.has(item.href) || !!item.children.some(c => location.pathname === c.href)}
+                    onToggle={() => toggleMenu(item.href)}
+                    pathname={location.pathname}
+                  />
+                ) : (
+                  <SidebarLink
+                    key={item.href}
+                    item={item}
+                    active={location.pathname === item.href}
+                    collapsed={collapsed}
+                  />
+                )
+              )}
+            </div>
+          );
+        })}
 
         {otherItems.length > 0 && (
           <>
-            {!collapsed && <div className="h-px bg-sidebar-border mx-2 my-3" />}
-            {collapsed && <div className="h-px bg-sidebar-border mx-2 my-2" />}
+            {!collapsed && (
+              <div className="flex items-center gap-2 px-3 pt-5 pb-1.5">
+                <span className="w-2 h-2 rounded-full bg-sidebar-primary shrink-0" />
+                <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-sidebar-primary">
+                  Gestão
+                </p>
+                <div className="flex-1 h-px bg-sidebar-primary opacity-30" />
+              </div>
+            )}
+            {collapsed && (
+              <div className="flex justify-center py-2">
+                <span className="w-2 h-2 rounded-full bg-sidebar-primary" />
+              </div>
+            )}
             {otherItems.map(item =>
               item.children && item.children.length > 0 ? (
                 <SidebarGroup
