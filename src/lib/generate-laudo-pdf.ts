@@ -87,11 +87,10 @@ const FLAG_LABELS: Record<string, string> = {
   critical: "⚠ Crítico",
 };
 
-/** Draw a laudo on an existing jsPDF doc (current page) */
-export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
+/** Draw the page header (title + patient info) and return the Y position after it */
+function drawPageHeader(doc: jsPDF, data: LaudoData): number {
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Header
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(20, 55, 90);
@@ -102,12 +101,10 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   doc.setTextColor(100);
   doc.text("Laboratório de Análises Clínicas", pageWidth / 2, 23, { align: "center" });
 
-  // Divider
   doc.setDrawColor(20, 55, 90);
   doc.setLineWidth(0.5);
   doc.line(14, 26, pageWidth - 14, 26);
 
-  // Patient info block
   let y = 32;
   doc.setFontSize(8);
   doc.setTextColor(40);
@@ -138,11 +135,21 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   addField("Liberação", data.releasedAt, leftCol, y);
   y += 3;
 
-  // Divider
   doc.setDrawColor(200);
   doc.setLineWidth(0.3);
   doc.line(14, y, pageWidth - 14, y);
   y += 4;
+
+  return y;
+}
+
+/** Draw a laudo on an existing jsPDF doc (current page) */
+export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const leftCol = 14;
+
+  // Draw initial header
+  let y = drawPageHeader(doc, data);
 
   // Collect per-exam header texts
   const examHeaderTexts: string[] = [];
@@ -198,7 +205,16 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
   const sectors = [...sectorMap.keys()].sort();
   const hasSectors = sectors.length > 1 || (sectors.length === 1 && sectors[0] !== "Geral");
 
-  for (const sector of sectors) {
+  for (let sectorIdx = 0; sectorIdx < sectors.length; sectorIdx++) {
+    const sector = sectors[sectorIdx];
+
+    // Each sector starts on a new page (except the first)
+    if (sectorIdx > 0) {
+      doc.addPage();
+      y = drawPageHeader(doc, data);
+      y += 16;
+    }
+
     const sectorResults = sectorMap.get(sector)!;
     const isCleanTable = CLEAN_TABLE_SECTORS.includes(sector.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()) ||
       CLEAN_TABLE_SECTORS.includes(sector.toLowerCase());
@@ -420,6 +436,31 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           y = (doc as any).lastAutoTable?.finalY + 3 || y + 40;
         }
       }
+
+      // Signature block for hematologia/autoTable sectors
+      y += 8;
+      const pageHeightH = doc.internal.pageSize.getHeight();
+      if (y + 22 > pageHeightH - 10) {
+        doc.addPage();
+        y = 30;
+      }
+      doc.setDrawColor(100);
+      doc.setLineWidth(0.3);
+      const hSigX = (pageWidth / 2) - 30;
+      const hSigEnd = (pageWidth / 2) + 30;
+      doc.line(hSigX, y, hSigEnd, y);
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40, 40, 40);
+      doc.text(data.analystName, pageWidth / 2, y + 4, { align: "center" });
+      doc.setFontSize(6.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      if (data.analystCrm) {
+        doc.text(`CRM: ${data.analystCrm}`, pageWidth / 2, y + 7.5, { align: "center" });
+      }
+      doc.text("Assinatura Digital — Laudo emitido eletronicamente", pageWidth / 2, y + 11, { align: "center" });
+      y += 16;
     } else if (isUrine) {
       // === Clinical Compact layout for EQU/Urina ===
       const SEDIMENTO_SECTIONS = ["sedimentoscopia", "sedimento", "microscopia"];
@@ -748,66 +789,35 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     }
   }
 
-  // Observations
-  let afterTableY = (doc as any).lastAutoTable?.finalY || y + 40;
+  // Observations (on last page)
   if (examObservations.length > 0) {
-    afterTableY += 6;
+    y += 6;
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(20, 55, 90);
-    doc.text("OBSERVAÇÕES", leftCol, afterTableY);
-    afterTableY += 5;
+    doc.text("OBSERVAÇÕES", leftCol, y);
+    y += 5;
     doc.setFont("helvetica", "normal");
     doc.setTextColor(60);
     doc.setFontSize(8);
     for (const obs of examObservations) {
       const lines = doc.splitTextToSize(obs, pageWidth - 28);
-      doc.text(lines, leftCol, afterTableY);
-      afterTableY += lines.length * 4 + 2;
+      doc.text(lines, leftCol, y);
+      y += lines.length * 4 + 2;
     }
   }
 
   // Exam footer texts
   if (examFooterTexts.length > 0) {
-    afterTableY += 4;
+    y += 4;
     doc.setFontSize(8);
     doc.setFont("helvetica", "italic");
     doc.setTextColor(100);
     for (const ft of examFooterTexts) {
-      doc.text(ft, leftCol, afterTableY);
-      afterTableY += 4;
+      doc.text(ft, leftCol, y);
+      y += 4;
     }
   }
-
-  // Digital signature
-  const sigY = afterTableY + 12;
-
-  // Check if signature fits on current page
-  const pageHeight = doc.internal.pageSize.getHeight();
-  let currentSigY = sigY;
-  if (sigY + 20 > pageHeight - 10) {
-    doc.addPage();
-    currentSigY = 30;
-  }
-
-  doc.setDrawColor(100);
-  doc.setLineWidth(0.3);
-  const sigLineX = pageWidth / 2 - 35;
-  const sigLineEnd = pageWidth / 2 + 35;
-  doc.line(sigLineX, currentSigY, sigLineEnd, currentSigY);
-
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(40);
-  doc.text(data.analystName, pageWidth / 2, currentSigY + 4, { align: "center" });
-
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100);
-  if (data.analystCrm) {
-    doc.text(`CRM: ${data.analystCrm}`, pageWidth / 2, currentSigY + 8, { align: "center" });
-  }
-  doc.text("Assinatura Digital — Laudo emitido eletronicamente", pageWidth / 2, currentSigY + 12, { align: "center" });
 
   // History section
   if (data.history && data.history.length > 0) {
