@@ -70,6 +70,18 @@ const Samples = () => {
     },
   });
 
+  const { data: examCatalog = [] } = useQuery({
+    queryKey: ["exam-catalog-for-samples"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("exam_catalog")
+        .select("name, sector, material")
+        .eq("status", "active");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async (items: { order_id: string; sample_type: string; sector: string }[]) => {
       const { error } = await supabase.from("samples").insert(
@@ -187,7 +199,7 @@ const Samples = () => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader><DialogTitle>Registrar Amostras</DialogTitle></DialogHeader>
-            <SampleForm orders={orders} onSubmit={items => createMutation.mutate(items)} loading={createMutation.isPending} />
+            <SampleForm orders={orders} examCatalog={examCatalog} onSubmit={items => createMutation.mutate(items)} loading={createMutation.isPending} />
           </DialogContent>
         </Dialog>
       </div>
@@ -401,10 +413,12 @@ interface SampleItem {
 
 const SampleForm = ({
   orders,
+  examCatalog,
   onSubmit,
   loading,
 }: {
   orders: any[];
+  examCatalog: any[];
   onSubmit: (items: { order_id: string; sample_type: string; sector: string }[]) => void;
   loading: boolean;
 }) => {
@@ -413,6 +427,40 @@ const SampleForm = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const selectedOrder = orders.find(o => o.id === orderId);
+
+  // Auto-populate items based on order's exams and exam catalog sectors
+  const handleOrderChange = (id: string) => {
+    setOrderId(id);
+    setErrors(e => { const n = { ...e }; delete n.order; return n; });
+    
+    const order = orders.find(o => o.id === id);
+    if (order && order.exams?.length > 0) {
+      const catalogMap = new Map<string, { sector: string; material: string }>();
+      for (const ec of examCatalog) {
+        catalogMap.set(ec.name, { sector: ec.sector || "Bioquímica", material: ec.material || "Sangue" });
+      }
+
+      const sectorMaterialMap = new Map<string, string>();
+      for (const examName of order.exams) {
+        const info = catalogMap.get(examName);
+        const sector = info?.sector || "Bioquímica";
+        const material = info?.material || "Sangue";
+        if (!sectorMaterialMap.has(sector)) {
+          sectorMaterialMap.set(sector, material);
+        }
+      }
+
+      if (sectorMaterialMap.size > 0) {
+        const autoItems = Array.from(sectorMaterialMap.entries()).map(([sector, material]) => ({
+          sample_type: material,
+          sector,
+        }));
+        setItems(autoItems);
+        return;
+      }
+    }
+    setItems([{ sample_type: "Sangue", sector: "Hematologia" }]);
+  };
 
   const addItem = () => {
     setItems(prev => [...prev, { sample_type: "Sangue", sector: "Hematologia" }]);
@@ -447,7 +495,7 @@ const SampleForm = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1">
         <Label>Pedido <span className="text-destructive">*</span></Label>
-        <Select value={orderId} onValueChange={v => { setOrderId(v); setErrors(e => { const n = { ...e }; delete n.order; return n; }); }}>
+        <Select value={orderId} onValueChange={handleOrderChange}>
           <SelectTrigger className={errors.order ? "border-destructive" : ""}>
             <SelectValue placeholder="Selecionar pedido" />
           </SelectTrigger>
