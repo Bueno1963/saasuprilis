@@ -149,7 +149,12 @@ const Patients = () => {
           <h1 className="text-2xl font-bold text-foreground">Pacientes</h1>
           <p className="text-sm text-muted-foreground">Cadastro e consulta de pacientes</p>
         </div>
-        <Button onClick={handleOpenCreate}><UserPlus className="w-4 h-4 mr-2" />Novo Paciente</Button>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={() => navigate("/recepcao")}>
+            <ArrowRight className="w-4 h-4 mr-2 rotate-180" />Voltar à Recepção
+          </Button>
+          <Button onClick={handleOpenCreate}><UserPlus className="w-4 h-4 mr-2" />Novo Paciente</Button>
+        </div>
       </div>
 
       <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); else setOpen(true); }}>
