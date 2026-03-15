@@ -421,47 +421,46 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
         }
       }
     } else if (isUrine) {
-      // === Special EQU/Urina layout matching reference: sections as separate tables ===
+      // === Clinical Compact layout for EQU/Urina ===
       const SEDIMENTO_SECTIONS = ["sedimentoscopia", "sedimento", "microscopia"];
       const isSedimentoSection = (s: string) => {
         const norm = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
         return SEDIMENTO_SECTIONS.some(ss => norm.includes(ss));
       };
 
-      // Positive/abnormal urine qualitative values
       const URINE_ABNORMAL_VALUES = ["positivo", "presente", "turvo", "ligeiramente turvo"];
       const isUrineAbnormal = (val: string) => {
         const norm = val.trim().toLowerCase();
         return URINE_ABNORMAL_VALUES.some(a => norm === a);
       };
 
-      const urineMarginLeft = 40;
-      const urineMarginRight = 40;
+      const uMargin = 30;
+      const uRight = pageWidth - 30;
+      const uWidth = uRight - uMargin;
 
       for (const r of sectorResults) {
-        // Title row
-        doc.setFontSize(10);
+        // Exam title — clean, no heavy box
+        doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
         const examTitle = /urin[aá]/i.test(r.exam) ? r.exam : `${r.exam} (Urina)`;
-        doc.text(examTitle, urineMarginLeft, y);
-        y += 4;
+        doc.text(examTitle, uMargin, y);
+        doc.setDrawColor(20, 55, 90);
+        doc.setLineWidth(0.4);
+        doc.line(uMargin, y + 1.5, uMargin + doc.getTextWidth(examTitle), y + 1.5);
+        y += 7;
 
         if (!r.parameters || r.parameters.length === 0) {
-          // Simple result
+          doc.setFontSize(7.5);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(35, 40, 50);
+          doc.text(r.exam, uMargin + 2, y);
+          doc.setFont("helvetica", "bold");
           const outOfRange = isOutOfRange(r.value, r.referenceRange);
-          const valCell = outOfRange
-            ? { content: r.value, styles: { textColor: RED_TEXT, fontStyle: "bold" as const } }
-            : r.value;
-          autoTable(doc, {
-            startY: y,
-            body: [[r.exam, valCell]],
-            theme: "grid",
-            bodyStyles: { fontSize: 8, textColor: 40, cellPadding: 2 },
-            columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 50, fontStyle: "bold", halign: "center" } },
-            margin: { left: urineMarginLeft, right: urineMarginRight },
-          });
-          y = (doc as any).lastAutoTable?.finalY + 3 || y + 10;
+          if (outOfRange) doc.setTextColor(200, 30, 30);
+          else doc.setTextColor(20, 25, 35);
+          doc.text(r.value || "—", uRight - 2, y, { align: "right" });
+          y += 5;
           continue;
         }
 
@@ -476,7 +475,6 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           if (sectionGroups.length === 0) {
             sectionGroups.push({ section: "CARACTERES GERAIS", params: [] });
           }
-          // Skip "Ausentes" values
           if (p.value && p.value.trim().toLowerCase() === "ausentes") continue;
           sectionGroups[sectionGroups.length - 1].params.push(p);
         }
@@ -485,53 +483,102 @@ export function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           if (group.params.length === 0) continue;
           const isSedimento = isSedimentoSection(group.section);
 
-          const tableBody: any[][] = [];
-          // Section header row
-          const sectionColCount = isSedimento ? 3 : 2;
-          tableBody.push([{
-            content: group.section,
-            colSpan: sectionColCount,
-            styles: { fontStyle: "bold", fillColor: [230, 236, 244], textColor: [40, 50, 70], fontSize: 8 },
-          }]);
+          // Section title — uppercase, subtle background strip
+          doc.setFillColor(235, 240, 248);
+          doc.rect(uMargin, y - 3.5, uWidth, 5, "F");
+          doc.setFontSize(6.5);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(40, 55, 80);
+          doc.text(group.section.toUpperCase(), uMargin + 2, y);
+          y += 4;
 
-          for (const p of group.params) {
+          // Column sub-headers
+          doc.setFontSize(5.5);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(100, 110, 125);
+          doc.text("Parâmetro", uMargin + 2, y);
+          if (isSedimento) {
+            doc.text("Resultado", uMargin + uWidth * 0.55, y, { align: "left" });
+            doc.text("Unidade", uRight - 2, y, { align: "right" });
+          } else {
+            doc.text("Resultado", uRight - 2, y, { align: "right" });
+          }
+          y += 1.5;
+          doc.setDrawColor(190, 198, 210);
+          doc.setLineWidth(0.2);
+          doc.line(uMargin, y, uRight, y);
+          y += 3.5;
+
+          const rowH = 5.5;
+          for (let pi = 0; pi < group.params.length; pi++) {
+            const p = group.params[pi];
+
+            // Page break
+            if (y + rowH > doc.internal.pageSize.getHeight() - 20) {
+              doc.addPage();
+              y = 20;
+            }
+
+            // Alternating row
+            if (pi % 2 === 0) {
+              doc.setFillColor(250, 251, 253);
+              doc.rect(uMargin, y - 3.5, uWidth, rowH, "F");
+            }
+
+            // Param name
+            doc.setFontSize(7);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(35, 40, 50);
+            doc.text(p.name, uMargin + 3, y);
+
+            // Value — right aligned, bold
             const outOfRange = isOutOfRange(p.value, p.referenceRange);
             const abnormal = isUrineAbnormal(p.value || "");
             const shouldHighlight = outOfRange || abnormal;
-            const valCell = shouldHighlight
-              ? { content: p.value, styles: { textColor: RED_TEXT, fontStyle: "bold" as const } }
-              : { content: p.value, styles: { fontStyle: "bold" as const } };
+
+            doc.setFont("helvetica", "bold");
+            if (shouldHighlight) {
+              doc.setTextColor(200, 30, 30);
+            } else {
+              doc.setTextColor(20, 25, 35);
+            }
 
             if (isSedimento) {
-              // 3 columns: param, value, unit (/campo)
-              tableBody.push(["   " + p.name, valCell, p.unit || ""]);
+              doc.text(p.value || "—", uMargin + uWidth * 0.55, y, { align: "left" });
+              // Unit
+              doc.setFont("helvetica", "normal");
+              doc.setTextColor(100, 105, 115);
+              doc.setFontSize(6.5);
+              doc.text(p.unit || "", uRight - 2, y, { align: "right" });
             } else {
-              // 2 columns: param, value
-              tableBody.push(["   " + p.name, valCell]);
+              doc.text(p.value || "—", uRight - 3, y, { align: "right" });
             }
-          }
 
-          autoTable(doc, {
-            startY: y,
-            body: tableBody,
-            theme: "grid",
-            showHead: false,
-            bodyStyles: { fontSize: 8, textColor: 40, cellPadding: 2 },
-            alternateRowStyles: { fillColor: [248, 250, 253] },
-            columnStyles: isSedimento
-              ? {
-                  0: { cellWidth: 'auto' },
-                  1: { cellWidth: 45, fontStyle: "bold", halign: "center" },
-                  2: { cellWidth: 30, halign: "center" },
-                }
-              : {
-                  0: { cellWidth: 'auto' },
-                  1: { cellWidth: 55, fontStyle: "bold", halign: "center" },
-                },
-            margin: { left: urineMarginLeft, right: urineMarginRight },
-          });
-          y = (doc as any).lastAutoTable?.finalY + 1 || y + 10;
+            // Separator
+            doc.setDrawColor(238, 240, 245);
+            doc.setLineWidth(0.1);
+            doc.line(uMargin + 1, y + 1.5, uRight - 1, y + 1.5);
+
+            y += rowH;
+          }
+          y += 3;
         }
+
+        // Reference note for pH/Densidade/Leucócitos/Hemácias
+        const refParams = (r.parameters || []).filter(p => {
+          const norm = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+          return ["ph", "densidade", "leucocitos", "hemacias"].some(rp => norm.includes(rp)) && p.referenceRange;
+        });
+        if (refParams.length > 0) {
+          y += 1;
+          doc.setFontSize(5.5);
+          doc.setFont("helvetica", "italic");
+          doc.setTextColor(120, 125, 135);
+          const refText = "Ref.: " + refParams.map(p => `${p.name}: ${p.referenceRange}`).join("  |  ");
+          doc.text(refText, uMargin + 2, y);
+          y += 4;
+        }
+
         y += 3;
       }
     } else {
