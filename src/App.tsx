@@ -13,7 +13,7 @@ import Orders from "./pages/Orders";
 import Samples from "./pages/Samples";
 import Worklist from "./pages/Worklist";
 import QualityControl from "./pages/QualityControl";
-import Results from "./pages/Results";
+
 import Laudos from "./pages/Laudos";
 import LiberarExames from "./pages/laudos/LiberarExames";
 import PedidosIncompletos from "./pages/laudos/PedidosIncompletos";
