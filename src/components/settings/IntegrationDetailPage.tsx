@@ -252,6 +252,51 @@ OBX|2|NM|...`}
                         </pre>
                       </div>
                     </div>
+                    <div className="mt-3 rounded border border-border bg-background p-3 space-y-2">
+                      <h4 className="text-xs font-semibold text-foreground">Processo de Envio de QC (Sending QC Data)</h4>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        O analisador bioquímico envia os resultados de controle de qualidade ao servidor LIS <strong className="text-foreground">em unidades de teste QC</strong>. 
+                        Após determinar (validar) a mensagem, o servidor LIS responde com o ACK apropriado. 
+                        A mensagem ORU contém os segmentos <strong className="text-foreground">MSH</strong> e <strong className="text-foreground">OBR</strong> (sem PID, pois não é paciente).
+                      </p>
+                      <div className="text-[11px] text-muted-foreground space-y-1">
+                        <p className="font-medium text-foreground">Exemplo de dados QC transmitidos:</p>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-[10px] border-collapse">
+                            <thead>
+                              <tr className="border-b border-border">
+                                <th className="text-left py-1 px-2 font-semibold text-foreground">Campo</th>
+                                <th className="text-left py-1 px-2 font-semibold text-foreground">Significado</th>
+                                <th className="text-left py-1 px-2 font-semibold text-foreground">Valor Exemplo</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                              <tr><td className="py-1 px-2">Item number</td><td className="py-1 px-2">Nº do analito</td><td className="py-1 px-2 font-mono">1</td></tr>
+                              <tr><td className="py-1 px-2">Item name</td><td className="py-1 px-2">Nome do analito</td><td className="py-1 px-2 font-mono">ALT</td></tr>
+                              <tr><td className="py-1 px-2">QC Name</td><td className="py-1 px-2">Nome do controle</td><td className="py-1 px-2 font-mono">Randox low value</td></tr>
+                              <tr><td className="py-1 px-2">QC batch number</td><td className="py-1 px-2">Lote do controle</td><td className="py-1 px-2 font-mono">123</td></tr>
+                              <tr><td className="py-1 px-2">QC times</td><td className="py-1 px-2">Nº de repetições</td><td className="py-1 px-2 font-mono">1</td></tr>
+                              <tr><td className="py-1 px-2">Module number</td><td className="py-1 px-2">Módulo do equipamento</td><td className="py-1 px-2 font-mono">1</td></tr>
+                              <tr><td className="py-1 px-2">Sample Type</td><td className="py-1 px-2">Tipo de amostra</td><td className="py-1 px-2 font-mono">serum</td></tr>
+                              <tr><td className="py-1 px-2">Rack / Position</td><td className="py-1 px-2">Rack e posição</td><td className="py-1 px-2 font-mono">C001, 2</td></tr>
+                              <tr><td className="py-1 px-2">Mean of QC</td><td className="py-1 px-2">Média esperada</td><td className="py-1 px-2 font-mono">40</td></tr>
+                              <tr><td className="py-1 px-2">Standard deviation</td><td className="py-1 px-2">Desvio padrão esperado</td><td className="py-1 px-2 font-mono">1</td></tr>
+                              <tr><td className="py-1 px-2">Measured value</td><td className="py-1 px-2">Valor medido (concentração)</td><td className="py-1 px-2 font-mono">123.232</td></tr>
+                              <tr><td className="py-1 px-2">Test date/time</td><td className="py-1 px-2">Data e hora do teste</td><td className="py-1 px-2 font-mono">2011.03.21 16:46:43</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      <div className="text-[11px] text-muted-foreground space-y-1">
+                        <p className="font-medium text-foreground">Estrutura da mensagem ORU^R01 (QC):</p>
+                        <pre className="bg-muted rounded p-2 text-[10px] font-mono overflow-x-auto whitespace-pre">
+{`MSH|^~\\&|MaxBIO200B|LAB|LIS|HOST|20110321164643|ORU^R01|...|Q|2.3.1||||||UNICODE UTF-8
+OBR|1||123|ALT^ALT||20110321164643|...
+OBX|1|NM|ALT^ALT||123.232|U/L|40~1|N|||F`}
+                        </pre>
+                        <p className="text-[10px] italic">MSH-11 = <strong className="text-foreground">Q</strong> indica que a mensagem é de Controle de Qualidade. OBX-7 contém média~SD esperados.</p>
+                      </div>
+                    </div>
                   </>)}
 
                   {currentType === "HL7" && !/dymind|maxcell|maxbio/i.test(currentName || integrationData?.name || "") && (
