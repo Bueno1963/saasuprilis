@@ -80,16 +80,17 @@ export const navItems: NavItem[] = [
     ],
   },
   {
-    title: "POPs",
-    href: "/pops",
-    icon: FileText,
+    title: "Controle de Qualidade",
+    href: "/controle-qualidade",
+    icon: Activity,
+    phase: "quality",
     allowedRoles: ["admin", "tecnico"],
     children: [
+      { title: "POPs", href: "/pops", icon: FileText },
       { title: "Arquivo de Certificados", href: "/pops/certificados", icon: Award },
       { title: "Calendário Manutenções", href: "/pops/manutencoes", icon: CalendarClock },
     ],
   },
-  { title: "Controle de Qualidade", href: "/controle-qualidade", icon: Activity, phase: "quality", allowedRoles: ["admin", "tecnico"] },
 
   { title: "Configurações", href: "/configuracoes", icon: Settings, allowedRoles: ["admin"] },
   { title: "Super Admin", href: "/admin", icon: ShieldAlert, allowedRoles: ["admin"] },
