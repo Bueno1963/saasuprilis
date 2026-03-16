@@ -33,7 +33,7 @@ export interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
-  phase?: "pre" | "analytical" | "post";
+  phase?: "pre" | "analytical" | "post" | "quality";
   children?: NavItem[];
   allowedRoles?: AppRole[];
 }
