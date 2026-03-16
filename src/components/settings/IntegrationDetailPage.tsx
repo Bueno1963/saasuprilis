@@ -213,8 +213,12 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
                   <h3 className="text-sm font-semibold text-foreground">Informações de Conexão — {currentType}</h3>
                   {currentType === "HL7" && (
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
-                      <li>Protocolo: <strong className="text-foreground">MLLP</strong></li>
-                      <li>Mensagens: ORM, ORU, ADT, ACK — HL7 v2.5.1</li>
+                      <li>Protocolo: <strong className="text-foreground">MLLP sobre TCP/IP</strong> — Framing: SB(0x0B) + Data + EB(0x1C) + CR(0x0D)</li>
+                      <li>Versão: <strong className="text-foreground">HL7 v2.3.1</strong> — Character Set: ASCII</li>
+                      <li>Mensagens de resultados: <strong className="text-foreground">ORU^R01</strong> (envio) → <strong className="text-foreground">ACK^R01</strong> (confirmação)</li>
+                      <li>Consulta de amostras: <strong className="text-foreground">QRY^Q02</strong> → <strong className="text-foreground">QCK^Q02</strong> + <strong className="text-foreground">DSR^Q03</strong> → <strong className="text-foreground">ACK^Q03</strong></li>
+                      <li>Segmentos: MSH, PID, OBR, OBX, MSA, ERR, QRD, QRF, QAK, DSP, DSC</li>
+                      <li>MSH-16: <strong className="text-foreground">0</strong>=Paciente, <strong className="text-foreground">1</strong>=Calibração, <strong className="text-foreground">2</strong>=QC</li>
                     </ul>
                   )}
                   {currentType === "ASTM" && (
