@@ -212,14 +212,27 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
 
                 <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
                   <h3 className="text-sm font-semibold text-foreground">Informações de Conexão — {currentType}</h3>
-                  {currentType === "HL7" && (
+                  {currentType === "HL7" && /dymind|maxcell|maxbio/i.test(currentName || "") && (
+                    <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
+                      <li>Protocolo: <strong className="text-foreground">MLLP sobre TCP/IP persistente</strong> — Framing: SB(0x0B) + Data + EB(0x1C) + CR(0x0D)</li>
+                      <li>Versão: <strong className="text-foreground">HL7 v2.3.1</strong> — Character Set: <strong className="text-foreground">UTF-8 (UNICODE)</strong></li>
+                      <li>Resultados/QC: <strong className="text-foreground">ORU^R01</strong> (envio) → <strong className="text-foreground">ACK^R01</strong> (confirmação)</li>
+                      <li>Consulta bidirecional: <strong className="text-foreground">ORM^O01</strong> (query) → <strong className="text-foreground">ORR^O02</strong> (resposta com PID/PV1/ORC/OBR/OBX)</li>
+                      <li>MSH-11: <strong className="text-foreground">P</strong>=Amostra/Pedido, <strong className="text-foreground">Q</strong>=QC</li>
+                      <li>Segmentos: MSH, MSA, PID, PV1, OBR, OBX, ORC</li>
+                      <li>OBR-4 tipos: <strong className="text-foreground">01001</strong>=CBC Auto, <strong className="text-foreground">01002</strong>=Manual, <strong className="text-foreground">01003</strong>=LJ QC, <strong className="text-foreground">01004</strong>=XB QC</li>
+                      <li>Flags OBX-8: <strong className="text-foreground">N</strong>=Normal, <strong className="text-foreground">H</strong>=Alto, <strong className="text-foreground">L</strong>=Baixo, <strong className="text-foreground">A</strong>=Anormal (separados por ~)</li>
+                      <li>Suporta histogramas/scattergramas em <strong className="text-foreground">BMP/PNG Base64</strong> (OBX tipo ED)</li>
+                      <li>ACK timeout: reconexão automática se sem resposta no tempo configurado</li>
+                    </ul>
+                  )}
+                  {currentType === "HL7" && !/dymind|maxcell|maxbio/i.test(currentName || "") && (
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
                       <li>Protocolo: <strong className="text-foreground">MLLP sobre TCP/IP</strong> — Framing: SB(0x0B) + Data + EB(0x1C) + CR(0x0D)</li>
                       <li>Versão: <strong className="text-foreground">HL7 v2.3.1</strong> — Character Set: ASCII</li>
                       <li>Mensagens de resultados: <strong className="text-foreground">ORU^R01</strong> (envio) → <strong className="text-foreground">ACK^R01</strong> (confirmação)</li>
                       <li>Consulta de amostras: <strong className="text-foreground">QRY^Q02</strong> → <strong className="text-foreground">QCK^Q02</strong> + <strong className="text-foreground">DSR^Q03</strong> → <strong className="text-foreground">ACK^Q03</strong></li>
                       <li>Segmentos: MSH, PID, OBR, OBX, MSA, ERR, QRD, QRF, QAK, DSP, DSC</li>
-                      <li>MSH-16: <strong className="text-foreground">0</strong>=Paciente, <strong className="text-foreground">1</strong>=Calibração, <strong className="text-foreground">2</strong>=QC</li>
                     </ul>
                   )}
                   {currentType === "ASTM" && (
