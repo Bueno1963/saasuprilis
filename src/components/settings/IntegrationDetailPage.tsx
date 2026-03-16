@@ -55,6 +55,7 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
   const qc = useQueryClient();
   const isNew = !integrationId;
   const { register, handleSubmit, reset, control, watch } = useForm<IntForm>({ defaultValues });
+  const currentName = watch("name");
   const [loaded, setLoaded] = useState(false);
 
   const currentStatus = watch("status");
