@@ -46,7 +46,7 @@ const SettingsPage = () => {
   if (section === "support_lab") return <SupportLabSettings onBack={goBack} />;
   if (section === "report_layouts") return <ReportLayoutListSettings onBack={goBack} />;
   if (section === "cadastro_parametros") return <CadastroParametrosSettings onBack={goBack} />;
-  if (section === "qc_management") return <QCManagementSettings onBack={goBack} />;
+  
   if (section === "sector_signers") return <SectorSignersSettings onBack={goBack} />;
 
   return (
