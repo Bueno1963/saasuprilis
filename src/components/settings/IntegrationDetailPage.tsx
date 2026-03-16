@@ -252,7 +252,8 @@ OBX|2|NM|...`}
                         </pre>
                       </div>
                     </div>
-                  )}
+                  </>)}
+
                   {currentType === "HL7" && !/dymind|maxcell|maxbio/i.test(currentName || integrationData?.name || "") && (
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
                       <li>Protocolo: <strong className="text-foreground">MLLP sobre TCP/IP</strong> — Framing: SB(0x0B) + Data + EB(0x1C) + CR(0x0D)</li>
