@@ -212,7 +212,7 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
 
                 <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
                   <h3 className="text-sm font-semibold text-foreground">Informações de Conexão — {currentType}</h3>
-                  {currentType === "HL7" && /dymind|maxcell|maxbio/i.test(currentName || integrationData?.name || "") && (
+                  {currentType === "HL7" && /dymind|maxcell|maxbio/i.test(currentName || integrationData?.name || "") && (<>
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
                       <li>Protocolo: <strong className="text-foreground">MLLP sobre TCP/IP persistente</strong> — Framing: SB(0x0B) + Data + EB(0x1C) + CR(0x0D)</li>
                       <li>Versão: <strong className="text-foreground">HL7 v2.3.1</strong> — Character Set: <strong className="text-foreground">UTF-8 (UNICODE)</strong></li>
