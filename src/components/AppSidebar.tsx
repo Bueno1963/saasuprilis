@@ -33,6 +33,7 @@ const AppSidebar = () => {
     { label: "Pré-Analítica", items: filteredItems.filter(n => n.phase === "pre") },
     { label: "Analítica", items: filteredItems.filter(n => n.phase === "analytical") },
     { label: "Pós-Analítica", items: filteredItems.filter(n => n.phase === "post") },
+    { label: "Gestão da Qualidade", items: filteredItems.filter(n => n.phase === "quality") },
   ];
 
   const otherItems = filteredItems.filter(n => !n.phase && n.href !== "/");
