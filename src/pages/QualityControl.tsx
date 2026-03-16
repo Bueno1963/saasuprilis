@@ -2,11 +2,14 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { mockQCData } from "@/lib/mock-data";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
+import { ChevronDown, FlaskConical } from "lucide-react";
 
 const QualityControl = () => {
   const { data: qcData = [] } = useQuery({
@@ -45,10 +48,25 @@ const QualityControl = () => {
       </div>
 
       <Tabs defaultValue="levey-jennings" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="levey-jennings">Levey-Jennings</TabsTrigger>
-          <TabsTrigger value="gestao">Gestão CQ</TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="levey-jennings">Levey-Jennings</TabsTrigger>
+            <TabsTrigger value="gestao">Gestão CQ</TabsTrigger>
+          </TabsList>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <FlaskConical className="h-4 w-4" />
+                Lançamentos Diários
+                <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>Bioquímica</DropdownMenuItem>
+              <DropdownMenuItem>Hematologia</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         <TabsContent value="levey-jennings" className="space-y-6">
           <Card>
