@@ -48,10 +48,25 @@ const QualityControl = () => {
       </div>
 
       <Tabs defaultValue="levey-jennings" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="levey-jennings">Levey-Jennings</TabsTrigger>
-          <TabsTrigger value="gestao">Gestão CQ</TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="levey-jennings">Levey-Jennings</TabsTrigger>
+            <TabsTrigger value="gestao">Gestão CQ</TabsTrigger>
+          </TabsList>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <FlaskConical className="h-4 w-4" />
+                Lançamentos Diários
+                <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>Bioquímica</DropdownMenuItem>
+              <DropdownMenuItem>Hematologia</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         <TabsContent value="levey-jennings" className="space-y-6">
           <Card>
