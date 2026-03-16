@@ -141,7 +141,7 @@ const SaaSLandingPage = () => {
             </span>
             <span className="hidden sm:block text-[10px] text-muted-foreground leading-tight ml-1">Sistema de Gestão<br/>Laboratorial</span>
           </Link>
-          <div className="hidden md:flex items-center gap-7 text-sm font-medium">
+          <div className="hidden md:flex items-center gap-7 text-base font-medium">
             <a href="#inicio" className="text-muted-foreground hover:text-foreground transition-colors">Início</a>
             <a href="#funcionalidades" className="text-muted-foreground hover:text-foreground transition-colors">Funcionalidades</a>
             <a href="#modulos" className="text-muted-foreground hover:text-foreground transition-colors">Módulos</a>
