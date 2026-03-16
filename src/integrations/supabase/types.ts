@@ -687,6 +687,50 @@ export type Database = {
           },
         ]
       }
+      integration_protocol_bank: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          file_name: string
+          file_url: string
+          id: string
+          name: string
+          notes: string | null
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          file_url?: string
+          id?: string
+          name: string
+          notes?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          file_url?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_protocol_bank_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_sync_logs: {
         Row: {
           created_at: string
