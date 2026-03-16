@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 interface Props {
   onBack: () => void;
+  embedded?: boolean;
 }
 
 // Hook to get distinct sectors from exam_catalog
@@ -704,12 +705,14 @@ const ProEXTab = () => {
 };
 
 // ─── Main ───
-const QCManagementSettings = ({ onBack }: Props) => {
+const QCManagementSettings = ({ onBack, embedded }: Props) => {
   return (
-    <div className="p-6 space-y-4">
-      <Button variant="ghost" size="sm" onClick={onBack}>
-        <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
-      </Button>
+    <div className={embedded ? "space-y-4" : "p-6 space-y-4"}>
+      {!embedded && (
+        <Button variant="ghost" size="sm" onClick={onBack}>
+          <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+        </Button>
+      )}
       <div>
         <h2 className="text-xl font-bold text-foreground">Gestão Controle de Qualidade</h2>
         <p className="text-sm text-muted-foreground">Configuração de analitos, regras de Westgard, lotes de controle, PRO-IN e PRO-EX — organizados por setor</p>

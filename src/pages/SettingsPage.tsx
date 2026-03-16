@@ -11,10 +11,10 @@ import PrinterSettings from "@/components/settings/PrinterSettings";
 import SupportLabSettings from "@/components/settings/SupportLabSettings";
 import ReportLayoutListSettings from "@/components/settings/ReportLayoutListSettings";
 import CadastroParametrosSettings from "@/components/settings/CadastroParametrosSettings";
-import QCManagementSettings from "@/components/settings/QCManagementSettings";
+
 import SectorSignersSettings from "@/components/settings/SectorSignersSettings";
 
-type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "qc_management" | "sector_signers";
+type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
@@ -28,7 +28,7 @@ const sections = [
   { key: "support_lab" as Section, title: "Lab. de Apoio", desc: "Integração com laboratórios terceirizados para exames encaminhados", icon: FlaskRound },
   { key: "report_layouts" as Section, title: "Cadastro de Layout", desc: "Modelos de impressão de laudos por exame: colunas, cabeçalho, rodapé e observações", icon: LayoutTemplate },
   { key: "cadastro_parametros" as Section, title: "Cadastro de Parâmetros", desc: "Modelo de exames por setor com parâmetros para digitação de laudos", icon: ListTree },
-  { key: "qc_management" as Section, title: "Gestão Controle de Qualidade", desc: "Analitos, regras de Westgard e lotes de reagentes de controle", icon: ShieldCheck },
+  
 ];
 
 const SettingsPage = () => {
@@ -46,7 +46,7 @@ const SettingsPage = () => {
   if (section === "support_lab") return <SupportLabSettings onBack={goBack} />;
   if (section === "report_layouts") return <ReportLayoutListSettings onBack={goBack} />;
   if (section === "cadastro_parametros") return <CadastroParametrosSettings onBack={goBack} />;
-  if (section === "qc_management") return <QCManagementSettings onBack={goBack} />;
+  
   if (section === "sector_signers") return <SectorSignersSettings onBack={goBack} />;
 
   return (
