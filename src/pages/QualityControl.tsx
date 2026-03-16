@@ -9,9 +9,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine, Responsive
 import { useQuery } from "@tanstack/react-query";
 import { mockQCData } from "@/lib/mock-data";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
+import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
 import { ChevronDown, FlaskConical } from "lucide-react";
 
 const QualityControl = () => {
+  const [activeView, setActiveView] = useState<"main" | "bioquimica" | "hematologia">("main");
+
   const { data: qcData = [] } = useQuery({
     queryKey: ["qc_data"],
     queryFn: async () => {
@@ -40,6 +43,14 @@ const QualityControl = () => {
     status: d.status,
   }));
 
+  if (activeView === "bioquimica") {
+    return (
+      <div className="p-6">
+        <BioquimicaDailySheet onBack={() => setActiveView("main")} />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -62,8 +73,8 @@ const QualityControl = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Bioquímica</DropdownMenuItem>
-              <DropdownMenuItem>Hematologia</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("bioquimica")}>Bioquímica</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("hematologia")}>Hematologia</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

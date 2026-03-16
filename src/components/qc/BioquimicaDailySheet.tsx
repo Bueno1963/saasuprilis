@@ -1,0 +1,192 @@
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Save } from "lucide-react";
+import { toast } from "sonner";
+
+const REAGENTES_BIOQUIMICA = [
+  "QUIMIURIC - ÁCIDO ÚRICO 500 mL",
+  "QUIMIURIC - ÁCIDO ÚRICO 200 mL",
+  "QUIMIALB - ALBUMINA 500 mL",
+  "QUIMIALB - ALBUMINA 200 mL",
+  "QUIMIBIL-D - BILIRRUBINA DIRETA R1 200 mL, R2 5 mL",
+  "QUIMIBIL-D - BILIRRUBINA DIRETA R1 10x10 mL, R2 5 mL",
+  "QUIMIBIL-T - BILIRRUBINA TOTAL R1 200 mL, R2 5 mL",
+  "QUIMIBIL-T - BILIRRUBINA TOTAL R1 10x10 mL, R2 5 mL",
+  "QUIMICREA - CREATININA 500 mL",
+  "QUIMICREA - CREATININA 200 mL",
+  "QUIMIGLIC-OX - GLICOSE OXIDASE 500 mL",
+  "QUIMIGLIC-OX - GLICOSE OXIDASE 200 mL",
+  "QUIMIPROT - PROTEÍNA TOTAL 500 mL",
+  "QUIMIPROT - PROTEÍNA TOTAL 200 mL",
+  "QUIMIURE - URÉIA 500 mL",
+  "QUIMIURE - URÉIA 200 mL",
+  "QUIMICAL - CÁLCIO 500 mL",
+  "QUIMICAL - CÁLCIO 100 mL",
+  "QUIMIFER - FERRO 250 mL",
+  "QUIMIFER - FERRO 100 mL",
+  "QUIMIFOS - FÓSFORO 500 mL",
+  "QUIMIFOS - FÓSFORO 7x15 mL",
+  "QUIMIMAG - MAGNÉSIO 500 mL",
+  "QUIMIMAG - MAGNÉSIO 210 mL",
+  "QUIMICOL - COLESTEROL 500 mL",
+  "QUIMICOL - COLESTEROL 200 mL",
+  "QUIMICOL-H - HDL COLESTEROL 280 mL",
+  "QUIMICOL-H - HDL COLESTEROL 80 mL",
+  "QUIMITRI - TRIGLICÉRIDES 500 mL",
+  "QUIMITRI - TRIGLICÉRIDES 200 mL",
+  "QUIMIAMIL - AMILASE 200 mL",
+  "QUIMIAMIL - AMILASE 60 mL",
+  "QUIMIALT - ALT/TGP 500 mL",
+  "QUIMIALT - ALT/TGP 200 mL",
+  "QUIMIAST - AST/TGO 500 mL",
+  "QUIMIAST - AST/TGO 200 mL",
+  "QUIMINAC - CKNAC 250 mL",
+  "QUIMINAC - CKNAC 50 mL",
+  "QUIMIMB - CKMB 250 mL",
+  "QUIMIMB - CKMB 50 mL",
+  "QUIMIDHL - LACTATO DESIDROGENASE 250 mL",
+  "QUIMIDHL - LACTATO DESIDROGENASE 100 mL",
+  "QUIMIFAL - FOSFATASE ALCALINA 250 mL",
+  "QUIMIFAL - FOSFATASE ALCALINA 125 mL",
+  "QUIMIGAMA - GAMA GT 250 mL",
+  "QUIMIGAMA - GAMA GT 100 mL",
+  "QUIMICLORO - CLORETOS 200 mL",
+  "QUIMICLORO - CLORETOS 7x15 mL",
+  "QUIMIADA - ADENOSINA DEAMINASE",
+  "QUIMIPROT-U - PROTEINÚRIA 50 mL",
+  "QUIMILAC - LACTATO R1 45 mL, R2 5 mL",
+  "QUIMILIP - LIPASE R1 4x10 mL, R2 10 mL",
+  "QUIMICALIB - CALIBRADOR 5 mL",
+  "QUIMICALIB - CALIBRADOR 25 mL",
+  "QUIMICONTROL - SORO CONTROLE NORMAL 15 mL",
+  "QUIMICONTROL - SORO CONTROLE NORMAL 50 mL",
+  "QUIMICONTROL - SORO CONTROLE ANORMAL 15 mL",
+  "QUIMICONTROL - SORO CONTROLE ANORMAL 50 mL",
+  "CALIBRADOR ADA 1 mL",
+  "SORO CONTROLE ADA (NÍVEL I e II) 2x1 mL",
+];
+
+const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
+
+const MONTHS = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+interface BioquimicaDailySheetProps {
+  onBack: () => void;
+}
+
+const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
+  const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
+  const [entries, setEntries] = useState<Record<string, Record<number, string>>>({});
+
+  const handleChange = (reagent: string, day: number, value: string) => {
+    setEntries(prev => ({
+      ...prev,
+      [reagent]: {
+        ...(prev[reagent] || {}),
+        [day]: value,
+      },
+    }));
+  };
+
+  const handleSave = () => {
+    toast.success("Lançamentos salvos com sucesso!");
+  };
+
+  const daysInMonth = new Date(Number(selectedYear), Number(selectedMonth) + 1, 0).getDate();
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Lançamentos Diários — Bioquímica</h2>
+            <p className="text-xs text-muted-foreground">Reagente Marca: EBRAM</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-[130px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MONTHS.map((m, i) => (
+                <SelectItem key={i} value={String(i)}>{m}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-[80px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[2024, 2025, 2026].map(y => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button size="sm" className="gap-1.5" onClick={handleSave}>
+            <Save className="h-3.5 w-3.5" />
+            Salvar
+          </Button>
+        </div>
+      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <ScrollArea className="w-full">
+            <div className="min-w-[2200px]">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="border-b bg-muted/60">
+                    <th className="sticky left-0 z-10 bg-muted/95 backdrop-blur-sm text-left p-2 min-w-[280px] font-medium text-muted-foreground border-r">
+                      Reagente
+                    </th>
+                    {DAYS.filter(d => d <= daysInMonth).map(day => (
+                      <th key={day} className="p-1 text-center font-medium text-muted-foreground min-w-[48px] border-r last:border-r-0">
+                        {day}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {REAGENTES_BIOQUIMICA.map((reagent, idx) => (
+                    <tr key={reagent} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                      <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={reagent}>
+                        {reagent}
+                      </td>
+                      {DAYS.filter(d => d <= daysInMonth).map(day => (
+                        <td key={day} className="p-0.5 border-r last:border-r-0">
+                          <Input
+                            className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
+                            value={entries[reagent]?.[day] || ""}
+                            onChange={(e) => handleChange(reagent, day, e.target.value)}
+                            tabIndex={0}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default BioquimicaDailySheet;
