@@ -128,7 +128,7 @@ const AppSidebar = () => {
               <div className="flex items-center gap-2 px-3 pt-5 pb-1.5">
                 <span className="w-2 h-2 rounded-full bg-sidebar-primary shrink-0" />
                 <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-sidebar-primary">
-                  Gestão
+                  Administração
                 </p>
                 <div className="flex-1 h-px bg-sidebar-primary opacity-30" />
               </div>
