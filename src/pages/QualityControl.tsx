@@ -2,11 +2,14 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { mockQCData } from "@/lib/mock-data";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
+import { ChevronDown, FlaskConical } from "lucide-react";
 
 const QualityControl = () => {
   const { data: qcData = [] } = useQuery({
