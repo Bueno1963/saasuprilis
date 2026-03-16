@@ -14,7 +14,7 @@ import CadastroParametrosSettings from "@/components/settings/CadastroParametros
 
 import SectorSignersSettings from "@/components/settings/SectorSignersSettings";
 
-type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "qc_management" | "sector_signers";
+type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
