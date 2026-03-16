@@ -4,11 +4,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, History, UserPlus } from "lucide-react";
+import { ArrowLeft, History, UserPlus, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { type AppRole } from "@/lib/navigation";
 import CreateUserDialog from "./CreateUserDialog";
@@ -28,17 +30,25 @@ const MENU_LABELS: Record<string, string> = {
   "/amostras": "Amostras",
   "/worklist": "Esteira de Produção",
   "/qc": "Controle de Qualidade",
-  
   "/laudos": "Laudos",
   "/configuracoes": "Configurações",
   "/recepcao": "Recepção",
 };
 
-
+interface EditProfile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  role_display: string;
+  sector: string;
+  crm: string;
+  registration_type: string;
+}
 
 const UsersSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
+  const [editProfile, setEditProfile] = useState<EditProfile | null>(null);
 
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ["all_profiles"],
@@ -63,7 +73,6 @@ const UsersSettings = ({ onBack }: Props) => {
     return r?.role || "tecnico";
   };
 
-
   const { data: auditLogs = [] } = useQuery({
     queryKey: ["permission_audit_log"],
     queryFn: async () => {
@@ -77,7 +86,6 @@ const UsersSettings = ({ onBack }: Props) => {
     },
   });
 
-  // Map user IDs to names for audit display
   const getProfileName = (userId: string) => {
     const p = profiles.find(pr => pr.user_id === userId);
     return p?.full_name || "Usuário desconhecido";
@@ -98,6 +106,36 @@ const UsersSettings = ({ onBack }: Props) => {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const updateProfile = useMutation({
+    mutationFn: async (p: EditProfile) => {
+      const { error } = await supabase.from("profiles").update({
+        full_name: p.full_name,
+        role_display: p.role_display,
+        sector: p.sector,
+        crm: p.crm,
+        registration_type: p.registration_type,
+      }).eq("id", p.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["all_profiles"] });
+      toast.success("Usuário atualizado!");
+      setEditProfile(null);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const openEdit = (p: any) => {
+    setEditProfile({
+      id: p.id,
+      user_id: p.user_id,
+      full_name: p.full_name || "",
+      role_display: p.role_display || "",
+      sector: p.sector || "",
+      crm: p.crm || "",
+      registration_type: p.registration_type || "CRBM",
+    });
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -138,17 +176,18 @@ const UsersSettings = ({ onBack }: Props) => {
                   <TableRow>
                     <TableHead>Nome</TableHead><TableHead>Cargo</TableHead><TableHead>Setor</TableHead>
                     <TableHead>Registro Prof.</TableHead><TableHead>Perfil de Acesso</TableHead>
+                    <TableHead className="w-16">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isLoading ? <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
-                  profiles.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Nenhum usuário</TableCell></TableRow> :
+                  {isLoading ? <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
+                  profiles.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Nenhum usuário</TableCell></TableRow> :
                   profiles.map((p) => (
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.full_name || "—"}</TableCell>
                       <TableCell>{p.role_display}</TableCell>
                       <TableCell>{p.sector || "—"}</TableCell>
-                      <TableCell>{p.crm ? `CRBM: ${p.crm}` : "—"}</TableCell>
+                      <TableCell>{p.crm ? `${p.registration_type || "CRBM"}: ${p.crm}` : "—"}</TableCell>
                       <TableCell>
                         <Select value={getRoleForUser(p.user_id)} onValueChange={(v) => updateRole.mutate({ userId: p.user_id, role: v })}>
                           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
@@ -159,6 +198,11 @@ const UsersSettings = ({ onBack }: Props) => {
                           </SelectContent>
                         </Select>
                       </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -166,7 +210,6 @@ const UsersSettings = ({ onBack }: Props) => {
             </CardContent>
           </Card>
         </TabsContent>
-
 
         <TabsContent value="audit" className="mt-4">
           <Card>
@@ -217,6 +260,57 @@ const UsersSettings = ({ onBack }: Props) => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit User Dialog */}
+      <Dialog open={!!editProfile} onOpenChange={(open) => { if (!open) setEditProfile(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+          </DialogHeader>
+          {editProfile && (
+            <div className="space-y-4">
+              <div>
+                <Label>Nome completo</Label>
+                <Input value={editProfile.full_name} onChange={e => setEditProfile({ ...editProfile, full_name: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Cargo</Label>
+                  <Input value={editProfile.role_display} onChange={e => setEditProfile({ ...editProfile, role_display: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Setor</Label>
+                  <Input value={editProfile.sector} onChange={e => setEditProfile({ ...editProfile, sector: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Tipo de Registro</Label>
+                  <Select value={editProfile.registration_type} onValueChange={v => setEditProfile({ ...editProfile, registration_type: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CRBM">CRBM</SelectItem>
+                      <SelectItem value="CRM">CRM</SelectItem>
+                      <SelectItem value="CRF">CRF</SelectItem>
+                      <SelectItem value="COREN">COREN</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Nº Registro</Label>
+                  <Input value={editProfile.crm} onChange={e => setEditProfile({ ...editProfile, crm: e.target.value })} />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditProfile(null)}>Cancelar</Button>
+                <Button onClick={() => updateProfile.mutate(editProfile)} disabled={updateProfile.isPending}>
+                  {updateProfile.isPending ? "Salvando..." : "Salvar"}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
