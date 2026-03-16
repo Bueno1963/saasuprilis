@@ -79,14 +79,14 @@ export const navItems: NavItem[] = [
       { title: "Balancete", href: "/financeiro/balancete", icon: Scale },
     ],
   },
+  { title: "Controle de Qualidade", href: "/controle-qualidade", icon: Activity, phase: "quality", allowedRoles: ["admin", "tecnico"] },
   {
-    title: "Controle de Qualidade",
-    href: "/controle-qualidade",
-    icon: Activity,
+    title: "POPs",
+    href: "/pops",
+    icon: FileText,
     phase: "quality",
     allowedRoles: ["admin", "tecnico"],
     children: [
-      { title: "POPs", href: "/pops", icon: FileText },
       { title: "Arquivo de Certificados", href: "/pops/certificados", icon: Award },
       { title: "Calendário Manutenções", href: "/pops/manutencoes", icon: CalendarClock },
     ],
