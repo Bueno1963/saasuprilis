@@ -43,6 +43,14 @@ const QualityControl = () => {
     status: d.status,
   }));
 
+  if (activeView === "bioquimica") {
+    return (
+      <div className="p-6">
+        <BioquimicaDailySheet onBack={() => setActiveView("main")} />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -65,8 +73,8 @@ const QualityControl = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Bioquímica</DropdownMenuItem>
-              <DropdownMenuItem>Hematologia</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("bioquimica")}>Bioquímica</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("hematologia")}>Hematologia</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
