@@ -157,49 +157,99 @@ const SaaSLandingPage = () => {
         </div>
       </nav>
 
-      {/* ── Hero ── */}
-      <section id="inicio" className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(210,50%,25%)] via-[hsl(200,45%,30%)] to-[hsl(170,55%,45%)]" />
-        {/* Decorative wave at bottom */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" className="w-full h-auto" preserveAspectRatio="none">
-            <path d="M0,80 C360,120 720,40 1440,80 L1440,120 L0,120 Z" fill="white" />
-          </svg>
+      {/* ── Hero — Full-Screen Parallax ── */}
+      <section id="inicio" className="relative h-screen min-h-[650px] max-h-[950px] flex items-center justify-center overflow-hidden">
+        {/* Parallax background */}
+        <div
+          className="absolute inset-0 bg-fixed bg-cover bg-center"
+          style={{ backgroundImage: `url(${saasHeroModern})` }}
+        />
+        {/* Multi-layer gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[hsl(210,50%,12%)]/85 via-[hsl(200,45%,18%)]/70 to-[hsl(170,55%,25%)]/80" />
+
+        {/* Animated floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[12%] left-[8%] w-2 h-2 rounded-full bg-[hsl(170,55%,55%)]/30 animate-[pulse_3s_ease-in-out_infinite]" />
+          <div className="absolute top-[25%] right-[12%] w-3 h-3 rounded-full bg-white/10 animate-[pulse_4s_ease-in-out_infinite_0.5s]" />
+          <div className="absolute bottom-[30%] left-[18%] w-1.5 h-1.5 rounded-full bg-[hsl(170,55%,55%)]/20 animate-[pulse_3.5s_ease-in-out_infinite_1s]" />
+          <div className="absolute top-[55%] right-[22%] w-2.5 h-2.5 rounded-full bg-white/10 animate-[pulse_5s_ease-in-out_infinite_0.3s]" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-6 py-20 md:py-28 lg:py-32">
+
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 border border-white/20 text-sm text-white/90 font-medium">
-                Sistema para Laboratórios
+            <div className="space-y-7">
+              {/* Trust badge */}
+              <div className="animate-fade-in [animation-duration:0.5s]">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase text-white/90 bg-white/10 backdrop-blur-md border border-white/20">
+                  <Shield className="w-3.5 h-3.5" />
+                  Sistema para Laboratórios
+                </span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight">
-                SUPRI<span className="text-[hsl(170,55%,55%)]">LIS</span>
+
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.05] tracking-tight animate-fade-in [animation-duration:0.7s] [animation-delay:0.15s] [animation-fill-mode:backwards]">
+                SUPRI<span className="bg-gradient-to-r from-[hsl(170,55%,55%)] to-[hsl(170,55%,70%)] bg-clip-text text-transparent">LIS</span>
               </h1>
-              <p className="text-lg text-white/80 leading-relaxed max-w-lg">
-                O sistema de gestão laboratorial mais completo do mercado. Automatize processos, reduza erros e entregue resultados com mais rapidez e confiabilidade.
+
+              <p className="text-lg md:text-xl text-white/70 max-w-lg leading-relaxed animate-fade-in [animation-duration:0.7s] [animation-delay:0.3s] [animation-fill-mode:backwards]">
+                O sistema de gestão laboratorial mais completo do mercado. Automatize processos, reduza erros e entregue resultados com mais rapidez.
               </p>
-              <div className="flex flex-wrap gap-4 pt-2">
+
+              {/* CTA buttons with glassmorphism */}
+              <div className="flex flex-wrap gap-4 pt-2 animate-fade-in [animation-duration:0.7s] [animation-delay:0.45s] [animation-fill-mode:backwards]">
                 <a href="#contato">
-                  <Button size="lg" className="rounded-md px-8 h-12 text-base bg-[hsl(170,55%,45%)] hover:bg-[hsl(170,55%,38%)] text-white shadow-lg font-semibold">
+                  <Button size="lg" className="rounded-full px-8 h-14 text-base bg-[hsl(170,55%,45%)] hover:bg-[hsl(170,55%,38%)] text-white shadow-[0_8px_32px_rgba(0,200,180,0.3)] font-bold">
                     Solicitar Demonstração
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </a>
                 <a href="#funcionalidades">
-                  <Button size="lg" variant="outline" className="rounded-md px-8 h-12 text-base border-white/30 text-white hover:bg-white/10">
+                  <Button size="lg" variant="outline" className="rounded-full px-8 h-14 text-base border-2 border-white/30 text-white bg-white/10 backdrop-blur-md hover:bg-white/20 font-bold">
                     Conhecer Recursos
                   </Button>
                 </a>
               </div>
+
+              {/* Stats row */}
+              <div className="flex flex-wrap gap-8 md:gap-10 pt-4 animate-fade-in [animation-duration:0.7s] [animation-delay:0.6s] [animation-fill-mode:backwards]">
+                {[
+                  { value: "500+", label: "Laboratórios" },
+                  { value: "15+", label: "Anos no mercado" },
+                  { value: "24/7", label: "Suporte técnico" },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center">
+                    <p className="text-2xl md:text-3xl font-extrabold text-white">{stat.value}</p>
+                    <p className="text-xs text-white/50 mt-1">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="relative flex justify-center">
-              <img
-                src={heroMockupImg}
-                alt="Sistema SUPRILIS - Dashboard"
-                className="w-full max-w-xl rounded-xl shadow-2xl border border-white/10"
-              />
+
+            {/* Floating mockup */}
+            <div className="relative flex justify-center animate-fade-in [animation-duration:0.9s] [animation-delay:0.3s] [animation-fill-mode:backwards]">
+              <div className="relative">
+                <img
+                  src={heroMockupImg}
+                  alt="Sistema SUPRILIS - Dashboard"
+                  className="w-full max-w-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border border-white/10"
+                />
+                {/* Glow effect behind mockup */}
+                <div className="absolute -inset-4 bg-[hsl(170,55%,45%)]/10 rounded-3xl blur-2xl -z-10" />
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-[pulse_2s_ease-in-out_infinite]">
+          <ChevronDown className="w-6 h-6 text-white/40" />
+        </div>
+
+        {/* Bottom wave */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 80" className="w-full h-auto" preserveAspectRatio="none">
+            <path d="M0,50 C360,80 720,20 1440,50 L1440,80 L0,80 Z" fill="white" />
+          </svg>
         </div>
       </section>
 
