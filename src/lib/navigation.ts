@@ -83,7 +83,6 @@ export const navItems: NavItem[] = [
     title: "POPs",
     href: "/pops",
     icon: FileText,
-    phase: "quality",
     allowedRoles: ["admin", "tecnico"],
     children: [
       { title: "Arquivo de Certificados", href: "/pops/certificados", icon: Award },
