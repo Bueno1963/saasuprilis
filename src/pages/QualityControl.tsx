@@ -9,6 +9,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine, Responsive
 import { useQuery } from "@tanstack/react-query";
 import { mockQCData } from "@/lib/mock-data";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
+import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
 import { ChevronDown, FlaskConical } from "lucide-react";
 
 const QualityControl = () => {
