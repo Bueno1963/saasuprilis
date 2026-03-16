@@ -212,7 +212,7 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
 
                 <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
                   <h3 className="text-sm font-semibold text-foreground">Informações de Conexão — {currentType}</h3>
-                  {currentType === "HL7" && /dymind|maxcell|maxbio/i.test(currentName || integrationData?.name || "") && (
+                  {currentType === "HL7" && /dymind|maxcell|maxbio/i.test(currentName || integrationData?.name || "") && (<>
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
                       <li>Protocolo: <strong className="text-foreground">MLLP sobre TCP/IP persistente</strong> — Framing: SB(0x0B) + Data + EB(0x1C) + CR(0x0D)</li>
                       <li>Versão: <strong className="text-foreground">HL7 v2.3.1</strong> — Character Set: <strong className="text-foreground">UTF-8 (UNICODE)</strong></li>
@@ -225,7 +225,35 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
                       <li>Suporta histogramas/scattergramas em <strong className="text-foreground">BMP/PNG Base64</strong> (OBX tipo ED)</li>
                       <li>ACK timeout: reconexão automática se sem resposta no tempo configurado</li>
                     </ul>
-                  )}
+                    <div className="mt-3 rounded border border-border bg-background p-3 space-y-2">
+                      <h4 className="text-xs font-semibold text-foreground">Processo de Envio de Dados de Teste (Sending Test Data)</h4>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        O analisador bioquímico envia as informações de amostra e os resultados dos exames ao servidor LIS <strong className="text-foreground">em unidades de amostras</strong>. 
+                        Ou seja, uma amostra e seus respectivos resultados são enviados juntos como uma única mensagem. 
+                        Após determinar (validar) a mensagem, o servidor LIS responde com o ACK apropriado.
+                      </p>
+                      <div className="text-[11px] text-muted-foreground space-y-1">
+                        <p className="font-medium text-foreground">Fluxo de comunicação:</p>
+                        <ol className="list-decimal ml-4 space-y-0.5">
+                          <li>Analisador estabelece conexão TCP/IP com o servidor LIS</li>
+                          <li>Analisador envia mensagem <strong className="text-foreground">ORU^R01</strong> contendo segmentos MSH + PID + OBR + OBX (1 amostra + N resultados)</li>
+                          <li>LIS valida a mensagem e responde com <strong className="text-foreground">ACK^R01</strong> (AA=aceito, AE=erro, AR=rejeitado)</li>
+                          <li>Próxima amostra é enviada somente após receber o ACK da anterior</li>
+                        </ol>
+                      </div>
+                      <div className="text-[11px] text-muted-foreground space-y-1">
+                        <p className="font-medium text-foreground">Estrutura da mensagem ORU^R01:</p>
+                        <pre className="bg-muted rounded p-2 text-[10px] font-mono overflow-x-auto whitespace-pre">
+{`MSH|^~\\&|MaxBIO200B|LAB|LIS|HOST|...|ORU^R01|...|P|2.3.1||||||UNICODE UTF-8
+PID|||<patient_id>||<patient_name>||<DOB>|<sex>|...
+OBR|1|<sample_barcode>||<test_code>^<test_name>||<collection_dt>|...
+OBX|1|NM|<analyte_code>^<analyte_name>||<value>|<unit>|<ref_range>|<flag>|||F
+OBX|2|NM|...`}
+                        </pre>
+                      </div>
+                    </div>
+                  </>)}
+
                   {currentType === "HL7" && !/dymind|maxcell|maxbio/i.test(currentName || integrationData?.name || "") && (
                     <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
                       <li>Protocolo: <strong className="text-foreground">MLLP sobre TCP/IP</strong> — Framing: SB(0x0B) + Data + EB(0x1C) + CR(0x0D)</li>
