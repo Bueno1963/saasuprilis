@@ -33,6 +33,7 @@ const AppSidebar = () => {
     { label: "Pré-Analítica", items: filteredItems.filter(n => n.phase === "pre") },
     { label: "Analítica", items: filteredItems.filter(n => n.phase === "analytical") },
     { label: "Pós-Analítica", items: filteredItems.filter(n => n.phase === "post") },
+    { label: "Gestão da Qualidade", items: filteredItems.filter(n => n.phase === "quality") },
   ];
 
   const otherItems = filteredItems.filter(n => !n.phase && n.href !== "/");
@@ -69,11 +70,13 @@ const AppSidebar = () => {
             "Pré-Analítica": "bg-[hsl(var(--phase-pre))]",
             "Analítica": "bg-[hsl(var(--phase-analytical))]",
             "Pós-Analítica": "bg-[hsl(var(--phase-post))]",
+            "Gestão da Qualidade": "bg-[hsl(280,60%,55%)]",
           };
           const phaseTextColors: Record<string, string> = {
             "Pré-Analítica": "text-[hsl(var(--phase-pre))]",
             "Analítica": "text-[hsl(var(--phase-analytical))]",
             "Pós-Analítica": "text-[hsl(var(--phase-post))]",
+            "Gestão da Qualidade": "text-[hsl(280,60%,55%)]",
           };
           const dotColor = phaseColors[phase.label] || "bg-sidebar-primary";
           const textColor = phaseTextColors[phase.label] || "text-sidebar-primary-foreground";
