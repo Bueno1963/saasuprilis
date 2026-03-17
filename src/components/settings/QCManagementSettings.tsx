@@ -726,7 +726,7 @@ const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn }: Props) =
           <TabsTrigger value="westgard">Regras Westgard</TabsTrigger>
           <TabsTrigger value="lots">Lotes de Controle</TabsTrigger>
         </TabsList>
-        <TabsContent value="pro-in"><Card><CardContent className="pt-6"><ProINTab /></CardContent></Card></TabsContent>
+        <TabsContent value="pro-in"><Card><CardContent className="pt-6"><ProINTab onNovoAnalito={onNovoAnalitoProIn} /></CardContent></Card></TabsContent>
         <TabsContent value="pro-ex"><Card><CardContent className="pt-6"><ProEXTab /></CardContent></Card></TabsContent>
         <TabsContent value="analytes"><Card><CardContent className="pt-6"><AnalytesTab /></CardContent></Card></TabsContent>
         <TabsContent value="westgard"><Card><CardContent className="pt-6"><WestgardTab /></CardContent></Card></TabsContent>
