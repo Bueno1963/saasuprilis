@@ -436,12 +436,15 @@ const ProINTab = ({ onNovoAnalito, material, sectorLabel, sectorFilter }: { onNo
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: "Soro humano liofilizado", sector: "Bioquímica" });
+  const defaultMaterial = material || "Soro humano liofilizado";
+  const defaultSector = sectorFilter || "Bioquímica";
+  const displayLabel = sectorLabel || "Bioquímica";
+  const [form, setForm] = useState({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: defaultMaterial, sector: defaultSector });
 
   const { data: items = [] } = useQuery({
-    queryKey: ["qc_analyte_configs", "pro-in"],
+    queryKey: ["qc_analyte_configs", "pro-in", defaultSector],
     queryFn: async () => {
-      const { data, error } = await supabase.from("qc_analyte_configs").select("*").eq("sector", "Bioquímica").order("analyte_name");
+      const { data, error } = await supabase.from("qc_analyte_configs").select("*").eq("sector", defaultSector).order("analyte_name");
       if (error) throw error;
       return data;
     },
