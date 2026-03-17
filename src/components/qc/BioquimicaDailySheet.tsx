@@ -197,7 +197,7 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {REAGENTES_BIOQUIMICA.map((reagent, idx) => (
+                  {reagents.map((reagent, idx) => (
                     <tr key={reagent} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
                       <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={reagent}>
                         {reagent}
@@ -221,6 +221,42 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
           </ScrollArea>
         </CardContent>
       </Card>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Editar Reagentes</DialogTitle>
+          </DialogHeader>
+          <div className="flex gap-2 mb-3">
+            <Input
+              placeholder="Nome do novo reagente..."
+              value={newReagent}
+              onChange={(e) => setNewReagent(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddReagent()}
+            />
+            <Button size="sm" onClick={handleAddReagent} className="gap-1 shrink-0">
+              <Plus className="h-3.5 w-3.5" />
+              Adicionar
+            </Button>
+          </div>
+          <ScrollArea className="flex-1 max-h-[50vh] pr-2">
+            <div className="space-y-1">
+              {editList.map((r, i) => (
+                <div key={i} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
+                  <span className="text-xs font-medium text-foreground truncate">{r}</span>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-destructive hover:text-destructive" onClick={() => handleRemoveReagent(i)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+          <DialogFooter className="mt-3">
+            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveReagents}>Salvar Alterações</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
