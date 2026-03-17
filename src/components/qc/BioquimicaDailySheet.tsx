@@ -80,9 +80,10 @@ const MONTHS = [
 
 interface BioquimicaDailySheetProps {
   onBack: () => void;
+  title?: string;
 }
 
-const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
+const BioquimicaDailySheet = ({ onBack, title = "Bioquímica" }: BioquimicaDailySheetProps) => {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
