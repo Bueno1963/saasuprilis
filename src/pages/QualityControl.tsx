@@ -13,7 +13,7 @@ import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
 import { ChevronDown, FlaskConical } from "lucide-react";
 
 const QualityControl = () => {
-  const [activeView, setActiveView] = useState<"main" | "bioquimica" | "hematologia">("main");
+  const [activeView, setActiveView] = useState<string>("main");
 
   const { data: qcData = [] } = useQuery({
     queryKey: ["qc_data"],
