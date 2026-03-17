@@ -2,6 +2,7 @@ import { useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, FlaskConical } from "lucide-react";
+import LeveyJenningsHematologia from "@/components/qc/LeveyJenningsHematologia";
 import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
 import type { DailySheetSection } from "@/components/qc/BioquimicaDailySheet";
 import NovoAnalitoSheet from "@/components/qc/NovoAnalitoSheet";
