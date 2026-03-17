@@ -62,13 +62,12 @@ const QualityControl = () => {
     );
   }
 
-  if (activeView !== "main") {
+  if (activeView !== "main" && activeView !== "gestao-cq") {
     return (
       <div className="p-6">
         <BioquimicaDailySheet
           onBack={() => setActiveView("main")}
           title={dailySheetViews[activeView] || activeView}
-          onNovoAnalito={activeView === "pro-in" ? () => setActiveView("novo-analito-pro-in") : undefined}
         />
       </div>
     );
