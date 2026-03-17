@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ArrowLeft, Save, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Pencil, Plus, Trash2, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
+import NovoAnalitoDialog from "./NovoAnalitoDialog";
 
 const REAGENTES_BIOQUIMICA = [
   "QUIMIURIC - ÁCIDO ÚRICO 500 mL",
@@ -95,6 +96,8 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica" }: BioquimicaDaily
   const [brandName, setBrandName] = useState("EBRAM");
   const [editingBrand, setEditingBrand] = useState(false);
   const [tempBrand, setTempBrand] = useState("");
+  const [novoAnalitoOpen, setNovoAnalitoOpen] = useState(false);
+  const isProIn = title === "Pro In";
 
   const handleChange = (reagent: string, day: number, value: string) => {
     setEntries(prev => ({
@@ -203,6 +206,12 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica" }: BioquimicaDaily
               ))}
             </SelectContent>
           </Select>
+          {isProIn && (
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setNovoAnalitoOpen(true)}>
+              <FlaskConical className="h-3.5 w-3.5" />
+              Novo Analito
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="gap-1.5" onClick={openEditDialog}>
             <Pencil className="h-3.5 w-3.5" />
             Editar Reagentes
@@ -292,6 +301,10 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica" }: BioquimicaDaily
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {isProIn && (
+        <NovoAnalitoDialog open={novoAnalitoOpen} onOpenChange={setNovoAnalitoOpen} />
+      )}
     </div>
   );
 };
