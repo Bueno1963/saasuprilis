@@ -250,23 +250,52 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito, pa
                   </tr>
                 </thead>
                 <tbody>
-                  {reagents.map((reagent, idx) => (
-                    <tr key={reagent} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
-                      <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={reagent}>
-                        {reagent}
-                      </td>
-                      {DAYS.filter(d => d <= daysInMonth).map(day => (
-                        <td key={day} className="p-0.5 border-r last:border-r-0">
-                          <Input
-                            className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
-                            value={entries[reagent]?.[day] || ""}
-                            onChange={(e) => handleChange(reagent, day, e.target.value)}
-                            tabIndex={0}
-                          />
+                  {useSections ? (
+                    parameterSections!.map((section) => (
+                      <>
+                        <tr key={`section-${section.section}`} className="bg-primary/10 border-b border-border">
+                          <td colSpan={daysInMonth + 1} className="sticky left-0 z-10 p-2 text-xs font-bold text-primary uppercase tracking-wide">
+                            {section.section}
+                          </td>
+                        </tr>
+                        {section.parameters.map((param, idx) => (
+                          <tr key={`${section.section}-${param}`} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                            <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={param}>
+                              {param}
+                            </td>
+                            {DAYS.filter(d => d <= daysInMonth).map(day => (
+                              <td key={day} className="p-0.5 border-r last:border-r-0">
+                                <Input
+                                  className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
+                                  value={entries[`${section.section}-${param}`]?.[day] || ""}
+                                  onChange={(e) => handleChange(`${section.section}-${param}`, day, e.target.value)}
+                                  tabIndex={0}
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </>
+                    ))
+                  ) : (
+                    reagents.map((reagent, idx) => (
+                      <tr key={reagent} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                        <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={reagent}>
+                          {reagent}
                         </td>
-                      ))}
-                    </tr>
-                  ))}
+                        {DAYS.filter(d => d <= daysInMonth).map(day => (
+                          <td key={day} className="p-0.5 border-r last:border-r-0">
+                            <Input
+                              className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
+                              value={entries[reagent]?.[day] || ""}
+                              onChange={(e) => handleChange(reagent, day, e.target.value)}
+                              tabIndex={0}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
