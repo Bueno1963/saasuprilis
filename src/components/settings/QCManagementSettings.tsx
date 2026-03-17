@@ -287,9 +287,9 @@ const LotsTab = () => {
   });
 
   const filtered = useMemo(() => {
-    if (sectorFilter === "__all__") return lots;
-    return lots.filter((l: any) => l.sector === sectorFilter);
-  }, [lots, sectorFilter]);
+    if (categoryFilter === "__all__") return lots;
+    return lots.filter((l: any) => l.sector === categoryFilter);
+  }, [lots, categoryFilter]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, any[]>();
