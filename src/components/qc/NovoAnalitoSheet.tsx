@@ -68,7 +68,7 @@ interface NovoAnalitoSheetProps {
   title?: string;
 }
 
-const NovoAnalitoSheet = ({ onBack }: NovoAnalitoSheetProps) => {
+const NovoAnalitoSheet = ({ onBack, title: sheetTitle = "Lançar Parâmetros Controle Qualidade" }: NovoAnalitoSheetProps) => {
   const [marca, setMarca] = useState("Ebram");
   const [lote, setLote] = useState("");
   const [nivel, setNivel] = useState("N1");
