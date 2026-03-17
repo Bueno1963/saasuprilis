@@ -91,6 +91,9 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
   const [editOpen, setEditOpen] = useState(false);
   const [editList, setEditList] = useState<string[]>([]);
   const [newReagent, setNewReagent] = useState("");
+  const [brandName, setBrandName] = useState("EBRAM");
+  const [editingBrand, setEditingBrand] = useState(false);
+  const [tempBrand, setTempBrand] = useState("");
 
   const handleChange = (reagent: string, day: number, value: string) => {
     setEntries(prev => ({
