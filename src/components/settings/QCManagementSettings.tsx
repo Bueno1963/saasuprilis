@@ -515,7 +515,7 @@ const ProINTab = ({ onNovoAnalito, material, sectorLabel, sectorFilter }: { onNo
         </div>
 
         {items.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">Nenhum analito cadastrado para Bioquímica</p>
+          <p className="text-center text-muted-foreground py-8">Nenhum analito cadastrado para {displayLabel}</p>
         ) : (
           <Table>
             <TableHeader>
