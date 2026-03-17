@@ -80,6 +80,7 @@ export const navItems: NavItem[] = [
     ],
   },
   { title: "Controle de Qualidade", href: "/controle-qualidade", icon: Activity, phase: "quality", allowedRoles: ["admin", "tecnico"] },
+  { title: "CQ Hematologia", href: "/controle-qualidade-hematologia", icon: Activity, phase: "quality", allowedRoles: ["admin", "tecnico"] },
   { title: "POPs", href: "/pops", icon: FileText, phase: "quality", allowedRoles: ["admin", "tecnico"] },
   { title: "Arquivo de Certificados", href: "/pops/certificados", icon: Award, phase: "quality", allowedRoles: ["admin", "tecnico"] },
   { title: "Calendário Manutenções", href: "/pops/manutencoes", icon: CalendarClock, phase: "quality", allowedRoles: ["admin", "tecnico"] },
