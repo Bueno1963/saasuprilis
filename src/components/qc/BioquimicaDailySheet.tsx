@@ -168,6 +168,10 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
               ))}
             </SelectContent>
           </Select>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={openEditDialog}>
+            <Pencil className="h-3.5 w-3.5" />
+            Editar Reagentes
+          </Button>
           <Button size="sm" className="gap-1.5" onClick={handleSave}>
             <Save className="h-3.5 w-3.5" />
             Salvar
