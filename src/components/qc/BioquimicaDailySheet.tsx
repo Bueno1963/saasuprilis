@@ -147,7 +147,38 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
           </Button>
           <div>
             <h2 className="text-lg font-semibold text-foreground">Lançamentos Diários — Bioquímica</h2>
-            <p className="text-xs text-muted-foreground">Reagente Marca: EBRAM</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              Reagente Marca: <strong>{brandName}</strong>
+              {editingBrand ? (
+                <span className="flex items-center gap-1 ml-1">
+                  <Input
+                    className="h-6 w-32 text-xs px-2"
+                    value={tempBrand}
+                    onChange={(e) => setTempBrand(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setBrandName(tempBrand.trim() || brandName);
+                        setEditingBrand(false);
+                        toast.success("Marca atualizada!");
+                      }
+                      if (e.key === "Escape") setEditingBrand(false);
+                    }}
+                    autoFocus
+                  />
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                    setBrandName(tempBrand.trim() || brandName);
+                    setEditingBrand(false);
+                    toast.success("Marca atualizada!");
+                  }}>
+                    <Save className="h-3 w-3" />
+                  </Button>
+                </span>
+              ) : (
+                <Button variant="ghost" size="icon" className="h-5 w-5 ml-1" onClick={() => { setTempBrand(brandName); setEditingBrand(true); }}>
+                  <Pencil className="h-3 w-3" />
+                </Button>
+              )}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
