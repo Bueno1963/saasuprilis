@@ -103,7 +103,7 @@ const NovoAnalitoSheet = ({ onBack, title: sheetTitle = "Lançar Parâmetros Con
         </div>
         <Button size="sm" className="gap-1.5" onClick={handleSave}>
           <Save className="h-3.5 w-3.5" />
-          Salvar Analito
+          Salvar Alterações
         </Button>
       </div>
 
