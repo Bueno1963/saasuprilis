@@ -128,7 +128,7 @@ const QualityControlHematologia = () => {
         <NovoAnalitoSheet
           onBack={() => setActiveView("main")}
           title="Lançar Parâmetros PRO-IN Hematologia"
-          parameterSections={HEMATOLOGIA_PRO_IN_SECTIONS}
+          parameterSections={sections}
           marcaLabel="Reagente Marca"
           defaultMarca="Diagno"
         />
@@ -142,7 +142,7 @@ const QualityControlHematologia = () => {
         <NovoAnalitoSheet
           onBack={() => setActiveView("main")}
           title="Lançar Parâmetros Controle Qualidade Hematologia"
-          parameterSections={HEMATOLOGIA_PRO_IN_SECTIONS}
+          parameterSections={sections}
           marcaLabel="Reagente Marca"
           defaultMarca="Diagno"
         />
@@ -156,7 +156,7 @@ const QualityControlHematologia = () => {
         <BioquimicaDailySheet
           onBack={() => setActiveView("main")}
           title={dailySheetViews[activeView] || activeView}
-          parameterSections={HEMATOLOGIA_PRO_IN_SECTIONS}
+          parameterSections={sections}
           defaultBrand="Diagno"
           sector="Hematologia"
           sheetType={activeView}
@@ -187,6 +187,96 @@ const QualityControlHematologia = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Seções de Parâmetros com Editar/Excluir */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-base">Parâmetros Hematológicos</CardTitle>
+          <Button variant="outline" size="sm" onClick={addNewSection}>
+            <Plus className="h-4 w-4 mr-1" /> Nova Seção
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {sections.map((sec, sIdx) => (
+            <div key={sIdx} className="border rounded-lg p-3 bg-muted/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-sm text-foreground">{sec.section}</span>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditSection(sIdx)}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm({ type: "section", sectionIdx: sIdx })}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {sec.parameters.map((p, pIdx) => (
+                  <span key={pIdx} className="text-xs bg-background border rounded-md px-2 py-1 text-muted-foreground">{p}</span>
+                ))}
+                {sec.parameters.length === 0 && <span className="text-xs text-muted-foreground italic">Nenhum parâmetro</span>}
+              </div>
+            </div>
+          ))}
+          {sections.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Nenhuma seção cadastrada</p>}
+        </CardContent>
+      </Card>
+
+      {/* Dialog Editar Seção */}
+      <Dialog open={editingSectionIdx !== null} onOpenChange={(open) => !open && setEditingSectionIdx(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Seção</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground">Nome da Seção</label>
+              <Input value={editSectionName} onChange={e => setEditSectionName(e.target.value)} className="mt-1" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Parâmetros</label>
+              <div className="space-y-1.5 mt-1 max-h-48 overflow-y-auto">
+                {editParams.map((p, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Input value={p} onChange={e => { const u = [...editParams]; u[i] = e.target.value; setEditParams(u); }} className="h-8 text-sm" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-destructive hover:text-destructive" onClick={() => removeParamFromEdit(i)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-2">
+                <Input placeholder="Novo parâmetro..." value={newParamName} onChange={e => setNewParamName(e.target.value)} onKeyDown={e => e.key === "Enter" && addParamToEdit()} className="h-8 text-sm" />
+                <Button variant="outline" size="sm" onClick={addParamToEdit} disabled={!newParamName.trim()}>
+                  <Plus className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingSectionIdx(null)}>Cancelar</Button>
+            <Button onClick={saveEditSection}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Confirmar Exclusão */}
+      <Dialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {deleteConfirm?.type === "section"
+              ? `Deseja excluir a seção "${sections[deleteConfirm.sectionIdx]?.section}" e todos os seus parâmetros?`
+              : "Deseja excluir este parâmetro?"}
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Excluir</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <LeveyJenningsHematologia />
 
