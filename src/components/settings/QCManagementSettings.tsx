@@ -332,7 +332,18 @@ const LotsTab = () => {
   return (
     <>
       <div className="flex justify-between items-center mb-4">
-        <SectorFilter value={sectorFilter} onChange={setSectorFilter} sectors={sectors} />
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[200px] h-8 text-sm">
+              <SelectValue placeholder="Todas as categorias" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">Todas as categorias</SelectItem>
+              {LOTS_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
         <Button size="sm" onClick={openNew}><Plus className="w-4 h-4 mr-1" /> Novo Lote</Button>
       </div>
 
