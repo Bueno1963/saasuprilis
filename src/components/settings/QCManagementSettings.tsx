@@ -347,7 +347,7 @@ const LotsTab = () => {
         <Button size="sm" onClick={openNew}><Plus className="w-4 h-4 mr-1" /> Novo Lote</Button>
       </div>
 
-      {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum lote cadastrado{sectorFilter !== "__all__" ? " neste setor" : ""}</p>}
+      {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum lote cadastrado{categoryFilter !== "__all__" ? " nesta categoria" : ""}</p>}
 
       {[...grouped.entries()].map(([sector, sectorLots]) => (
         <div key={sector} className="mb-6 border border-border rounded-lg overflow-hidden">
