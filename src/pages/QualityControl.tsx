@@ -47,7 +47,6 @@ const QualityControl = () => {
   const dailySheetViews: Record<string, string> = {
     "bioq-normal": "Bioquímica Normal",
     "bioq-patologica": "Bioquímica Patológica",
-    "pro-ex": "Pró Ex",
     "hemato-normal": "Hematologia Nível Normal",
     "hemato-baixa": "Hematologia Baixa",
     "hemato-alta": "Hematologia Alta",
@@ -97,7 +96,6 @@ const QualityControl = () => {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setActiveView("bioq-normal")}>Bioquímica Normal</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("bioq-patologica")}>Bioquímica Patológica</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("pro-ex")}>Pró Ex</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("hemato-normal")}>Hematologia Nível Normal</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("hemato-baixa")}>Hematologia Baixa</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("hemato-alta")}>Hematologia Alta</DropdownMenuItem>
