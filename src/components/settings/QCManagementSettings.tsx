@@ -267,10 +267,12 @@ const WestgardTab = () => {
 };
 
 // ─── Control Lots Tab ───
+const LOTS_CATEGORIES = ["Pró In", "Pró Ex", "Controle Normal", "Controle Baixo"];
+
 const LotsTab = () => {
   const qc = useQueryClient();
   const sectors = useSectors();
-  const [sectorFilter, setSectorFilter] = useState("__all__");
+  const [categoryFilter, setCategoryFilter] = useState("__all__");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState({ lot_number: "", manufacturer: "", analyte_name: "", level: "N1", expected_mean: "", expected_sd: "", unit: "", expiry_date: "", notes: "", sector: "" });
@@ -285,9 +287,9 @@ const LotsTab = () => {
   });
 
   const filtered = useMemo(() => {
-    if (sectorFilter === "__all__") return lots;
-    return lots.filter((l: any) => l.sector === sectorFilter);
-  }, [lots, sectorFilter]);
+    if (categoryFilter === "__all__") return lots;
+    return lots.filter((l: any) => l.sector === categoryFilter);
+  }, [lots, categoryFilter]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, any[]>();
@@ -322,7 +324,7 @@ const LotsTab = () => {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["qc_control_lots"] }); toast.success("Removido"); },
   });
 
-  const openNew = () => { setEditing(null); setForm({ lot_number: "", manufacturer: "", analyte_name: "", level: "N1", expected_mean: "", expected_sd: "", unit: "", expiry_date: "", notes: "", sector: sectorFilter !== "__all__" ? sectorFilter : "" }); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ lot_number: "", manufacturer: "", analyte_name: "", level: "N1", expected_mean: "", expected_sd: "", unit: "", expiry_date: "", notes: "", sector: categoryFilter !== "__all__" ? categoryFilter : "" }); setOpen(true); };
   const openEdit = (item: any) => { setEditing(item); setForm({ lot_number: item.lot_number, manufacturer: item.manufacturer, analyte_name: item.analyte_name, level: item.level, expected_mean: String(item.expected_mean), expected_sd: String(item.expected_sd), unit: item.unit, expiry_date: item.expiry_date || "", notes: item.notes || "", sector: item.sector || "" }); setOpen(true); };
 
   const statusLabel: Record<string, string> = { vigente: "Vigente", vencido: "Vencido", aberto: "Aberto" };
@@ -330,11 +332,22 @@ const LotsTab = () => {
   return (
     <>
       <div className="flex justify-between items-center mb-4">
-        <SectorFilter value={sectorFilter} onChange={setSectorFilter} sectors={sectors} />
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[200px] h-8 text-sm">
+              <SelectValue placeholder="Todas as categorias" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">Todas as categorias</SelectItem>
+              {LOTS_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
         <Button size="sm" onClick={openNew}><Plus className="w-4 h-4 mr-1" /> Novo Lote</Button>
       </div>
 
-      {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum lote cadastrado{sectorFilter !== "__all__" ? " neste setor" : ""}</p>}
+      {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum lote cadastrado{categoryFilter !== "__all__" ? " nesta categoria" : ""}</p>}
 
       {[...grouped.entries()].map(([sector, sectorLots]) => (
         <div key={sector} className="mb-6 border border-border rounded-lg overflow-hidden">
