@@ -116,7 +116,7 @@ const AnalytesTab = ({ onNovoAnalito }: { onNovoAnalito?: () => void }) => {
     <>
       <div className="flex justify-between items-center mb-4">
         <SectorFilter value={sectorFilter} onChange={setSectorFilter} sectors={sectors} />
-        <Button size="sm" onClick={onNovoAnalito || openNew}><Plus className="w-4 h-4 mr-1" /> Novo Analito</Button>
+        <Button size="sm" onClick={onNovoAnalito || openNew}><Plus className="w-4 h-4 mr-1" /> Lançar Parâmetros Controle Qualidade</Button>
       </div>
 
       {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum analito cadastrado{sectorFilter !== "__all__" ? " neste setor" : ""}</p>}
