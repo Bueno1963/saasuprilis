@@ -707,7 +707,7 @@ const ProEXTab = () => {
 };
 
 // ─── Main ───
-const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn }: Props) => {
+const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnalitoNiveis }: Props) => {
   return (
     <div className={embedded ? "space-y-4" : "p-6 space-y-4"}>
       {!embedded && (
