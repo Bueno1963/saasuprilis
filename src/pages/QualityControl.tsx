@@ -43,10 +43,23 @@ const QualityControl = () => {
     status: d.status,
   }));
 
-  if (activeView === "bioquimica") {
+  const dailySheetViews: Record<string, string> = {
+    "bioq-normal": "Bioquímica Normal",
+    "bioq-patologica": "Bioquímica Patológica",
+    "pro-in": "Pro In",
+    "pro-ex": "Pró Ex",
+    "hemato-normal": "Hematologia Nível Normal",
+    "hemato-baixa": "Hematologia Baixa",
+    "hemato-alta": "Hematologia Alta",
+  };
+
+  if (activeView !== "main") {
     return (
       <div className="p-6">
-        <BioquimicaDailySheet onBack={() => setActiveView("main")} />
+        <BioquimicaDailySheet
+          onBack={() => setActiveView("main")}
+          title={dailySheetViews[activeView] || activeView}
+        />
       </div>
     );
   }
