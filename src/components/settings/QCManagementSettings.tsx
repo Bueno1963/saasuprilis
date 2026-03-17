@@ -20,6 +20,11 @@ interface Props {
   embedded?: boolean;
   onNovoAnalitoProIn?: () => void;
   onNovoAnalitoNiveis?: () => void;
+  sectorTitle?: string;
+  sectorDescription?: string;
+  proInMaterial?: string;
+  proInSectorLabel?: string;
+  proInSectorFilter?: string;
 }
 
 // Hook to get distinct sectors from exam_catalog
@@ -427,16 +432,19 @@ const LotsTab = () => {
 };
 
 // ─── PRO-IN Tab (Controle Interno) ───
-const ProINTab = ({ onNovoAnalito }: { onNovoAnalito?: () => void }) => {
+const ProINTab = ({ onNovoAnalito, material, sectorLabel, sectorFilter }: { onNovoAnalito?: () => void; material?: string; sectorLabel?: string; sectorFilter?: string }) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: "Soro humano liofilizado", sector: "Bioquímica" });
+  const defaultMaterial = material || "Soro humano liofilizado";
+  const defaultSector = sectorFilter || "Bioquímica";
+  const displayLabel = sectorLabel || "Bioquímica";
+  const [form, setForm] = useState({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: defaultMaterial, sector: defaultSector });
 
   const { data: items = [] } = useQuery({
-    queryKey: ["qc_analyte_configs", "pro-in"],
+    queryKey: ["qc_analyte_configs", "pro-in", defaultSector],
     queryFn: async () => {
-      const { data, error } = await supabase.from("qc_analyte_configs").select("*").eq("sector", "Bioquímica").order("analyte_name");
+      const { data, error } = await supabase.from("qc_analyte_configs").select("*").eq("sector", defaultSector).order("analyte_name");
       if (error) throw error;
       return data;
     },
@@ -465,8 +473,8 @@ const ProINTab = ({ onNovoAnalito }: { onNovoAnalito?: () => void }) => {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["qc_analyte_configs"] }); toast.success("Removido"); },
   });
 
-  const openNew = () => { setEditing(null); setForm({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: "Soro humano liofilizado", sector: "Bioquímica" }); setOpen(true); };
-  const openEdit = (item: any) => { setEditing(item); setForm({ analyte_name: item.analyte_name, equipment: item.equipment, level: item.level, lot_number: item.lot_number, target_mean: String(item.target_mean), target_sd: String(item.target_sd), unit: item.unit, material: item.material, sector: item.sector || "Bioquímica" }); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: defaultMaterial, sector: defaultSector }); setOpen(true); };
+  const openEdit = (item: any) => { setEditing(item); setForm({ analyte_name: item.analyte_name, equipment: item.equipment, level: item.level, lot_number: item.lot_number, target_mean: String(item.target_mean), target_sd: String(item.target_sd), unit: item.unit, material: item.material, sector: item.sector || defaultSector }); setOpen(true); };
 
   return (
     <>
@@ -476,7 +484,7 @@ const ProINTab = ({ onNovoAnalito }: { onNovoAnalito?: () => void }) => {
           <Target className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
           <div className="space-y-2 text-sm">
             <h4 className="font-bold text-blue-800 dark:text-blue-300">Controle Interno da Qualidade (PRO-IN) — PNCQ</h4>
-            <p className="text-blue-700 dark:text-blue-400">Ferramenta contínua que utiliza <strong>soro humano liofilizado</strong> (bioquímica) para monitorar a rotina laboratorial.</p>
+            <p className="text-blue-700 dark:text-blue-400">Ferramenta contínua que utiliza <strong>{defaultMaterial}</strong> ({displayLabel.toLowerCase()}) para monitorar a rotina laboratorial.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
               <div className="bg-white/70 dark:bg-blue-900/30 rounded-md p-2.5 border border-blue-100 dark:border-blue-800">
                 <p className="font-semibold text-blue-800 dark:text-blue-300 text-xs uppercase tracking-wide">Finalidade</p>
@@ -500,14 +508,14 @@ const ProINTab = ({ onNovoAnalito }: { onNovoAnalito?: () => void }) => {
         <div className="flex items-center justify-between gap-3 px-4 py-3 bg-primary/10 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-primary" />
-            <h3 className="text-sm font-bold text-primary uppercase tracking-wide">Bioquímica — PRO-IN</h3>
+            <h3 className="text-sm font-bold text-primary uppercase tracking-wide">{displayLabel} — PRO-IN</h3>
             <span className="text-xs text-muted-foreground">({items.length} analito{items.length !== 1 ? "s" : ""})</span>
           </div>
            <Button size="sm" onClick={onNovoAnalito || openNew}><Plus className="w-4 h-4 mr-1" /> Lançar Parâmetros Pro IN</Button>
         </div>
 
         {items.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">Nenhum analito cadastrado para Bioquímica</p>
+          <p className="text-center text-muted-foreground py-8">Nenhum analito cadastrado para {displayLabel}</p>
         ) : (
           <Table>
             <TableHeader>
@@ -720,7 +728,7 @@ const ProEXTab = () => {
 };
 
 // ─── Main ───
-const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnalitoNiveis }: Props) => {
+const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnalitoNiveis, sectorTitle, sectorDescription, proInMaterial, proInSectorLabel, proInSectorFilter }: Props) => {
   return (
     <div className={embedded ? "space-y-4" : "p-6 space-y-4"}>
       {!embedded && (
@@ -729,8 +737,8 @@ const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnal
         </Button>
       )}
       <div>
-        <h2 className="text-xl font-bold text-foreground">Gestão Controle de Qualidade Bioquímica</h2>
-        <p className="text-sm text-muted-foreground">Configuração de analitos, regras de Westgard, lotes de controle, PRO-IN e PRO-EX — organizados por setor</p>
+        <h2 className="text-xl font-bold text-foreground">{sectorTitle || "Gestão Controle de Qualidade Bioquímica"}</h2>
+        <p className="text-sm text-muted-foreground">{sectorDescription || "Configuração de analitos, regras de Westgard, lotes de controle, PRO-IN e PRO-EX — organizados por setor"}</p>
       </div>
       <Tabs defaultValue="pro-in">
         <TabsList className="flex-wrap h-auto gap-1">
@@ -740,7 +748,7 @@ const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnal
           <TabsTrigger value="westgard">Regras Westgard</TabsTrigger>
           <TabsTrigger value="lots">Lotes de Controle</TabsTrigger>
         </TabsList>
-        <TabsContent value="pro-in"><Card><CardContent className="pt-6"><ProINTab onNovoAnalito={onNovoAnalitoProIn} /></CardContent></Card></TabsContent>
+        <TabsContent value="pro-in"><Card><CardContent className="pt-6"><ProINTab onNovoAnalito={onNovoAnalitoProIn} material={proInMaterial} sectorLabel={proInSectorLabel} sectorFilter={proInSectorFilter} /></CardContent></Card></TabsContent>
         <TabsContent value="pro-ex"><Card><CardContent className="pt-6"><ProEXTab /></CardContent></Card></TabsContent>
         <TabsContent value="analytes"><Card><CardContent className="pt-6"><AnalytesTab onNovoAnalito={onNovoAnalitoNiveis} /></CardContent></Card></TabsContent>
         <TabsContent value="westgard"><Card><CardContent className="pt-6"><WestgardTab /></CardContent></Card></TabsContent>
