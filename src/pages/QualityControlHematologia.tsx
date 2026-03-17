@@ -121,6 +121,8 @@ const QualityControlHematologia = () => {
         </DropdownMenu>
       </div>
 
+      <LeveyJenningsHematologia />
+
       <QCManagementSettings
         onBack={() => {}}
         embedded
