@@ -206,6 +206,12 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica" }: BioquimicaDaily
               ))}
             </SelectContent>
           </Select>
+          {isProIn && (
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setNovoAnalitoOpen(true)}>
+              <FlaskConical className="h-3.5 w-3.5" />
+              Novo Analito
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="gap-1.5" onClick={openEditDialog}>
             <Pencil className="h-3.5 w-3.5" />
             Editar Reagentes
