@@ -18,6 +18,7 @@ import { toast } from "sonner";
 interface Props {
   onBack: () => void;
   embedded?: boolean;
+  onNovoAnalitoProIn?: () => void;
 }
 
 // Hook to get distinct sectors from exam_catalog

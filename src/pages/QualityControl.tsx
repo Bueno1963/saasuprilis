@@ -57,7 +57,7 @@ const QualityControl = () => {
   if (activeView === "novo-analito-pro-in") {
     return (
       <div className="p-6">
-        <NovoAnalitoSheet onBack={() => setActiveView("pro-in")} />
+        <NovoAnalitoSheet onBack={() => setActiveView("gestao-cq")} />
       </div>
     );
   }
