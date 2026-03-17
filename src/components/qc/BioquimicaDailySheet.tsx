@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ArrowLeft, Save, Pencil, Plus, Trash2, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
-import NovoAnalitoDialog from "./NovoAnalitoDialog";
+
 
 const REAGENTES_BIOQUIMICA = [
   "QUIMIURIC - ÁCIDO ÚRICO 500 mL",
