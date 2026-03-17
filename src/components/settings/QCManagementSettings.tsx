@@ -324,7 +324,7 @@ const LotsTab = () => {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["qc_control_lots"] }); toast.success("Removido"); },
   });
 
-  const openNew = () => { setEditing(null); setForm({ lot_number: "", manufacturer: "", analyte_name: "", level: "N1", expected_mean: "", expected_sd: "", unit: "", expiry_date: "", notes: "", sector: sectorFilter !== "__all__" ? sectorFilter : "" }); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ lot_number: "", manufacturer: "", analyte_name: "", level: "N1", expected_mean: "", expected_sd: "", unit: "", expiry_date: "", notes: "", sector: categoryFilter !== "__all__" ? categoryFilter : "" }); setOpen(true); };
   const openEdit = (item: any) => { setEditing(item); setForm({ lot_number: item.lot_number, manufacturer: item.manufacturer, analyte_name: item.analyte_name, level: item.level, expected_mean: String(item.expected_mean), expected_sd: String(item.expected_sd), unit: item.unit, expiry_date: item.expiry_date || "", notes: item.notes || "", sector: item.sector || "" }); setOpen(true); };
 
   const statusLabel: Record<string, string> = { vigente: "Vigente", vencido: "Vencido", aberto: "Aberto" };
