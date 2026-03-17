@@ -61,15 +61,30 @@ const REAGENTES_PRO_IN = [
   "QUIMILIP - LIPASE R1 = 4 x 10mL, R2 = 1 x 10mL",
 ];
 
+export interface ParameterSection {
+  section: string;
+  parameters: string[];
+}
+
 const COLUMNS = ["Limite baixo", "Média", "Limite alto", "DP esperado"];
 
 interface NovoAnalitoSheetProps {
   onBack: () => void;
   title?: string;
+  /** If provided, renders sectioned parameters instead of flat REAGENTES_PRO_IN list */
+  parameterSections?: ParameterSection[];
+  marcaLabel?: string;
+  defaultMarca?: string;
 }
 
-const NovoAnalitoSheet = ({ onBack, title: sheetTitle = "Lançar Parâmetros Controle Qualidade" }: NovoAnalitoSheetProps) => {
-  const [marca, setMarca] = useState("Ebram");
+const NovoAnalitoSheet = ({
+  onBack,
+  title: sheetTitle = "Lançar Parâmetros Controle Qualidade",
+  parameterSections,
+  marcaLabel = "Reagente Marca",
+  defaultMarca = "Ebram",
+}: NovoAnalitoSheetProps) => {
+  const [marca, setMarca] = useState(defaultMarca);
   const [lote, setLote] = useState("");
   const [nivel, setNivel] = useState("N1");
   const [data, setData] = useState("");
@@ -86,8 +101,11 @@ const NovoAnalitoSheet = ({ onBack, title: sheetTitle = "Lançar Parâmetros Con
   };
 
   const handleSave = () => {
-    toast.success("Analito salvo com sucesso!");
+    toast.success("Parâmetros salvos com sucesso!");
   };
+
+  // Flat list for legacy mode
+  const useSections = parameterSections && parameterSections.length > 0;
 
   return (
     <div className="space-y-4">
@@ -98,7 +116,7 @@ const NovoAnalitoSheet = ({ onBack, title: sheetTitle = "Lançar Parâmetros Con
           </Button>
           <div>
             <h2 className="text-lg font-semibold text-foreground">{sheetTitle}</h2>
-            <p className="text-xs text-muted-foreground">Preencha os dados do analito e os limites para cada reagente</p>
+            <p className="text-xs text-muted-foreground">Preencha os dados e os limites para cada parâmetro</p>
           </div>
         </div>
         <Button size="sm" className="gap-1.5" onClick={handleSave}>
@@ -109,7 +127,7 @@ const NovoAnalitoSheet = ({ onBack, title: sheetTitle = "Lançar Parâmetros Con
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">Reagente Marca</label>
+          <label className="text-xs font-medium text-muted-foreground">{marcaLabel}</label>
           <Input className="h-8 text-xs" value={marca} onChange={e => setMarca(e.target.value)} />
         </div>
         <div className="space-y-1">
@@ -133,8 +151,8 @@ const NovoAnalitoSheet = ({ onBack, title: sheetTitle = "Lançar Parâmetros Con
               <table className="w-full text-xs border-collapse">
                 <thead>
                   <tr className="border-b bg-muted/60">
-                    <th className="sticky left-0 z-10 bg-muted/95 backdrop-blur-sm text-left p-2 min-w-[340px] font-medium text-muted-foreground border-r">
-                      Reagente
+                    <th className="sticky left-0 z-10 bg-muted/95 backdrop-blur-sm text-left p-2 min-w-[280px] font-medium text-muted-foreground border-r">
+                      Parâmetro
                     </th>
                     {COLUMNS.map(col => (
                       <th key={col} className="p-2 text-center font-medium text-muted-foreground min-w-[120px] border-r last:border-r-0">
@@ -144,28 +162,62 @@ const NovoAnalitoSheet = ({ onBack, title: sheetTitle = "Lançar Parâmetros Con
                   </tr>
                 </thead>
                 <tbody>
-                  {REAGENTES_PRO_IN.map((reagent, idx) => (
-                    <tr
-                      key={reagent}
-                      className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}
-                    >
-                      <td
-                        className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[340px]"
-                        title={reagent}
+                  {useSections ? (
+                    parameterSections!.map((section) => (
+                      <>
+                        <tr key={`section-${section.section}`} className="bg-primary/10 border-b border-border">
+                          <td colSpan={5} className="sticky left-0 z-10 p-2 text-xs font-bold text-primary uppercase tracking-wide">
+                            {section.section}
+                          </td>
+                        </tr>
+                        {section.parameters.map((param, idx) => (
+                          <tr
+                            key={`${section.section}-${param}`}
+                            className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}
+                          >
+                            <td
+                              className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]"
+                              title={param}
+                            >
+                              {param}
+                            </td>
+                            {COLUMNS.map(col => (
+                              <td key={col} className="p-0.5 border-r last:border-r-0">
+                                <Input
+                                  className="h-7 w-full text-center text-[11px] px-1 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
+                                  value={values[`${section.section}-${param}`]?.[col] || ""}
+                                  onChange={e => handleChange(`${section.section}-${param}`, col, e.target.value)}
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </>
+                    ))
+                  ) : (
+                    REAGENTES_PRO_IN.map((reagent, idx) => (
+                      <tr
+                        key={reagent}
+                        className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}
                       >
-                        {reagent}
-                      </td>
-                      {COLUMNS.map(col => (
-                        <td key={col} className="p-0.5 border-r last:border-r-0">
-                          <Input
-                            className="h-7 w-full text-center text-[11px] px-1 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
-                            value={values[reagent]?.[col] || ""}
-                            onChange={e => handleChange(reagent, col, e.target.value)}
-                          />
+                        <td
+                          className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[340px]"
+                          title={reagent}
+                        >
+                          {reagent}
                         </td>
-                      ))}
-                    </tr>
-                  ))}
+                        {COLUMNS.map(col => (
+                          <td key={col} className="p-0.5 border-r last:border-r-0">
+                            <Input
+                              className="h-7 w-full text-center text-[11px] px-1 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
+                              value={values[reagent]?.[col] || ""}
+                              onChange={e => handleChange(reagent, col, e.target.value)}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
