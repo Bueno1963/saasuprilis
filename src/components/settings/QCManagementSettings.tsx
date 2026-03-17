@@ -20,6 +20,11 @@ interface Props {
   embedded?: boolean;
   onNovoAnalitoProIn?: () => void;
   onNovoAnalitoNiveis?: () => void;
+  sectorTitle?: string;
+  sectorDescription?: string;
+  proInMaterial?: string;
+  proInSectorLabel?: string;
+  proInSectorFilter?: string;
 }
 
 // Hook to get distinct sectors from exam_catalog
