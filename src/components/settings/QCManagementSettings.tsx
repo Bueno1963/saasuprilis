@@ -728,7 +728,7 @@ const ProEXTab = () => {
 };
 
 // ─── Main ───
-const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnalitoNiveis }: Props) => {
+const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnalitoNiveis, sectorTitle, sectorDescription, proInMaterial, proInSectorLabel, proInSectorFilter }: Props) => {
   return (
     <div className={embedded ? "space-y-4" : "p-6 space-y-4"}>
       {!embedded && (
@@ -737,8 +737,8 @@ const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnal
         </Button>
       )}
       <div>
-        <h2 className="text-xl font-bold text-foreground">Gestão Controle de Qualidade Bioquímica</h2>
-        <p className="text-sm text-muted-foreground">Configuração de analitos, regras de Westgard, lotes de controle, PRO-IN e PRO-EX — organizados por setor</p>
+        <h2 className="text-xl font-bold text-foreground">{sectorTitle || "Gestão Controle de Qualidade Bioquímica"}</h2>
+        <p className="text-sm text-muted-foreground">{sectorDescription || "Configuração de analitos, regras de Westgard, lotes de controle, PRO-IN e PRO-EX — organizados por setor"}</p>
       </div>
       <Tabs defaultValue="pro-in">
         <TabsList className="flex-wrap h-auto gap-1">
@@ -748,7 +748,7 @@ const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnal
           <TabsTrigger value="westgard">Regras Westgard</TabsTrigger>
           <TabsTrigger value="lots">Lotes de Controle</TabsTrigger>
         </TabsList>
-        <TabsContent value="pro-in"><Card><CardContent className="pt-6"><ProINTab onNovoAnalito={onNovoAnalitoProIn} /></CardContent></Card></TabsContent>
+        <TabsContent value="pro-in"><Card><CardContent className="pt-6"><ProINTab onNovoAnalito={onNovoAnalitoProIn} material={proInMaterial} sectorLabel={proInSectorLabel} sectorFilter={proInSectorFilter} /></CardContent></Card></TabsContent>
         <TabsContent value="pro-ex"><Card><CardContent className="pt-6"><ProEXTab /></CardContent></Card></TabsContent>
         <TabsContent value="analytes"><Card><CardContent className="pt-6"><AnalytesTab onNovoAnalito={onNovoAnalitoNiveis} /></CardContent></Card></TabsContent>
         <TabsContent value="westgard"><Card><CardContent className="pt-6"><WestgardTab /></CardContent></Card></TabsContent>
