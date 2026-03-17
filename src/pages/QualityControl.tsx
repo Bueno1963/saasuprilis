@@ -13,7 +13,7 @@ import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
 import { ChevronDown, FlaskConical } from "lucide-react";
 
 const QualityControl = () => {
-  const [activeView, setActiveView] = useState<"main" | "bioquimica" | "hematologia">("main");
+  const [activeView, setActiveView] = useState<string>("main");
 
   const { data: qcData = [] } = useQuery({
     queryKey: ["qc_data"],
@@ -43,10 +43,23 @@ const QualityControl = () => {
     status: d.status,
   }));
 
-  if (activeView === "bioquimica") {
+  const dailySheetViews: Record<string, string> = {
+    "bioq-normal": "Bioquímica Normal",
+    "bioq-patologica": "Bioquímica Patológica",
+    "pro-in": "Pro In",
+    "pro-ex": "Pró Ex",
+    "hemato-normal": "Hematologia Nível Normal",
+    "hemato-baixa": "Hematologia Baixa",
+    "hemato-alta": "Hematologia Alta",
+  };
+
+  if (activeView !== "main") {
     return (
       <div className="p-6">
-        <BioquimicaDailySheet onBack={() => setActiveView("main")} />
+        <BioquimicaDailySheet
+          onBack={() => setActiveView("main")}
+          title={dailySheetViews[activeView] || activeView}
+        />
       </div>
     );
   }
@@ -73,8 +86,13 @@ const QualityControl = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setActiveView("bioquimica")}>Bioquímica</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("hematologia")}>Hematologia</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("bioq-normal")}>Bioquímica Normal</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("bioq-patologica")}>Bioquímica Patológica</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("pro-in")}>Pro In</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("pro-ex")}>Pró Ex</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("hemato-normal")}>Hematologia Nível Normal</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("hemato-baixa")}>Hematologia Baixa</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("hemato-alta")}>Hematologia Alta</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
