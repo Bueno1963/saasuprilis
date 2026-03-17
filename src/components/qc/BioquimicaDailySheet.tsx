@@ -96,6 +96,8 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica" }: BioquimicaDaily
   const [brandName, setBrandName] = useState("EBRAM");
   const [editingBrand, setEditingBrand] = useState(false);
   const [tempBrand, setTempBrand] = useState("");
+  const [novoAnalitoOpen, setNovoAnalitoOpen] = useState(false);
+  const isProIn = title === "Pro In";
 
   const handleChange = (reagent: string, day: number, value: string) => {
     setEntries(prev => ({
