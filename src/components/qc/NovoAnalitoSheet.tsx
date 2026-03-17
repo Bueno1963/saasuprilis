@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Save } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
 
 const REAGENTES_PRO_IN = [
@@ -63,12 +63,11 @@ const REAGENTES_PRO_IN = [
 
 const COLUMNS = ["Limite baixo", "Média", "Limite alto", "DP esperado"];
 
-interface NovoAnalitoDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface NovoAnalitoSheetProps {
+  onBack: () => void;
 }
 
-const NovoAnalitoDialog = ({ open, onOpenChange }: NovoAnalitoDialogProps) => {
+const NovoAnalitoSheet = ({ onBack }: NovoAnalitoSheetProps) => {
   const [marca, setMarca] = useState("Ebram");
   const [lote, setLote] = useState("");
   const [nivel, setNivel] = useState("N1");
@@ -87,38 +86,49 @@ const NovoAnalitoDialog = ({ open, onOpenChange }: NovoAnalitoDialogProps) => {
 
   const handleSave = () => {
     toast.success("Analito salvo com sucesso!");
-    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-3">
-          <DialogTitle className="text-lg">Novo Analito — Pro In</DialogTitle>
-        </DialogHeader>
-
-        <div className="px-6 pb-3 grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Reagente Marca</label>
-            <Input className="h-8 text-xs" value={marca} onChange={e => setMarca(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Lote</label>
-            <Input className="h-8 text-xs" value={lote} onChange={e => setLote(e.target.value)} placeholder="Ex: ABC123" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Nível</label>
-            <Input className="h-8 text-xs" value={nivel} onChange={e => setNivel(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Data</label>
-            <Input className="h-8 text-xs" type="date" value={data} onChange={e => setData(e.target.value)} />
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Novo Analito — Pro In</h2>
+            <p className="text-xs text-muted-foreground">Preencha os dados do analito e os limites para cada reagente</p>
           </div>
         </div>
+        <Button size="sm" className="gap-1.5" onClick={handleSave}>
+          <Save className="h-3.5 w-3.5" />
+          Salvar Analito
+        </Button>
+      </div>
 
-        <div className="flex-1 overflow-hidden px-6">
-          <ScrollArea className="h-[55vh] w-full">
-            <div className="min-w-[700px]">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">Reagente Marca</label>
+          <Input className="h-8 text-xs" value={marca} onChange={e => setMarca(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">Lote</label>
+          <Input className="h-8 text-xs" value={lote} onChange={e => setLote(e.target.value)} placeholder="Ex: ABC123" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">Nível</label>
+          <Input className="h-8 text-xs" value={nivel} onChange={e => setNivel(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">Data</label>
+          <Input className="h-8 text-xs" type="date" value={data} onChange={e => setData(e.target.value)} />
+        </div>
+      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <ScrollArea className="w-full">
+            <div className="min-w-[800px]">
               <table className="w-full text-xs border-collapse">
                 <thead>
                   <tr className="border-b bg-muted/60">
@@ -126,7 +136,7 @@ const NovoAnalitoDialog = ({ open, onOpenChange }: NovoAnalitoDialogProps) => {
                       Reagente
                     </th>
                     {COLUMNS.map(col => (
-                      <th key={col} className="p-2 text-center font-medium text-muted-foreground min-w-[110px] border-r last:border-r-0">
+                      <th key={col} className="p-2 text-center font-medium text-muted-foreground min-w-[120px] border-r last:border-r-0">
                         {col}
                       </th>
                     ))}
@@ -160,18 +170,10 @@ const NovoAnalitoDialog = ({ open, onOpenChange }: NovoAnalitoDialogProps) => {
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
-        </div>
-
-        <DialogFooter className="px-6 py-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} className="gap-1.5">
-            <Save className="h-3.5 w-3.5" />
-            Salvar Analito
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
-export default NovoAnalitoDialog;
+export default NovoAnalitoSheet;

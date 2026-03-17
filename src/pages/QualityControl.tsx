@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { mockQCData } from "@/lib/mock-data";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
 import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
+import NovoAnalitoSheet from "@/components/qc/NovoAnalitoSheet";
 import { ChevronDown, FlaskConical } from "lucide-react";
 
 const QualityControl = () => {
@@ -53,12 +54,21 @@ const QualityControl = () => {
     "hemato-alta": "Hematologia Alta",
   };
 
+  if (activeView === "novo-analito-pro-in") {
+    return (
+      <div className="p-6">
+        <NovoAnalitoSheet onBack={() => setActiveView("pro-in")} />
+      </div>
+    );
+  }
+
   if (activeView !== "main") {
     return (
       <div className="p-6">
         <BioquimicaDailySheet
           onBack={() => setActiveView("main")}
           title={dailySheetViews[activeView] || activeView}
+          onNovoAnalito={activeView === "pro-in" ? () => setActiveView("novo-analito-pro-in") : undefined}
         />
       </div>
     );
