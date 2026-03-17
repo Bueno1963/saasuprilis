@@ -82,9 +82,10 @@ const MONTHS = [
 interface BioquimicaDailySheetProps {
   onBack: () => void;
   title?: string;
+  onNovoAnalito?: () => void;
 }
 
-const BioquimicaDailySheet = ({ onBack, title = "Bioquímica" }: BioquimicaDailySheetProps) => {
+const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito }: BioquimicaDailySheetProps) => {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
@@ -96,8 +97,6 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica" }: BioquimicaDaily
   const [brandName, setBrandName] = useState("EBRAM");
   const [editingBrand, setEditingBrand] = useState(false);
   const [tempBrand, setTempBrand] = useState("");
-  const [novoAnalitoOpen, setNovoAnalitoOpen] = useState(false);
-  const isProIn = title === "Pro In";
 
   const handleChange = (reagent: string, day: number, value: string) => {
     setEntries(prev => ({
