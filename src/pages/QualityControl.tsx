@@ -86,8 +86,13 @@ const QualityControl = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setActiveView("bioquimica")}>Bioquímica</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("hematologia")}>Hematologia</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("bioq-normal")}>Bioquímica Normal</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("bioq-patologica")}>Bioquímica Patológica</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("pro-in")}>Pro In</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("pro-ex")}>Pró Ex</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("hemato-normal")}>Hematologia Nível Normal</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("hemato-baixa")}>Hematologia Baixa</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView("hemato-alta")}>Hematologia Alta</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

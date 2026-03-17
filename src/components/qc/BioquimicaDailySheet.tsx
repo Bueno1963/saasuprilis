@@ -147,7 +147,7 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica" }: BioquimicaDaily
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Lançamentos Diários — Bioquímica</h2>
+            <h2 className="text-lg font-semibold text-foreground">Lançamentos Diários — {title}</h2>
             <p className="text-xs text-muted-foreground flex items-center gap-1.5">
               Reagente Marca: <strong>{brandName}</strong>
               {editingBrand ? (
