@@ -80,7 +80,7 @@ const QualityControl = () => {
         <p className="text-sm text-muted-foreground">Monitoramento de precisão analítica e gestão de controles</p>
       </div>
 
-      <Tabs defaultValue="levey-jennings" className="space-y-4">
+      <Tabs defaultValue={activeView === "gestao-cq" ? "gestao" : "levey-jennings"} className="space-y-4">
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger value="levey-jennings">Levey-Jennings</TabsTrigger>
