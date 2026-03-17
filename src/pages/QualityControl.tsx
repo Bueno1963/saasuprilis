@@ -47,9 +47,6 @@ const QualityControl = () => {
   const dailySheetViews: Record<string, string> = {
     "bioq-normal": "Bioquímica Normal",
     "bioq-patologica": "Bioquímica Patológica",
-    "hemato-normal": "Hematologia Nível Normal",
-    "hemato-baixa": "Hematologia Baixa",
-    "hemato-alta": "Hematologia Alta",
   };
 
   if (activeView === "novo-analito-pro-in" || activeView === "novo-analito-niveis") {
