@@ -79,10 +79,18 @@ const MONTHS = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
+export interface DailySheetSection {
+  section: string;
+  parameters: string[];
+}
+
 interface BioquimicaDailySheetProps {
   onBack: () => void;
   title?: string;
   onNovoAnalito?: () => void;
+  /** If provided, renders sectioned rows instead of flat reagent list */
+  parameterSections?: DailySheetSection[];
+  defaultBrand?: string;
 }
 
 const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito }: BioquimicaDailySheetProps) => {
