@@ -96,7 +96,7 @@ const NovoAnalitoSheet = ({ onBack }: NovoAnalitoSheetProps) => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Novo Analito — Pro In</h2>
+            <h2 className="text-lg font-semibold text-foreground">Lançar Parâmetros Pro IN</h2>
             <p className="text-xs text-muted-foreground">Preencha os dados do analito e os limites para cada reagente</p>
           </div>
         </div>
