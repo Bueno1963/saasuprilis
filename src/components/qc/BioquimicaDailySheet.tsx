@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ArrowLeft, Save, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const REAGENTES_BIOQUIMICA = [
@@ -86,6 +87,10 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
   const [entries, setEntries] = useState<Record<string, Record<number, string>>>({});
+  const [reagents, setReagents] = useState<string[]>(REAGENTES_BIOQUIMICA);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editList, setEditList] = useState<string[]>([]);
+  const [newReagent, setNewReagent] = useState("");
 
   const handleChange = (reagent: string, day: number, value: string) => {
     setEntries(prev => ({
@@ -99,6 +104,33 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
 
   const handleSave = () => {
     toast.success("Lançamentos salvos com sucesso!");
+  };
+
+  const openEditDialog = () => {
+    setEditList([...reagents]);
+    setNewReagent("");
+    setEditOpen(true);
+  };
+
+  const handleAddReagent = () => {
+    const trimmed = newReagent.trim();
+    if (!trimmed) return;
+    if (editList.includes(trimmed)) {
+      toast.error("Reagente já existe na lista.");
+      return;
+    }
+    setEditList(prev => [...prev, trimmed]);
+    setNewReagent("");
+  };
+
+  const handleRemoveReagent = (index: number) => {
+    setEditList(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSaveReagents = () => {
+    setReagents(editList);
+    setEditOpen(false);
+    toast.success("Lista de reagentes atualizada!");
   };
 
   const daysInMonth = new Date(Number(selectedYear), Number(selectedMonth) + 1, 0).getDate();
@@ -136,6 +168,10 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
               ))}
             </SelectContent>
           </Select>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={openEditDialog}>
+            <Pencil className="h-3.5 w-3.5" />
+            Editar Reagentes
+          </Button>
           <Button size="sm" className="gap-1.5" onClick={handleSave}>
             <Save className="h-3.5 w-3.5" />
             Salvar
@@ -161,7 +197,7 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {REAGENTES_BIOQUIMICA.map((reagent, idx) => (
+                  {reagents.map((reagent, idx) => (
                     <tr key={reagent} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
                       <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={reagent}>
                         {reagent}
@@ -185,6 +221,42 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
           </ScrollArea>
         </CardContent>
       </Card>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Editar Reagentes</DialogTitle>
+          </DialogHeader>
+          <div className="flex gap-2 mb-3">
+            <Input
+              placeholder="Nome do novo reagente..."
+              value={newReagent}
+              onChange={(e) => setNewReagent(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddReagent()}
+            />
+            <Button size="sm" onClick={handleAddReagent} className="gap-1 shrink-0">
+              <Plus className="h-3.5 w-3.5" />
+              Adicionar
+            </Button>
+          </div>
+          <ScrollArea className="flex-1 max-h-[50vh] pr-2">
+            <div className="space-y-1">
+              {editList.map((r, i) => (
+                <div key={i} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
+                  <span className="text-xs font-medium text-foreground truncate">{r}</span>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-destructive hover:text-destructive" onClick={() => handleRemoveReagent(i)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+          <DialogFooter className="mt-3">
+            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveReagents}>Salvar Alterações</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
