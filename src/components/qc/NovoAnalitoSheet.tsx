@@ -65,6 +65,7 @@ const COLUMNS = ["Limite baixo", "Média", "Limite alto", "DP esperado"];
 
 interface NovoAnalitoSheetProps {
   onBack: () => void;
+  title?: string;
 }
 
 const NovoAnalitoSheet = ({ onBack }: NovoAnalitoSheetProps) => {
