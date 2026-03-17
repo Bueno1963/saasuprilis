@@ -729,7 +729,7 @@ const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnal
         </TabsList>
         <TabsContent value="pro-in"><Card><CardContent className="pt-6"><ProINTab onNovoAnalito={onNovoAnalitoProIn} /></CardContent></Card></TabsContent>
         <TabsContent value="pro-ex"><Card><CardContent className="pt-6"><ProEXTab /></CardContent></Card></TabsContent>
-        <TabsContent value="analytes"><Card><CardContent className="pt-6"><AnalytesTab /></CardContent></Card></TabsContent>
+        <TabsContent value="analytes"><Card><CardContent className="pt-6"><AnalytesTab onNovoAnalito={onNovoAnalitoNiveis} /></CardContent></Card></TabsContent>
         <TabsContent value="westgard"><Card><CardContent className="pt-6"><WestgardTab /></CardContent></Card></TabsContent>
         <TabsContent value="lots"><Card><CardContent className="pt-6"><LotsTab /></CardContent></Card></TabsContent>
       </Tabs>
