@@ -19,6 +19,7 @@ interface Props {
   onBack: () => void;
   embedded?: boolean;
   onNovoAnalitoProIn?: () => void;
+  onNovoAnalitoNiveis?: () => void;
 }
 
 // Hook to get distinct sectors from exam_catalog
