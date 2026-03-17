@@ -93,12 +93,20 @@ interface BioquimicaDailySheetProps {
   defaultBrand?: string;
 }
 
-const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito }: BioquimicaDailySheetProps) => {
+const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito, parameterSections, defaultBrand = "EBRAM" }: BioquimicaDailySheetProps) => {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
   const [entries, setEntries] = useState<Record<string, Record<number, string>>>({});
-  const [reagents, setReagents] = useState<string[]>(REAGENTES_BIOQUIMICA);
+  const useSections = parameterSections && parameterSections.length > 0;
+  const flatParams = useSections ? parameterSections!.flatMap(s => s.parameters) : REAGENTES_BIOQUIMICA;
+  const [reagents, setReagents] = useState<string[]>(flatParams);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editList, setEditList] = useState<string[]>([]);
+  const [newReagent, setNewReagent] = useState("");
+  const [brandName, setBrandName] = useState(defaultBrand);
+  const [editingBrand, setEditingBrand] = useState(false);
+  const [tempBrand, setTempBrand] = useState("");
   const [editOpen, setEditOpen] = useState(false);
   const [editList, setEditList] = useState<string[]>([]);
   const [newReagent, setNewReagent] = useState("");
