@@ -508,7 +508,7 @@ const ProINTab = ({ onNovoAnalito, material, sectorLabel, sectorFilter }: { onNo
         <div className="flex items-center justify-between gap-3 px-4 py-3 bg-primary/10 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-primary" />
-            <h3 className="text-sm font-bold text-primary uppercase tracking-wide">Bioquímica — PRO-IN</h3>
+            <h3 className="text-sm font-bold text-primary uppercase tracking-wide">{displayLabel} — PRO-IN</h3>
             <span className="text-xs text-muted-foreground">({items.length} analito{items.length !== 1 ? "s" : ""})</span>
           </div>
            <Button size="sm" onClick={onNovoAnalito || openNew}><Plus className="w-4 h-4 mr-1" /> Lançar Parâmetros Pro IN</Button>
