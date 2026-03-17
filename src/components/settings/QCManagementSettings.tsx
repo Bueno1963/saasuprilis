@@ -432,7 +432,7 @@ const LotsTab = () => {
 };
 
 // ─── PRO-IN Tab (Controle Interno) ───
-const ProINTab = ({ onNovoAnalito }: { onNovoAnalito?: () => void }) => {
+const ProINTab = ({ onNovoAnalito, material, sectorLabel, sectorFilter }: { onNovoAnalito?: () => void; material?: string; sectorLabel?: string; sectorFilter?: string }) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
