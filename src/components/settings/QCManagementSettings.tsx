@@ -729,7 +729,7 @@ const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnal
         </Button>
       )}
       <div>
-        <h2 className="text-xl font-bold text-foreground">Gestão Controle de Qualidade</h2>
+        <h2 className="text-xl font-bold text-foreground">Gestão Controle de Qualidade Bioquímica</h2>
         <p className="text-sm text-muted-foreground">Configuração de analitos, regras de Westgard, lotes de controle, PRO-IN e PRO-EX — organizados por setor</p>
       </div>
       <Tabs defaultValue="pro-in">
