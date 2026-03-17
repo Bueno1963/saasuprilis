@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { mockQCData } from "@/lib/mock-data";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
 import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
+import NovoAnalitoSheet from "@/components/qc/NovoAnalitoSheet";
 import { ChevronDown, FlaskConical } from "lucide-react";
 
 const QualityControl = () => {
