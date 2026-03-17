@@ -205,8 +205,8 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito }: 
               ))}
             </SelectContent>
           </Select>
-          {isProIn && (
-            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setNovoAnalitoOpen(true)}>
+          {onNovoAnalito && (
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={onNovoAnalito}>
               <FlaskConical className="h-3.5 w-3.5" />
               Novo Analito
             </Button>
