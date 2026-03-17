@@ -489,7 +489,7 @@ const ProINTab = ({ onNovoAnalito }: { onNovoAnalito?: () => void }) => {
             <h3 className="text-sm font-bold text-primary uppercase tracking-wide">Bioquímica — PRO-IN</h3>
             <span className="text-xs text-muted-foreground">({items.length} analito{items.length !== 1 ? "s" : ""})</span>
           </div>
-           <Button size="sm" onClick={onNovoAnalito || openNew}><Plus className="w-4 h-4 mr-1" /> Novo Analito</Button>
+           <Button size="sm" onClick={onNovoAnalito || openNew}><Plus className="w-4 h-4 mr-1" /> Lançar Parâmetros Pro IN</Button>
         </div>
 
         {items.length === 0 ? (
