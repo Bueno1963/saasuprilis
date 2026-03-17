@@ -47,7 +47,6 @@ const QualityControl = () => {
   const dailySheetViews: Record<string, string> = {
     "bioq-normal": "Bioquímica Normal",
     "bioq-patologica": "Bioquímica Patológica",
-    "pro-in": "Pro In",
     "pro-ex": "Pró Ex",
     "hemato-normal": "Hematologia Nível Normal",
     "hemato-baixa": "Hematologia Baixa",
@@ -57,18 +56,17 @@ const QualityControl = () => {
   if (activeView === "novo-analito-pro-in") {
     return (
       <div className="p-6">
-        <NovoAnalitoSheet onBack={() => setActiveView("pro-in")} />
+        <NovoAnalitoSheet onBack={() => setActiveView("gestao-cq")} />
       </div>
     );
   }
 
-  if (activeView !== "main") {
+  if (activeView !== "main" && activeView !== "gestao-cq") {
     return (
       <div className="p-6">
         <BioquimicaDailySheet
           onBack={() => setActiveView("main")}
           title={dailySheetViews[activeView] || activeView}
-          onNovoAnalito={activeView === "pro-in" ? () => setActiveView("novo-analito-pro-in") : undefined}
         />
       </div>
     );
@@ -81,7 +79,7 @@ const QualityControl = () => {
         <p className="text-sm text-muted-foreground">Monitoramento de precisão analítica e gestão de controles</p>
       </div>
 
-      <Tabs defaultValue="levey-jennings" className="space-y-4">
+      <Tabs defaultValue={activeView === "gestao-cq" ? "gestao" : "levey-jennings"} className="space-y-4">
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger value="levey-jennings">Levey-Jennings</TabsTrigger>
@@ -98,7 +96,6 @@ const QualityControl = () => {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setActiveView("bioq-normal")}>Bioquímica Normal</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("bioq-patologica")}>Bioquímica Patológica</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("pro-in")}>Pro In</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("pro-ex")}>Pró Ex</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("hemato-normal")}>Hematologia Nível Normal</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("hemato-baixa")}>Hematologia Baixa</DropdownMenuItem>
@@ -173,7 +170,7 @@ const QualityControl = () => {
         </TabsContent>
 
         <TabsContent value="gestao">
-          <QCManagementSettings onBack={() => {}} embedded />
+          <QCManagementSettings onBack={() => {}} embedded onNovoAnalitoProIn={() => setActiveView("novo-analito-pro-in")} />
         </TabsContent>
       </Tabs>
     </div>

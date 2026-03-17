@@ -18,6 +18,7 @@ import { toast } from "sonner";
 interface Props {
   onBack: () => void;
   embedded?: boolean;
+  onNovoAnalitoProIn?: () => void;
 }
 
 // Hook to get distinct sectors from exam_catalog
@@ -412,7 +413,7 @@ const LotsTab = () => {
 };
 
 // ─── PRO-IN Tab (Controle Interno) ───
-const ProINTab = () => {
+const ProINTab = ({ onNovoAnalito }: { onNovoAnalito?: () => void }) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -488,7 +489,7 @@ const ProINTab = () => {
             <h3 className="text-sm font-bold text-primary uppercase tracking-wide">Bioquímica — PRO-IN</h3>
             <span className="text-xs text-muted-foreground">({items.length} analito{items.length !== 1 ? "s" : ""})</span>
           </div>
-          <Button size="sm" onClick={openNew}><Plus className="w-4 h-4 mr-1" /> Novo Analito</Button>
+           <Button size="sm" onClick={onNovoAnalito || openNew}><Plus className="w-4 h-4 mr-1" /> Novo Analito</Button>
         </div>
 
         {items.length === 0 ? (
@@ -705,7 +706,7 @@ const ProEXTab = () => {
 };
 
 // ─── Main ───
-const QCManagementSettings = ({ onBack, embedded }: Props) => {
+const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn }: Props) => {
   return (
     <div className={embedded ? "space-y-4" : "p-6 space-y-4"}>
       {!embedded && (
@@ -725,7 +726,7 @@ const QCManagementSettings = ({ onBack, embedded }: Props) => {
           <TabsTrigger value="westgard">Regras Westgard</TabsTrigger>
           <TabsTrigger value="lots">Lotes de Controle</TabsTrigger>
         </TabsList>
-        <TabsContent value="pro-in"><Card><CardContent className="pt-6"><ProINTab /></CardContent></Card></TabsContent>
+        <TabsContent value="pro-in"><Card><CardContent className="pt-6"><ProINTab onNovoAnalito={onNovoAnalitoProIn} /></CardContent></Card></TabsContent>
         <TabsContent value="pro-ex"><Card><CardContent className="pt-6"><ProEXTab /></CardContent></Card></TabsContent>
         <TabsContent value="analytes"><Card><CardContent className="pt-6"><AnalytesTab /></CardContent></Card></TabsContent>
         <TabsContent value="westgard"><Card><CardContent className="pt-6"><WestgardTab /></CardContent></Card></TabsContent>
