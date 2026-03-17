@@ -473,8 +473,8 @@ const ProINTab = ({ onNovoAnalito, material, sectorLabel, sectorFilter }: { onNo
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["qc_analyte_configs"] }); toast.success("Removido"); },
   });
 
-  const openNew = () => { setEditing(null); setForm({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: "Soro humano liofilizado", sector: "Bioquímica" }); setOpen(true); };
-  const openEdit = (item: any) => { setEditing(item); setForm({ analyte_name: item.analyte_name, equipment: item.equipment, level: item.level, lot_number: item.lot_number, target_mean: String(item.target_mean), target_sd: String(item.target_sd), unit: item.unit, material: item.material, sector: item.sector || "Bioquímica" }); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ analyte_name: "", equipment: "", level: "N1", lot_number: "", target_mean: "", target_sd: "", unit: "", material: defaultMaterial, sector: defaultSector }); setOpen(true); };
+  const openEdit = (item: any) => { setEditing(item); setForm({ analyte_name: item.analyte_name, equipment: item.equipment, level: item.level, lot_number: item.lot_number, target_mean: String(item.target_mean), target_sd: String(item.target_sd), unit: item.unit, material: item.material, sector: item.sector || defaultSector }); setOpen(true); };
 
   return (
     <>
