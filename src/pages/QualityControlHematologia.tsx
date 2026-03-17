@@ -90,6 +90,8 @@ const QualityControlHematologia = () => {
           title={dailySheetViews[activeView] || activeView}
           parameterSections={HEMATOLOGIA_PRO_IN_SECTIONS}
           defaultBrand="Diagno"
+          sector="Hematologia"
+          sheetType={activeView}
         />
       </div>
     );
