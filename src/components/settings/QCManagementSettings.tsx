@@ -53,7 +53,7 @@ const SectorFilter = ({ value, onChange, sectors }: { value: string; onChange: (
 );
 
 // ─── Analytes Tab ───
-const AnalytesTab = () => {
+const AnalytesTab = ({ onNovoAnalito }: { onNovoAnalito?: () => void }) => {
   const qc = useQueryClient();
   const sectors = useSectors();
   const [sectorFilter, setSectorFilter] = useState("__all__");
