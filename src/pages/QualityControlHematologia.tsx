@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, FlaskConical } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ChevronDown, FlaskConical, Pencil, Trash2, Plus, Check, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import LeveyJenningsHematologia from "@/components/qc/LeveyJenningsHematologia";
 import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
 import type { DailySheetSection } from "@/components/qc/BioquimicaDailySheet";
 import NovoAnalitoSheet from "@/components/qc/NovoAnalitoSheet";
 import type { ParameterSection } from "@/components/qc/NovoAnalitoSheet";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 
 const dailySheetViews: Record<string, string> = {
   "hemato-normal": "Hematologia Nível Normal",
@@ -15,7 +19,7 @@ const dailySheetViews: Record<string, string> = {
   "hemato-alta": "Hematologia Alta",
 };
 
-const HEMATOLOGIA_PRO_IN_SECTIONS: ParameterSection[] = [
+const DEFAULT_SECTIONS: ParameterSection[] = [
   {
     section: "Eritrograma",
     parameters: [
@@ -54,6 +58,69 @@ const HEMATOLOGIA_PRO_IN_SECTIONS: ParameterSection[] = [
 
 const QualityControlHematologia = () => {
   const [activeView, setActiveView] = useState<string>("main");
+  const [sections, setSections] = useState<ParameterSection[]>(() => {
+    const saved = localStorage.getItem("hemato-qc-sections");
+    return saved ? JSON.parse(saved) : DEFAULT_SECTIONS;
+  });
+  const [editingSectionIdx, setEditingSectionIdx] = useState<number | null>(null);
+  const [editSectionName, setEditSectionName] = useState("");
+  const [editParams, setEditParams] = useState<string[]>([]);
+  const [newParamName, setNewParamName] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "section" | "param"; sectionIdx: number; paramIdx?: number } | null>(null);
+
+  const saveSections = (updated: ParameterSection[]) => {
+    setSections(updated);
+    localStorage.setItem("hemato-qc-sections", JSON.stringify(updated));
+  };
+
+  const openEditSection = (idx: number) => {
+    setEditingSectionIdx(idx);
+    setEditSectionName(sections[idx].section);
+    setEditParams([...sections[idx].parameters]);
+    setNewParamName("");
+  };
+
+  const saveEditSection = () => {
+    if (editingSectionIdx === null) return;
+    const updated = [...sections];
+    updated[editingSectionIdx] = { section: editSectionName.trim() || updated[editingSectionIdx].section, parameters: editParams.filter(p => p.trim()) };
+    saveSections(updated);
+    setEditingSectionIdx(null);
+    toast.success("Seção atualizada com sucesso");
+  };
+
+  const confirmDelete = () => {
+    if (!deleteConfirm) return;
+    const updated = [...sections];
+    if (deleteConfirm.type === "section") {
+      updated.splice(deleteConfirm.sectionIdx, 1);
+      toast.success("Seção excluída");
+    } else if (deleteConfirm.type === "param" && deleteConfirm.paramIdx !== undefined) {
+      updated[deleteConfirm.sectionIdx].parameters.splice(deleteConfirm.paramIdx, 1);
+      toast.success("Parâmetro excluído");
+    }
+    saveSections(updated);
+    setDeleteConfirm(null);
+    if (editingSectionIdx !== null && deleteConfirm.type === "param") {
+      setEditParams([...updated[deleteConfirm.sectionIdx].parameters]);
+    }
+  };
+
+  const addParamToEdit = () => {
+    if (!newParamName.trim()) return;
+    setEditParams([...editParams, newParamName.trim()]);
+    setNewParamName("");
+  };
+
+  const removeParamFromEdit = (idx: number) => {
+    setEditParams(editParams.filter((_, i) => i !== idx));
+  };
+
+  const addNewSection = () => {
+    const updated = [...sections, { section: `Nova Seção ${sections.length + 1}`, parameters: [] }];
+    saveSections(updated);
+    openEditSection(updated.length - 1);
+  };
 
   if (activeView === "novo-analito-pro-in-hemato") {
     return (
