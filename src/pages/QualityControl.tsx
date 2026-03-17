@@ -97,7 +97,6 @@ const QualityControl = () => {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setActiveView("bioq-normal")}>Bioquímica Normal</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("bioq-patologica")}>Bioquímica Patológica</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("pro-in")}>Pro In</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("pro-ex")}>Pró Ex</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("hemato-normal")}>Hematologia Nível Normal</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("hemato-baixa")}>Hematologia Baixa</DropdownMenuItem>
