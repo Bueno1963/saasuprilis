@@ -267,10 +267,12 @@ const WestgardTab = () => {
 };
 
 // ─── Control Lots Tab ───
+const LOTS_CATEGORIES = ["Pró In", "Pró Ex", "Controle Normal", "Controle Baixo"];
+
 const LotsTab = () => {
   const qc = useQueryClient();
   const sectors = useSectors();
-  const [sectorFilter, setSectorFilter] = useState("__all__");
+  const [categoryFilter, setCategoryFilter] = useState("__all__");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState({ lot_number: "", manufacturer: "", analyte_name: "", level: "N1", expected_mean: "", expected_sd: "", unit: "", expiry_date: "", notes: "", sector: "" });
