@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ArrowLeft, Save, Pencil, Plus, Trash2, FlaskConical } from "lucide-react";
+import { ArrowLeft, Save, Pencil, Plus, Trash2, FlaskConical, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
+import { supabase } from "@/integrations/supabase/client";
 
 const REAGENTES_BIOQUIMICA = [
   "QUIMIURIC - ÁCIDO ÚRICO 500 mL",
@@ -88,12 +88,23 @@ interface BioquimicaDailySheetProps {
   onBack: () => void;
   title?: string;
   onNovoAnalito?: () => void;
-  /** If provided, renders sectioned rows instead of flat reagent list */
   parameterSections?: DailySheetSection[];
   defaultBrand?: string;
+  /** Identifies which sector this sheet belongs to for DB persistence */
+  sector?: string;
+  /** Identifies which sheet type (e.g. hemato-normal, hemato-baixa) */
+  sheetType?: string;
 }
 
-const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito, parameterSections, defaultBrand = "EBRAM" }: BioquimicaDailySheetProps) => {
+const BioquimicaDailySheet = ({
+  onBack,
+  title = "Bioquímica",
+  onNovoAnalito,
+  parameterSections,
+  defaultBrand = "EBRAM",
+  sector = "Bioquímica",
+  sheetType = "default",
+}: BioquimicaDailySheetProps) => {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
@@ -107,6 +118,47 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito, pa
   const [brandName, setBrandName] = useState(defaultBrand);
   const [editingBrand, setEditingBrand] = useState(false);
   const [tempBrand, setTempBrand] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const month = Number(selectedMonth);
+  const year = Number(selectedYear);
+
+  // Load entries from database
+  const loadEntries = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("qc_daily_entries")
+        .select("parameter_name, day, value, brand")
+        .eq("sector", sector)
+        .eq("sheet_type", sheetType)
+        .eq("month", month)
+        .eq("year", year);
+
+      if (error) throw error;
+
+      const loaded: Record<string, Record<number, string>> = {};
+      if (data && data.length > 0) {
+        for (const row of data) {
+          if (!loaded[row.parameter_name]) loaded[row.parameter_name] = {};
+          loaded[row.parameter_name][row.day] = row.value;
+        }
+        // Get brand from first entry if available
+        const firstBrand = data[0]?.brand;
+        if (firstBrand) setBrandName(firstBrand);
+      }
+      setEntries(loaded);
+    } catch (err) {
+      console.error("Error loading entries:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [sector, sheetType, month, year]);
+
+  useEffect(() => {
+    loadEntries();
+  }, [loadEntries]);
 
   const handleChange = (reagent: string, day: number, value: string) => {
     setEntries(prev => ({
@@ -118,8 +170,68 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito, pa
     }));
   };
 
-  const handleSave = () => {
-    toast.success("Lançamentos salvos com sucesso!");
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      // Collect all non-empty entries
+      const rows: Array<{
+        sector: string;
+        sheet_type: string;
+        parameter_name: string;
+        day: number;
+        month: number;
+        year: number;
+        value: string;
+        brand: string;
+      }> = [];
+
+      for (const [paramName, days] of Object.entries(entries)) {
+        for (const [dayStr, value] of Object.entries(days)) {
+          if (value && value.trim()) {
+            rows.push({
+              sector,
+              sheet_type: sheetType,
+              parameter_name: paramName,
+              day: Number(dayStr),
+              month,
+              year,
+              value: value.trim(),
+              brand: brandName,
+            });
+          }
+        }
+      }
+
+      // Delete existing entries for this month/year/sector/sheetType first
+      const { error: deleteError } = await supabase
+        .from("qc_daily_entries")
+        .delete()
+        .eq("sector", sector)
+        .eq("sheet_type", sheetType)
+        .eq("month", month)
+        .eq("year", year);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new entries in batches
+      if (rows.length > 0) {
+        const batchSize = 500;
+        for (let i = 0; i < rows.length; i += batchSize) {
+          const batch = rows.slice(i, i + batchSize);
+          const { error: insertError } = await supabase
+            .from("qc_daily_entries")
+            .insert(batch);
+          if (insertError) throw insertError;
+        }
+      }
+
+      toast.success(`${rows.length} lançamentos salvos com sucesso!`);
+    } catch (err: any) {
+      console.error("Error saving:", err);
+      toast.error("Erro ao salvar lançamentos: " + (err.message || "Erro desconhecido"));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const openEditDialog = () => {
@@ -132,7 +244,7 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito, pa
     const trimmed = newReagent.trim();
     if (!trimmed) return;
     if (editList.includes(trimmed)) {
-      toast.error("Reagente já existe na lista.");
+      toast.error("Item já existe na lista.");
       return;
     }
     setEditList(prev => [...prev, trimmed]);
@@ -146,10 +258,14 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito, pa
   const handleSaveReagents = () => {
     setReagents(editList);
     setEditOpen(false);
-    toast.success("Lista de reagentes atualizada!");
+    toast.success("Lista atualizada!");
   };
 
-  const daysInMonth = new Date(Number(selectedYear), Number(selectedMonth) + 1, 0).getDate();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Helper to get the key for a parameter (with section prefix for sectioned mode)
+  const getParamKey = (sectionName: string | null, param: string) =>
+    sectionName ? `${sectionName}-${param}` : param;
 
   return (
     <div className="space-y-4">
@@ -225,93 +341,103 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito, pa
             <Pencil className="h-3.5 w-3.5" />
             {useSections ? "Editar Parâmetros" : "Editar Reagentes"}
           </Button>
-          <Button size="sm" className="gap-1.5" onClick={handleSave}>
-            <Save className="h-3.5 w-3.5" />
-            Salvar
+          <Button size="sm" className="gap-1.5" onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            {saving ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <ScrollArea className="w-full">
-            <div className="min-w-[2200px]">
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="border-b bg-muted/60">
-                    <th className="sticky left-0 z-10 bg-muted/95 backdrop-blur-sm text-left p-2 min-w-[280px] font-medium text-muted-foreground border-r">
-                      Reagente
-                    </th>
-                    {DAYS.filter(d => d <= daysInMonth).map(day => (
-                      <th key={day} className="p-1 text-center font-medium text-muted-foreground min-w-[48px] border-r last:border-r-0">
-                        {day}
+      {loading ? (
+        <div className="flex items-center justify-center py-16 gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span className="text-sm">Carregando lançamentos...</span>
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <ScrollArea className="w-full">
+              <div className="min-w-[2200px]">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b bg-muted/60">
+                      <th className="sticky left-0 z-10 bg-muted/95 backdrop-blur-sm text-left p-2 min-w-[280px] font-medium text-muted-foreground border-r">
+                        {useSections ? "Parâmetro" : "Reagente"}
                       </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {useSections ? (
-                    parameterSections!.map((section) => (
-                      <>
-                        <tr key={`section-${section.section}`} className="bg-primary/10 border-b border-border">
-                          <td colSpan={daysInMonth + 1} className="sticky left-0 z-10 p-2 text-xs font-bold text-primary uppercase tracking-wide">
-                            {section.section}
-                          </td>
-                        </tr>
-                        {section.parameters.map((param, idx) => (
-                          <tr key={`${section.section}-${param}`} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
-                            <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={param}>
-                              {param}
+                      {DAYS.filter(d => d <= daysInMonth).map(day => (
+                        <th key={day} className="p-1 text-center font-medium text-muted-foreground min-w-[48px] border-r last:border-r-0">
+                          {day}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {useSections ? (
+                      parameterSections!.map((section) => (
+                        <>
+                          <tr key={`section-${section.section}`} className="bg-primary/10 border-b border-border">
+                            <td colSpan={daysInMonth + 1} className="sticky left-0 z-10 p-2 text-xs font-bold text-primary uppercase tracking-wide">
+                              {section.section}
                             </td>
-                            {DAYS.filter(d => d <= daysInMonth).map(day => (
-                              <td key={day} className="p-0.5 border-r last:border-r-0">
-                                <Input
-                                  className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
-                                  value={entries[`${section.section}-${param}`]?.[day] || ""}
-                                  onChange={(e) => handleChange(`${section.section}-${param}`, day, e.target.value)}
-                                  tabIndex={0}
-                                />
-                              </td>
-                            ))}
                           </tr>
-                        ))}
-                      </>
-                    ))
-                  ) : (
-                    reagents.map((reagent, idx) => (
-                      <tr key={reagent} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
-                        <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={reagent}>
-                          {reagent}
-                        </td>
-                        {DAYS.filter(d => d <= daysInMonth).map(day => (
-                          <td key={day} className="p-0.5 border-r last:border-r-0">
-                            <Input
-                              className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
-                              value={entries[reagent]?.[day] || ""}
-                              onChange={(e) => handleChange(reagent, day, e.target.value)}
-                              tabIndex={0}
-                            />
+                          {section.parameters.map((param, idx) => {
+                            const key = getParamKey(section.section, param);
+                            return (
+                              <tr key={key} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                                <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={param}>
+                                  {param}
+                                </td>
+                                {DAYS.filter(d => d <= daysInMonth).map(day => (
+                                  <td key={day} className="p-0.5 border-r last:border-r-0">
+                                    <Input
+                                      className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
+                                      value={entries[key]?.[day] || ""}
+                                      onChange={(e) => handleChange(key, day, e.target.value)}
+                                      tabIndex={0}
+                                    />
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                          })}
+                        </>
+                      ))
+                    ) : (
+                      reagents.map((reagent, idx) => (
+                        <tr key={reagent} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                          <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={reagent}>
+                            {reagent}
                           </td>
-                        ))}
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </CardContent>
-      </Card>
+                          {DAYS.filter(d => d <= daysInMonth).map(day => (
+                            <td key={day} className="p-0.5 border-r last:border-r-0">
+                              <Input
+                                className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
+                                value={entries[reagent]?.[day] || ""}
+                                onChange={(e) => handleChange(reagent, day, e.target.value)}
+                                tabIndex={0}
+                              />
+                            </td>
+                          ))}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>Editar Reagentes</DialogTitle>
+            <DialogTitle>{useSections ? "Editar Parâmetros" : "Editar Reagentes"}</DialogTitle>
           </DialogHeader>
           <div className="flex gap-2 mb-3">
             <Input
-              placeholder="Nome do novo reagente..."
+              placeholder={useSections ? "Nome do novo parâmetro..." : "Nome do novo reagente..."}
               value={newReagent}
               onChange={(e) => setNewReagent(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddReagent()}
@@ -339,7 +465,6 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito, pa
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 };

@@ -1566,6 +1566,62 @@ export type Database = {
           },
         ]
       }
+      qc_daily_entries: {
+        Row: {
+          brand: string
+          created_at: string
+          day: number
+          id: string
+          month: number
+          parameter_name: string
+          recorded_by: string | null
+          sector: string
+          sheet_type: string
+          tenant_id: string | null
+          updated_at: string
+          value: string
+          year: number
+        }
+        Insert: {
+          brand?: string
+          created_at?: string
+          day: number
+          id?: string
+          month: number
+          parameter_name: string
+          recorded_by?: string | null
+          sector?: string
+          sheet_type?: string
+          tenant_id?: string | null
+          updated_at?: string
+          value?: string
+          year: number
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          day?: number
+          id?: string
+          month?: number
+          parameter_name?: string
+          recorded_by?: string | null
+          sector?: string
+          sheet_type?: string
+          tenant_id?: string | null
+          updated_at?: string
+          value?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qc_daily_entries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       qc_data: {
         Row: {
           analyte: string
