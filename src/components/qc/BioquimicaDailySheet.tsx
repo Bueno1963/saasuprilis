@@ -301,6 +301,10 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica" }: BioquimicaDaily
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {isProIn && (
+        <NovoAnalitoDialog open={novoAnalitoOpen} onOpenChange={setNovoAnalitoOpen} />
+      )}
     </div>
   );
 };
