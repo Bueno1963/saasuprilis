@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, FlaskConical } from "lucide-react";
 import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
 import NovoAnalitoSheet from "@/components/qc/NovoAnalitoSheet";
+import type { ParameterSection } from "@/components/qc/NovoAnalitoSheet";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
 
 const dailySheetViews: Record<string, string> = {
@@ -12,14 +13,70 @@ const dailySheetViews: Record<string, string> = {
   "hemato-alta": "Hematologia Alta",
 };
 
+const HEMATOLOGIA_PRO_IN_SECTIONS: ParameterSection[] = [
+  {
+    section: "Eritrograma",
+    parameters: [
+      "Eritrócitos (hemácias)",
+      "Hemoglobina",
+      "Hematócrito",
+      "VCM (Volume Corpuscular Médio)",
+      "HCM (Hemoglobina Corpuscular Média)",
+      "CHCM (Concentração de Hemoglobina Corpuscular Média)",
+      "RDW (Red Cell Distribution Width)",
+      "Reticulócitos",
+    ],
+  },
+  {
+    section: "Leucograma",
+    parameters: [
+      "Leucócitos Totais",
+      "Neutrófilos",
+      "Linfócitos",
+      "Monócitos",
+      "Eosinófilos",
+      "Basófilos",
+      "Bastões",
+      "Metamielócitos",
+    ],
+  },
+  {
+    section: "Plaquetas",
+    parameters: [
+      "Plaquetas",
+      "VPM (Volume Plaquetário Médio)",
+      "PDW (Platelet Distribution Width)",
+    ],
+  },
+];
+
 const QualityControlHematologia = () => {
   const [activeView, setActiveView] = useState<string>("main");
 
-  if (activeView === "novo-analito-pro-in-hemato" || activeView === "novo-analito-niveis-hemato") {
-    const sheetTitle = activeView === "novo-analito-pro-in-hemato" ? "Lançar Parâmetros Pro IN Hematologia" : "Lançar Parâmetros Controle Qualidade Hematologia";
+  if (activeView === "novo-analito-pro-in-hemato") {
     return (
       <div className="p-6">
-        <NovoAnalitoSheet onBack={() => setActiveView("main")} title={sheetTitle} />
+        <NovoAnalitoSheet
+          onBack={() => setActiveView("main")}
+          title="Lançar Parâmetros PRO-IN Hematologia"
+          parameterSections={HEMATOLOGIA_PRO_IN_SECTIONS}
+          marcaLabel="Reagente Marca"
+          defaultMarca="Diagno"
+        />
+      </div>
+    );
+  }
+
+  if (activeView === "novo-analito-niveis-hemato") {
+    return (
+      <div className="p-6">
+        <NovoAnalitoSheet
+          onBack={() => setActiveView("main")}
+          title="Lançar Parâmetros Controle Qualidade Hematologia"
+          parameterSections={HEMATOLOGIA_PRO_IN_SECTIONS}
+          marcaLabel="Reagente Marca"
+          defaultMarca="Diagno"
+        />
       </div>
     );
   }
