@@ -171,7 +171,7 @@ const QualityControl = () => {
         </TabsContent>
 
         <TabsContent value="gestao">
-          <QCManagementSettings onBack={() => {}} embedded />
+          <QCManagementSettings onBack={() => {}} embedded onNovoAnalitoProIn={() => setActiveView("novo-analito-pro-in")} />
         </TabsContent>
       </Tabs>
     </div>
