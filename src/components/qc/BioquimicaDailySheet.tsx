@@ -87,6 +87,10 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
   const [entries, setEntries] = useState<Record<string, Record<number, string>>>({});
+  const [reagents, setReagents] = useState<string[]>(REAGENTES_BIOQUIMICA);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editList, setEditList] = useState<string[]>([]);
+  const [newReagent, setNewReagent] = useState("");
 
   const handleChange = (reagent: string, day: number, value: string) => {
     setEntries(prev => ({
@@ -100,6 +104,33 @@ const BioquimicaDailySheet = ({ onBack }: BioquimicaDailySheetProps) => {
 
   const handleSave = () => {
     toast.success("Lançamentos salvos com sucesso!");
+  };
+
+  const openEditDialog = () => {
+    setEditList([...reagents]);
+    setNewReagent("");
+    setEditOpen(true);
+  };
+
+  const handleAddReagent = () => {
+    const trimmed = newReagent.trim();
+    if (!trimmed) return;
+    if (editList.includes(trimmed)) {
+      toast.error("Reagente já existe na lista.");
+      return;
+    }
+    setEditList(prev => [...prev, trimmed]);
+    setNewReagent("");
+  };
+
+  const handleRemoveReagent = (index: number) => {
+    setEditList(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSaveReagents = () => {
+    setReagents(editList);
+    setEditOpen(false);
+    toast.success("Lista de reagentes atualizada!");
   };
 
   const daysInMonth = new Date(Number(selectedYear), Number(selectedMonth) + 1, 0).getDate();
