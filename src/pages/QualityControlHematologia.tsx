@@ -88,7 +88,7 @@ const QualityControlHematologia = () => {
         <BioquimicaDailySheet
           onBack={() => setActiveView("main")}
           title={dailySheetViews[activeView] || activeView}
-          parameterSections={HEMATOLOGIA_DAILY_SECTIONS}
+          parameterSections={HEMATOLOGIA_PRO_IN_SECTIONS}
           defaultBrand="Diagno"
         />
       </div>
