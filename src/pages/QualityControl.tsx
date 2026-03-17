@@ -54,9 +54,10 @@ const QualityControl = () => {
   };
 
   if (activeView === "novo-analito-pro-in" || activeView === "novo-analito-niveis") {
+    const sheetTitle = activeView === "novo-analito-pro-in" ? "Lançar Parâmetros Pro IN" : "Lançar Parâmetros Controle Qualidade";
     return (
       <div className="p-6">
-        <NovoAnalitoSheet onBack={() => setActiveView("gestao-cq")} />
+        <NovoAnalitoSheet onBack={() => setActiveView("gestao-cq")} title={sheetTitle} />
       </div>
     );
   }
