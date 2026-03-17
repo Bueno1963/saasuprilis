@@ -53,7 +53,7 @@ const QualityControl = () => {
     "hemato-alta": "Hematologia Alta",
   };
 
-  if (activeView === "novo-analito-pro-in") {
+  if (activeView === "novo-analito-pro-in" || activeView === "novo-analito-niveis") {
     return (
       <div className="p-6">
         <NovoAnalitoSheet onBack={() => setActiveView("gestao-cq")} />
@@ -170,7 +170,7 @@ const QualityControl = () => {
         </TabsContent>
 
         <TabsContent value="gestao">
-          <QCManagementSettings onBack={() => {}} embedded onNovoAnalitoProIn={() => setActiveView("novo-analito-pro-in")} />
+          <QCManagementSettings onBack={() => {}} embedded onNovoAnalitoProIn={() => setActiveView("novo-analito-pro-in")} onNovoAnalitoNiveis={() => setActiveView("novo-analito-niveis")} />
         </TabsContent>
       </Tabs>
     </div>

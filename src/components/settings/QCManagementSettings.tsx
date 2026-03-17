@@ -19,6 +19,7 @@ interface Props {
   onBack: () => void;
   embedded?: boolean;
   onNovoAnalitoProIn?: () => void;
+  onNovoAnalitoNiveis?: () => void;
 }
 
 // Hook to get distinct sectors from exam_catalog
@@ -52,7 +53,7 @@ const SectorFilter = ({ value, onChange, sectors }: { value: string; onChange: (
 );
 
 // ─── Analytes Tab ───
-const AnalytesTab = () => {
+const AnalytesTab = ({ onNovoAnalito }: { onNovoAnalito?: () => void }) => {
   const qc = useQueryClient();
   const sectors = useSectors();
   const [sectorFilter, setSectorFilter] = useState("__all__");
@@ -115,7 +116,7 @@ const AnalytesTab = () => {
     <>
       <div className="flex justify-between items-center mb-4">
         <SectorFilter value={sectorFilter} onChange={setSectorFilter} sectors={sectors} />
-        <Button size="sm" onClick={openNew}><Plus className="w-4 h-4 mr-1" /> Novo Analito</Button>
+        <Button size="sm" onClick={onNovoAnalito || openNew}><Plus className="w-4 h-4 mr-1" /> Novo Analito</Button>
       </div>
 
       {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum analito cadastrado{sectorFilter !== "__all__" ? " neste setor" : ""}</p>}
@@ -706,7 +707,7 @@ const ProEXTab = () => {
 };
 
 // ─── Main ───
-const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn }: Props) => {
+const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn, onNovoAnalitoNiveis }: Props) => {
   return (
     <div className={embedded ? "space-y-4" : "p-6 space-y-4"}>
       {!embedded && (
@@ -728,7 +729,7 @@ const QCManagementSettings = ({ onBack, embedded, onNovoAnalitoProIn }: Props) =
         </TabsList>
         <TabsContent value="pro-in"><Card><CardContent className="pt-6"><ProINTab onNovoAnalito={onNovoAnalitoProIn} /></CardContent></Card></TabsContent>
         <TabsContent value="pro-ex"><Card><CardContent className="pt-6"><ProEXTab /></CardContent></Card></TabsContent>
-        <TabsContent value="analytes"><Card><CardContent className="pt-6"><AnalytesTab /></CardContent></Card></TabsContent>
+        <TabsContent value="analytes"><Card><CardContent className="pt-6"><AnalytesTab onNovoAnalito={onNovoAnalitoNiveis} /></CardContent></Card></TabsContent>
         <TabsContent value="westgard"><Card><CardContent className="pt-6"><WestgardTab /></CardContent></Card></TabsContent>
         <TabsContent value="lots"><Card><CardContent className="pt-6"><LotsTab /></CardContent></Card></TabsContent>
       </Tabs>
