@@ -79,22 +79,32 @@ const MONTHS = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
+export interface DailySheetSection {
+  section: string;
+  parameters: string[];
+}
+
 interface BioquimicaDailySheetProps {
   onBack: () => void;
   title?: string;
   onNovoAnalito?: () => void;
+  /** If provided, renders sectioned rows instead of flat reagent list */
+  parameterSections?: DailySheetSection[];
+  defaultBrand?: string;
 }
 
-const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito }: BioquimicaDailySheetProps) => {
+const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito, parameterSections, defaultBrand = "EBRAM" }: BioquimicaDailySheetProps) => {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
   const [entries, setEntries] = useState<Record<string, Record<number, string>>>({});
-  const [reagents, setReagents] = useState<string[]>(REAGENTES_BIOQUIMICA);
+  const useSections = parameterSections && parameterSections.length > 0;
+  const flatParams = useSections ? parameterSections!.flatMap(s => s.parameters) : REAGENTES_BIOQUIMICA;
+  const [reagents, setReagents] = useState<string[]>(flatParams);
   const [editOpen, setEditOpen] = useState(false);
   const [editList, setEditList] = useState<string[]>([]);
   const [newReagent, setNewReagent] = useState("");
-  const [brandName, setBrandName] = useState("EBRAM");
+  const [brandName, setBrandName] = useState(defaultBrand);
   const [editingBrand, setEditingBrand] = useState(false);
   const [tempBrand, setTempBrand] = useState("");
 
@@ -240,23 +250,52 @@ const BioquimicaDailySheet = ({ onBack, title = "Bioquímica", onNovoAnalito }: 
                   </tr>
                 </thead>
                 <tbody>
-                  {reagents.map((reagent, idx) => (
-                    <tr key={reagent} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
-                      <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={reagent}>
-                        {reagent}
-                      </td>
-                      {DAYS.filter(d => d <= daysInMonth).map(day => (
-                        <td key={day} className="p-0.5 border-r last:border-r-0">
-                          <Input
-                            className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
-                            value={entries[reagent]?.[day] || ""}
-                            onChange={(e) => handleChange(reagent, day, e.target.value)}
-                            tabIndex={0}
-                          />
+                  {useSections ? (
+                    parameterSections!.map((section) => (
+                      <>
+                        <tr key={`section-${section.section}`} className="bg-primary/10 border-b border-border">
+                          <td colSpan={daysInMonth + 1} className="sticky left-0 z-10 p-2 text-xs font-bold text-primary uppercase tracking-wide">
+                            {section.section}
+                          </td>
+                        </tr>
+                        {section.parameters.map((param, idx) => (
+                          <tr key={`${section.section}-${param}`} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                            <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={param}>
+                              {param}
+                            </td>
+                            {DAYS.filter(d => d <= daysInMonth).map(day => (
+                              <td key={day} className="p-0.5 border-r last:border-r-0">
+                                <Input
+                                  className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
+                                  value={entries[`${section.section}-${param}`]?.[day] || ""}
+                                  onChange={(e) => handleChange(`${section.section}-${param}`, day, e.target.value)}
+                                  tabIndex={0}
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </>
+                    ))
+                  ) : (
+                    reagents.map((reagent, idx) => (
+                      <tr key={reagent} className={`border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                        <td className="sticky left-0 z-10 bg-inherit backdrop-blur-sm p-2 text-[11px] font-medium text-foreground border-r whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={reagent}>
+                          {reagent}
                         </td>
-                      ))}
-                    </tr>
-                  ))}
+                        {DAYS.filter(d => d <= daysInMonth).map(day => (
+                          <td key={day} className="p-0.5 border-r last:border-r-0">
+                            <Input
+                              className="h-7 w-full text-center text-[11px] px-0.5 border-0 bg-transparent focus:bg-background focus:ring-1 focus:ring-primary/40 rounded-sm"
+                              value={entries[reagent]?.[day] || ""}
+                              onChange={(e) => handleChange(reagent, day, e.target.value)}
+                              tabIndex={0}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

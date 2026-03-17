@@ -3,6 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button";
 import { ChevronDown, FlaskConical } from "lucide-react";
 import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
+import type { DailySheetSection } from "@/components/qc/BioquimicaDailySheet";
 import NovoAnalitoSheet from "@/components/qc/NovoAnalitoSheet";
 import type { ParameterSection } from "@/components/qc/NovoAnalitoSheet";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
@@ -87,6 +88,8 @@ const QualityControlHematologia = () => {
         <BioquimicaDailySheet
           onBack={() => setActiveView("main")}
           title={dailySheetViews[activeView] || activeView}
+          parameterSections={HEMATOLOGIA_PRO_IN_SECTIONS}
+          defaultBrand="Diagno"
         />
       </div>
     );
