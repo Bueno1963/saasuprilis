@@ -8,43 +8,39 @@ import { Input } from "@/components/ui/input";
 import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical } from "lucide-react";
 
 /**
- * Known analyte codes for the MaxBIO200B analyzer.
- * These are the test identifiers the equipment sends/receives in OBR-4 / OBX-3.
+ * Known analyte codes for the MaxBIO200B analyzer (bioquímica).
  */
 const MAXBIO_ANALYTES: Record<string, string> = {
-  GLU: "Glicose",
-  ALT: "ALT (TGP)",
-  AST: "AST (TGO)",
-  TP: "Proteínas Totais",
-  ALB: "Albumina",
-  BUN: "Ureia",
-  CREA: "Creatinina",
-  UA: "Ácido Úrico",
-  CHOL: "Colesterol Total",
-  TG: "Triglicerídeos",
-  HDL: "HDL-Colesterol",
-  LDL: "LDL-Colesterol",
-  VLDL: "VLDL-Colesterol",
-  TBIL: "Bilirrubina Total",
-  DBIL: "Bilirrubina Direta",
-  ALP: "Fosfatase Alcalina",
-  GGT: "Gama-GT",
-  AMY: "Amilase",
-  LIP: "Lipase",
-  CK: "Creatina Quinase",
-  CKMB: "CK-MB",
-  LDH: "Desidrogenase Láctica",
-  FE: "Ferro Sérico",
-  CA: "Cálcio",
-  MG: "Magnésio",
-  P: "Fósforo",
-  NA: "Sódio",
-  K: "Potássio",
-  CL: "Cloreto",
-  CRP: "PCR (Proteína C Reativa)",
-  RF: "Fator Reumatoide",
-  ASO: "ASLO",
+  GLU: "Glicose", ALT: "ALT (TGP)", AST: "AST (TGO)", TP: "Proteínas Totais",
+  ALB: "Albumina", BUN: "Ureia", CREA: "Creatinina", UA: "Ácido Úrico",
+  CHOL: "Colesterol Total", TG: "Triglicerídeos", HDL: "HDL-Colesterol",
+  LDL: "LDL-Colesterol", VLDL: "VLDL-Colesterol", TBIL: "Bilirrubina Total",
+  DBIL: "Bilirrubina Direta", ALP: "Fosfatase Alcalina", GGT: "Gama-GT",
+  AMY: "Amilase", LIP: "Lipase", CK: "Creatina Quinase", CKMB: "CK-MB",
+  LDH: "Desidrogenase Láctica", FE: "Ferro Sérico", CA: "Cálcio", MG: "Magnésio",
+  P: "Fósforo", NA: "Sódio", K: "Potássio", CL: "Cloreto",
+  CRP: "PCR (Proteína C Reativa)", RF: "Fator Reumatoide", ASO: "ASLO",
   HBA1C: "Hemoglobina Glicada",
+};
+
+/**
+ * Known analyte codes for the MAXCELL 500D/500F analyzer (hematologia 5-diff).
+ * Codes match the OBX-3 identifiers transmitted via HL7 ORU^R01.
+ */
+const MAXCELL_ANALYTES: Record<string, string> = {
+  WBC: "Leucócitos (WBC)", RBC: "Eritrócitos (RBC)", HGB: "Hemoglobina",
+  HCT: "Hematócrito", MCV: "VCM (Volume Corpuscular Médio)",
+  MCH: "HCM (Hemoglobina Corpuscular Média)", MCHC: "CHCM (Conc. Hb Corp. Média)",
+  RDW_CV: "RDW-CV", RDW_SD: "RDW-SD", PLT: "Plaquetas",
+  MPV: "Volume Plaquetário Médio (MPV)", PDW: "PDW (Amplitude Plaquetária)",
+  PCT: "Plaquetócrito (PCT)", "P-LCR": "P-LCR (Plaq. Gigantes %)",
+  NEU_ABS: "Neutrófilos (#)", NEU_PCT: "Neutrófilos (%)",
+  LYM_ABS: "Linfócitos (#)", LYM_PCT: "Linfócitos (%)",
+  MON_ABS: "Monócitos (#)", MON_PCT: "Monócitos (%)",
+  EOS_ABS: "Eosinófilos (#)", EOS_PCT: "Eosinófilos (%)",
+  BAS_ABS: "Basófilos (#)", BAS_PCT: "Basófilos (%)",
+  NRBC: "Eritroblastos (NRBC)", IG_ABS: "Granulócitos Imaturos (#)",
+  IG_PCT: "Granulócitos Imaturos (%)",
 };
 
 interface Props {
