@@ -43,14 +43,18 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<"list" | "sector">("sector");
+  const [viewMode, setViewMode] = useState<"list" | "sector" | "equipment">("sector");
   const [activeSector, setActiveSector] = useState<string | null>(null);
+  const [activeEquipment, setActiveEquipment] = useState<string | null>(null);
   const [newSectorOpen, setNewSectorOpen] = useState(false);
   const [newSectorName, setNewSectorName] = useState("");
   const [newMaterialOpen, setNewMaterialOpen] = useState(false);
   const [newMaterialName, setNewMaterialName] = useState("");
   const [customMaterials, setCustomMaterials] = useState<string[]>([]);
   const [customSectors, setCustomSectors] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkEquipOpen, setBulkEquipOpen] = useState(false);
+  const [bulkEquipValue, setBulkEquipValue] = useState("");
   const { register, handleSubmit, reset, control } = useForm<ExamForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
