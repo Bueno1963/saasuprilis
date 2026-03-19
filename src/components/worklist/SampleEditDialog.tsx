@@ -81,10 +81,23 @@ const SampleEditDialog = ({ open, onOpenChange, sample, sectors }: SampleEditDia
           if (error) throw error;
         }
       }
+      // Auto-send to equipment if status changed to "triaged"
+      if (status === "triaged" && sample.status !== "triaged") {
+        const sentTo = await autoSendTriagedSample({
+          id: sample.id,
+          barcode: sample.barcode,
+          sector,
+          orders: sample.orders,
+        });
+        if (sentTo && sentTo.length > 0) {
+          toast.success(`Amostra enviada automaticamente para: ${sentTo.join(", ")}`);
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["samples"] });
       queryClient.invalidateQueries({ queryKey: ["sample_results", sample?.id] });
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
       toast.success("Amostra atualizada com sucesso");
       onOpenChange(false);
     },
