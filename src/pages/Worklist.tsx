@@ -25,6 +25,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import SampleEditDialog from "@/components/worklist/SampleEditDialog";
+import SendToEquipmentDialog from "@/components/worklist/SendToEquipmentDialog";
 
 const Worklist = () => {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
