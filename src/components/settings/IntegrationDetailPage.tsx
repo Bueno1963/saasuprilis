@@ -121,10 +121,11 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
 
       {/* Tabs */}
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="general">Dados Gerais</TabsTrigger>
           <TabsTrigger value="technical">Configuração Técnica</TabsTrigger>
           <TabsTrigger value="mapping">Mapeamento de Campos</TabsTrigger>
+          <TabsTrigger value="validation">Validação de Códigos</TabsTrigger>
           <TabsTrigger value="logs">Logs / Histórico</TabsTrigger>
         </TabsList>
 
