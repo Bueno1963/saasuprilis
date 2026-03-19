@@ -192,6 +192,14 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
 
   const renderExamRow = (item: any) => (
     <TableRow key={item.id}>
+      {viewMode === "equipment" && (
+        <TableCell className="w-10">
+          <Checkbox
+            checked={selectedIds.has(item.id)}
+            onCheckedChange={() => toggleSelect(item.id)}
+          />
+        </TableCell>
+      )}
       <TableCell className="font-mono">{item.code}</TableCell>
       <TableCell className="font-medium">{item.name}</TableCell>
       <TableCell>{item.material}</TableCell>
@@ -210,8 +218,18 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     </TableRow>
   );
 
+  const colCount = viewMode === "list" ? 10 : viewMode === "equipment" ? 10 : 9;
+
   const tableHeaders = (
     <TableRow>
+      {viewMode === "equipment" && (
+        <TableHead className="w-10">
+          <Checkbox
+            checked={displayedItems.length > 0 && selectedIds.size === displayedItems.length}
+            onCheckedChange={toggleSelectAll}
+          />
+        </TableHead>
+      )}
       <TableHead>Código</TableHead><TableHead>Nome</TableHead><TableHead>Material</TableHead>
       {viewMode === "list" && <TableHead>Setor</TableHead>}
       <TableHead>Equipamento</TableHead><TableHead>Unidade</TableHead><TableHead>Ref.</TableHead>
