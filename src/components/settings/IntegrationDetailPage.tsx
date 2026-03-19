@@ -231,7 +231,15 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
           <FieldMappingTab integrationId={integrationId} protocolType={currentType} />
         </TabsContent>
 
-        {/* Tab 4: Logs / Histórico */}
+        {/* Tab 4: Validação de Códigos */}
+        <TabsContent value="validation">
+          <ExamEquipmentValidation
+            integrationId={integrationId}
+            equipmentName={currentName || integrationData?.name || ""}
+          />
+        </TabsContent>
+
+        {/* Tab 5: Logs / Histórico */}
         <TabsContent value="logs">
           <IntegrationLogsTab
             integrationId={integrationId}
