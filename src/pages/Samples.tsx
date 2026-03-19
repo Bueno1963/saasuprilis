@@ -270,6 +270,7 @@ const Samples = () => {
       <Tabs defaultValue="amostras" className="space-y-4">
         <TabsList>
           <TabsTrigger value="amostras">Amostras</TabsTrigger>
+          <TabsTrigger value="kanban">Kanban</TabsTrigger>
           <TabsTrigger value="rastreabilidade">Rastreabilidade</TabsTrigger>
           <TabsTrigger value="nao-conformidades">Não-Conformidades</TabsTrigger>
           <TabsTrigger value="temperatura">Temperatura</TabsTrigger>
