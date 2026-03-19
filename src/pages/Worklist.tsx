@@ -18,13 +18,14 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, MoreVertical, Pencil, Trash2, CalendarIcon, X, Printer } from "lucide-react";
+import { Plus, MoreVertical, Pencil, Trash2, CalendarIcon, X, Printer, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import SampleEditDialog from "@/components/worklist/SampleEditDialog";
+import SendToEquipmentDialog from "@/components/worklist/SendToEquipmentDialog";
 
 const Worklist = () => {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
@@ -32,6 +33,8 @@ const Worklist = () => {
   const [renameValue, setRenameValue] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [editingSample, setEditingSample] = useState<any>(null);
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [sendDialogSector, setSendDialogSector] = useState("");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const queryClient = useQueryClient();
@@ -242,6 +245,18 @@ const Worklist = () => {
                       <CardTitle className="text-base">{sector} — {sectorSamples.length} amostras</CardTitle>
                       <div className="flex items-center gap-1">
                         <Button
+                          variant="default"
+                          size="sm"
+                          className="text-xs gap-1"
+                          disabled={sectorSamples.length === 0}
+                          onClick={() => {
+                            setSendDialogSector(sector);
+                            setSendDialogOpen(true);
+                          }}
+                        >
+                          <Send className="w-3.5 h-3.5" /> Enviar para Equipamento
+                        </Button>
+                        <Button
                           variant="outline"
                           size="sm"
                           className="text-xs"
@@ -361,6 +376,13 @@ const Worklist = () => {
         onOpenChange={open => !open && setEditingSample(null)}
         sample={editingSample}
         sectors={sectors}
+      />
+
+      <SendToEquipmentDialog
+        open={sendDialogOpen}
+        onOpenChange={setSendDialogOpen}
+        samples={filteredSamples.filter(s => s.sector === sendDialogSector)}
+        sector={sendDialogSector}
       />
     </div>
   );
