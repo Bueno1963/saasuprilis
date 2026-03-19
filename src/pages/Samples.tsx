@@ -386,6 +386,14 @@ const Samples = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="kanban">
+          <Card>
+            <CardContent className="pt-6">
+              <SampleKanbanTab />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="rastreabilidade">
           <Card>
             <CardContent className="pt-6">
