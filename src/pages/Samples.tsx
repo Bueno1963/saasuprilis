@@ -20,6 +20,7 @@ import NonConformityTab from "@/components/samples/NonConformityTab";
 import TemperatureTab from "@/components/samples/TemperatureTab";
 import ComplianceReportTab from "@/components/samples/ComplianceReportTab";
 import SampleStatusStepper from "@/components/samples/SampleStatusStepper";
+import SampleKanbanTab from "@/components/samples/SampleKanbanTab";
 
 const SAMPLE_TYPES = ["Sangue", "Urina", "Soro", "Plasma"] as const;
 const SECTORS = ["Hematologia", "Bioquímica", "Imunologia", "Microbiologia"] as const;
