@@ -493,6 +493,37 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk equipment assignment dialog */}
+      <Dialog open={bulkEquipOpen} onOpenChange={setBulkEquipOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Vincular Equipamento em Lote</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Selecione o equipamento para atribuir aos <strong className="text-foreground">{selectedIds.size}</strong> exame(s) selecionados.
+          </p>
+          <div className="space-y-2">
+            <Label>Equipamento</Label>
+            <Select value={bulkEquipValue || "__none__"} onValueChange={(v) => setBulkEquipValue(v === "__none__" ? "" : v)}>
+              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Nenhum (remover vínculo)</SelectItem>
+                {equipmentList.map(eq => (
+                  <SelectItem key={eq.id} value={eq.name}>{eq.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            className="w-full gap-2"
+            disabled={bulkEquip.isPending}
+            onClick={() => bulkEquip.mutate({ ids: Array.from(selectedIds), equipment: bulkEquipValue })}
+          >
+            <Link2 className="h-4 w-4" />Confirmar Vinculação
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
