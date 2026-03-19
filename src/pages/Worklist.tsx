@@ -18,7 +18,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, MoreVertical, Pencil, Trash2, CalendarIcon, X, Printer } from "lucide-react";
+import { Plus, MoreVertical, Pencil, Trash2, CalendarIcon, X, Printer, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
