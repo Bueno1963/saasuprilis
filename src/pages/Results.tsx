@@ -43,14 +43,41 @@ const Results = () => {
 
   const releaseMutation = useMutation({
     mutationFn: async (id: string) => {
+      const { data: result, error: fetchErr } = await supabase
+        .from("results")
+        .select("sample_id")
+        .eq("id", id)
+        .single();
+      if (fetchErr) throw fetchErr;
+
       const { error } = await supabase.from("results").update({
         status: "released",
         released_at: new Date().toISOString(),
       }).eq("id", id);
       if (error) throw error;
+
+      if (result?.sample_id) {
+        await supabase.from("samples").update({ status: "analyzed" }).eq("id", result.sample_id);
+
+        let performerName = "";
+        if (user?.id) {
+          const { data: profile } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).single();
+          performerName = profile?.full_name || "";
+        }
+        await supabase.from("sample_tracking_events").insert({
+          sample_id: result.sample_id,
+          event_type: "status_change",
+          previous_status: "processing",
+          new_status: "analyzed",
+          performed_by: user?.id,
+          performed_by_name: performerName,
+          notes: "Migração automática: exame liberado",
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["results"] });
+      queryClient.invalidateQueries({ queryKey: ["samples"] });
       toast.success("Laudo liberado!");
     },
   });
