@@ -2,13 +2,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TestTubes, FlaskConical, Microscope, BadgeCheck, Barcode, GripVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TestTubes, FlaskConical, Microscope, BadgeCheck, Barcode, GripVertical, ClipboardCheck } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 const KANBAN_COLUMNS = [
   { status: "collected", label: "Coletadas", icon: TestTubes, color: "text-warning", bg: "bg-warning/10", border: "border-warning/30", headerBg: "bg-warning/15" },
@@ -17,10 +23,21 @@ const KANBAN_COLUMNS = [
   { status: "analyzed", label: "Analisadas", icon: BadgeCheck, color: "text-success", bg: "bg-success/10", border: "border-success/30", headerBg: "bg-success/15" },
 ];
 
+const CONDITION_OPTIONS = [
+  { value: "de_acordo", label: "De acordo" },
+  { value: "hemolisada", label: "Hemolisada" },
+  { value: "insuficiente", label: "Insuficiente" },
+  { value: "lipêmica", label: "Lipêmica" },
+  { value: "coagulada", label: "Coagulada" },
+];
+
 const SampleKanbanTab = () => {
   const [sectorFilter, setSectorFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [draggedSampleId, setDraggedSampleId] = useState<string | null>(null);
+  const [registerDialog, setRegisterDialog] = useState<{ open: boolean; sample: any | null }>({ open: false, sample: null });
+  const [condition, setCondition] = useState("de_acordo");
+  const [registerNotes, setRegisterNotes] = useState("");
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -64,6 +81,41 @@ const SampleKanbanTab = () => {
     onError: (e: any) => toast.error(e.message || "Erro ao atualizar status"),
   });
 
+  const registerSampleMutation = useMutation({
+    mutationFn: async ({ id, condition, notes }: { id: string; condition: string; notes: string }) => {
+      const { error } = await supabase.from("samples").update({
+        condition,
+        status: "processing",
+      }).eq("id", id);
+      if (error) throw error;
+
+      let performerName = "";
+      if (user?.id) {
+        const { data: profile } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).single();
+        performerName = profile?.full_name || "";
+      }
+
+      await supabase.from("sample_tracking_events").insert({
+        sample_id: id,
+        event_type: "registered",
+        previous_status: "triaged",
+        new_status: "processing",
+        performed_by: user?.id,
+        performed_by_name: performerName,
+        notes: `Condição: ${condition}${notes ? ` | Obs: ${notes}` : ""}`,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["samples"] });
+      queryClient.invalidateQueries({ queryKey: ["sample-tracking-events"] });
+      toast.success("Amostra registrada e movida para análise");
+      setRegisterDialog({ open: false, sample: null });
+      setCondition("de_acordo");
+      setRegisterNotes("");
+    },
+    onError: (e: any) => toast.error(e.message || "Erro ao registrar amostra"),
+  });
+
   const sectors = [...new Set(samples.map(s => s.sector).filter(Boolean))].sort();
 
   const filtered = samples.filter(s => {
@@ -99,6 +151,21 @@ const SampleKanbanTab = () => {
   };
 
   const handleDragEnd = () => setDraggedSampleId(null);
+
+  const handleRegisterClick = (sample: any) => {
+    setCondition("de_acordo");
+    setRegisterNotes("");
+    setRegisterDialog({ open: true, sample });
+  };
+
+  const handleConfirmRegister = () => {
+    if (!registerDialog.sample) return;
+    registerSampleMutation.mutate({
+      id: registerDialog.sample.id,
+      condition,
+      notes: registerNotes,
+    });
+  };
 
   if (isLoading) {
     return <p className="text-center py-8 text-muted-foreground">Carregando Kanban...</p>;
@@ -184,6 +251,21 @@ const SampleKanbanTab = () => {
                         <p className="text-[10px] text-muted-foreground pl-5">
                           {(sample.orders as any)?.order_number}
                         </p>
+
+                        {col.status === "triaged" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full mt-2 text-xs gap-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRegisterClick(sample);
+                            }}
+                          >
+                            <ClipboardCheck className="w-3.5 h-3.5" />
+                            Registrar Amostra
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   ))
@@ -193,6 +275,72 @@ const SampleKanbanTab = () => {
           );
         })}
       </div>
+
+      {/* Dialog de Registro de Amostra */}
+      <Dialog open={registerDialog.open} onOpenChange={(open) => !open && setRegisterDialog({ open: false, sample: null })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-info" />
+              Registrar Amostra
+            </DialogTitle>
+            <DialogDescription>
+              Confirme a condição da amostra antes de movê-la para análise.
+            </DialogDescription>
+          </DialogHeader>
+
+          {registerDialog.sample && (
+            <div className="space-y-4">
+              <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
+                <div className="flex items-center gap-2">
+                  <Barcode className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-mono text-sm">{registerDialog.sample.barcode}</span>
+                </div>
+                <p className="text-sm font-medium">
+                  {(registerDialog.sample.orders as any)?.patients?.name || "—"}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">{registerDialog.sample.sector}</Badge>
+                  <span className="text-xs text-muted-foreground">{registerDialog.sample.sample_type}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Condição da amostra</Label>
+                <Select value={condition} onValueChange={setCondition}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONDITION_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Observações (opcional)</Label>
+                <Textarea
+                  value={registerNotes}
+                  onChange={e => setRegisterNotes(e.target.value)}
+                  placeholder="Adicione observações sobre a amostra..."
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRegisterDialog({ open: false, sample: null })}>
+              Cancelar
+            </Button>
+            <Button onClick={handleConfirmRegister} disabled={registerSampleMutation.isPending}>
+              {registerSampleMutation.isPending ? "Registrando..." : "Confirmar Registro"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
