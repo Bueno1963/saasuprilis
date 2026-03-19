@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, LayoutGrid, List } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, LayoutGrid, List, Monitor, Link2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { cn } from "@/lib/utils";
 
@@ -42,14 +43,18 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<"list" | "sector">("sector");
+  const [viewMode, setViewMode] = useState<"list" | "sector" | "equipment">("sector");
   const [activeSector, setActiveSector] = useState<string | null>(null);
+  const [activeEquipment, setActiveEquipment] = useState<string | null>(null);
   const [newSectorOpen, setNewSectorOpen] = useState(false);
   const [newSectorName, setNewSectorName] = useState("");
   const [newMaterialOpen, setNewMaterialOpen] = useState(false);
   const [newMaterialName, setNewMaterialName] = useState("");
   const [customMaterials, setCustomMaterials] = useState<string[]>([]);
   const [customSectors, setCustomSectors] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkEquipOpen, setBulkEquipOpen] = useState(false);
+  const [bulkEquipValue, setBulkEquipValue] = useState("");
   const { register, handleSubmit, reset, control } = useForm<ExamForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
@@ -96,6 +101,25 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
 
+  const groupedByEquipment = useMemo(() => {
+    const groups: Record<string, typeof filtered> = {};
+    filtered.forEach((item) => {
+      const eq = item.equipment || "Sem equipamento";
+      if (!groups[eq]) groups[eq] = [];
+      groups[eq].push(item);
+    });
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [filtered]);
+
+  const equipmentCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    items.forEach((item) => {
+      const eq = item.equipment || "Sem equipamento";
+      counts[eq] = (counts[eq] || 0) + 1;
+    });
+    return counts;
+  }, [items]);
+
   const sectorCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     items.forEach((item) => {
@@ -105,7 +129,9 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     return counts;
   }, [items]);
 
-  const displayedItems = activeSector
+  const displayedItems = viewMode === "equipment" && activeEquipment
+    ? filtered.filter((i) => (i.equipment || "Sem equipamento") === activeEquipment)
+    : activeSector
     ? filtered.filter((i) => (i.sector || "Sem setor") === activeSector)
     : filtered;
 
@@ -130,11 +156,50 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const bulkEquip = useMutation({
+    mutationFn: async ({ ids, equipment }: { ids: string[]; equipment: string }) => {
+      const { error } = await supabase.from("exam_catalog").update({ equipment }).in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["exam_catalog"] });
+      setSelectedIds(new Set());
+      setBulkEquipOpen(false);
+      setBulkEquipValue("");
+      toast.success("Equipamento atualizado nos exames selecionados!");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === displayedItems.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(displayedItems.map((i) => i.id)));
+    }
+  };
+
   const openEdit = (item: any) => { setEditId(item.id); reset(item); setOpen(true); };
   const openNew = () => { setEditId(null); reset(defaultValues); setOpen(true); };
 
   const renderExamRow = (item: any) => (
     <TableRow key={item.id}>
+      {viewMode === "equipment" && (
+        <TableCell className="w-10">
+          <Checkbox
+            checked={selectedIds.has(item.id)}
+            onCheckedChange={() => toggleSelect(item.id)}
+          />
+        </TableCell>
+      )}
       <TableCell className="font-mono">{item.code}</TableCell>
       <TableCell className="font-medium">{item.name}</TableCell>
       <TableCell>{item.material}</TableCell>
@@ -153,8 +218,18 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     </TableRow>
   );
 
+  const colCount = viewMode === "list" ? 10 : viewMode === "equipment" ? 10 : 9;
+
   const tableHeaders = (
     <TableRow>
+      {viewMode === "equipment" && (
+        <TableHead className="w-10">
+          <Checkbox
+            checked={displayedItems.length > 0 && selectedIds.size === displayedItems.length}
+            onCheckedChange={toggleSelectAll}
+          />
+        </TableHead>
+      )}
       <TableHead>Código</TableHead><TableHead>Nome</TableHead><TableHead>Material</TableHead>
       {viewMode === "list" && <TableHead>Setor</TableHead>}
       <TableHead>Equipamento</TableHead><TableHead>Unidade</TableHead><TableHead>Ref.</TableHead>
@@ -215,33 +290,45 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
 
       <div className="flex items-center gap-3">
         <Input placeholder="Buscar por nome ou código..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
+        {viewMode === "equipment" && selectedIds.size > 0 && (
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBulkEquipOpen(true)}>
+            <Link2 className="h-4 w-4" />Vincular {selectedIds.size} exame(s) a equipamento
+          </Button>
+        )}
         <div className="flex gap-1 ml-auto border rounded-lg p-1 bg-muted/40">
-          <Button variant={viewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => { setViewMode("list"); setActiveSector(null); }}>
+          <Button variant={viewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => { setViewMode("list"); setActiveSector(null); setActiveEquipment(null); setSelectedIds(new Set()); }}>
             <List className="h-4 w-4 mr-1" />Lista
           </Button>
-          <Button variant={viewMode === "sector" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("sector")}>
+          <Button variant={viewMode === "sector" ? "default" : "ghost"} size="sm" onClick={() => { setViewMode("sector"); setActiveEquipment(null); setSelectedIds(new Set()); }}>
             <LayoutGrid className="h-4 w-4 mr-1" />Por Setor
+          </Button>
+          <Button variant={viewMode === "equipment" ? "default" : "ghost"} size="sm" onClick={() => { setViewMode("equipment"); setActiveSector(null); setSelectedIds(new Set()); }}>
+            <Monitor className="h-4 w-4 mr-1" />Por Equipamento
           </Button>
         </div>
       </div>
 
       {viewMode === "sector" && (
         <div className="flex flex-wrap gap-2">
-          <Badge
-            variant={activeSector === null ? "default" : "outline"}
-            className="cursor-pointer text-sm px-3 py-1"
-            onClick={() => setActiveSector(null)}
-          >
+          <Badge variant={activeSector === null ? "default" : "outline"} className="cursor-pointer text-sm px-3 py-1" onClick={() => setActiveSector(null)}>
             Todos ({items.length})
           </Badge>
           {Object.entries(sectorCounts).sort(([a], [b]) => a.localeCompare(b)).map(([sector, count]) => (
-            <Badge
-              key={sector}
-              variant={activeSector === sector ? "default" : "outline"}
-              className="cursor-pointer text-sm px-3 py-1"
-              onClick={() => setActiveSector(activeSector === sector ? null : sector)}
-            >
+            <Badge key={sector} variant={activeSector === sector ? "default" : "outline"} className="cursor-pointer text-sm px-3 py-1" onClick={() => setActiveSector(activeSector === sector ? null : sector)}>
               {sector} ({count})
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {viewMode === "equipment" && (
+        <div className="flex flex-wrap gap-2">
+          <Badge variant={activeEquipment === null ? "default" : "outline"} className="cursor-pointer text-sm px-3 py-1" onClick={() => { setActiveEquipment(null); setSelectedIds(new Set()); }}>
+            Todos ({items.length})
+          </Badge>
+          {Object.entries(equipmentCounts).sort(([a], [b]) => a.localeCompare(b)).map(([eq, count]) => (
+            <Badge key={eq} variant={activeEquipment === eq ? "default" : "outline"} className="cursor-pointer text-sm px-3 py-1" onClick={() => { setActiveEquipment(activeEquipment === eq ? null : eq); setSelectedIds(new Set()); }}>
+              {eq} ({count})
             </Badge>
           ))}
         </div>
@@ -253,13 +340,58 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             <Table>
               <TableHeader>{tableHeaders}</TableHeader>
               <TableBody>
-                {isLoading ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
-                filtered.length === 0 ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground">Nenhum exame cadastrado</TableCell></TableRow> :
+                {isLoading ? <TableRow><TableCell colSpan={colCount} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
+                filtered.length === 0 ? <TableRow><TableCell colSpan={colCount} className="text-center text-muted-foreground">Nenhum exame cadastrado</TableCell></TableRow> :
                 filtered.map(renderExamRow)}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
+      ) : viewMode === "equipment" ? (
+        <div className="space-y-4">
+          {activeEquipment ? (
+            <Card>
+              <CardContent className="p-0">
+                <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-foreground flex items-center gap-2"><Monitor className="h-4 w-4" />{activeEquipment}</h3>
+                    <p className="text-xs text-muted-foreground">{displayedItems.length} exame(s)</p>
+                  </div>
+                  {selectedIds.size > 0 && (
+                    <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBulkEquipOpen(true)}>
+                      <Link2 className="h-4 w-4" />Alterar equipamento ({selectedIds.size})
+                    </Button>
+                  )}
+                </div>
+                <Table>
+                  <TableHeader>{tableHeaders}</TableHeader>
+                  <TableBody>
+                    {displayedItems.length === 0
+                      ? <TableRow><TableCell colSpan={colCount} className="text-center text-muted-foreground">Nenhum exame encontrado</TableCell></TableRow>
+                      : displayedItems.map(renderExamRow)}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          ) : (
+            groupedByEquipment.map(([eq, exams]) => (
+              <Card key={eq}>
+                <CardContent className="p-0">
+                  <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between cursor-pointer" onClick={() => { setActiveEquipment(eq); setSelectedIds(new Set()); }}>
+                    <div className="flex items-center gap-2">
+                      <Monitor className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <h3 className="font-semibold text-foreground">{eq}</h3>
+                        <p className="text-xs text-muted-foreground">{exams.length} exame(s)</p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">{exams.length}</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
       ) : (
         <div className="space-y-4">
           {activeSector ? (
@@ -273,7 +405,7 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
                   <TableHeader>{tableHeaders}</TableHeader>
                   <TableBody>
                     {displayedItems.length === 0
-                      ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Nenhum exame encontrado</TableCell></TableRow>
+                      ? <TableRow><TableCell colSpan={colCount} className="text-center text-muted-foreground">Nenhum exame encontrado</TableCell></TableRow>
                       : displayedItems.map(renderExamRow)}
                   </TableBody>
                 </Table>
@@ -359,6 +491,37 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             </div>
             <Button type="submit" className="w-full" disabled={save.isPending}>Salvar</Button>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk equipment assignment dialog */}
+      <Dialog open={bulkEquipOpen} onOpenChange={setBulkEquipOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Vincular Equipamento em Lote</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Selecione o equipamento para atribuir aos <strong className="text-foreground">{selectedIds.size}</strong> exame(s) selecionados.
+          </p>
+          <div className="space-y-2">
+            <Label>Equipamento</Label>
+            <Select value={bulkEquipValue || "__none__"} onValueChange={(v) => setBulkEquipValue(v === "__none__" ? "" : v)}>
+              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Nenhum (remover vínculo)</SelectItem>
+                {equipmentList.map(eq => (
+                  <SelectItem key={eq.id} value={eq.name}>{eq.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            className="w-full gap-2"
+            disabled={bulkEquip.isPending}
+            onClick={() => bulkEquip.mutate({ ids: Array.from(selectedIds), equipment: bulkEquipValue })}
+          >
+            <Link2 className="h-4 w-4" />Confirmar Vinculação
+          </Button>
         </DialogContent>
       </Dialog>
     </div>
