@@ -62,6 +62,8 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
   const [search, setSearch] = useState("");
 
   const isMaxBio = /maxbio/i.test(equipmentName);
+  const isMaxCell = /maxcell/i.test(equipmentName);
+  const isSupported = isMaxBio || isMaxCell;
 
   const { data: exams = [], isLoading } = useQuery({
     queryKey: ["exam-catalog-for-validation"],
@@ -76,7 +78,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
     },
   });
 
-  const analyteMap = isMaxBio ? MAXBIO_ANALYTES : {};
+  const analyteMap = isMaxBio ? MAXBIO_ANALYTES : isMaxCell ? MAXCELL_ANALYTES : {};
 
   const rows = useMemo<ValidationRow[]>(() => {
     const result: ValidationRow[] = [];
