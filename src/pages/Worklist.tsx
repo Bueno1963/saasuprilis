@@ -377,6 +377,13 @@ const Worklist = () => {
         sample={editingSample}
         sectors={sectors}
       />
+
+      <SendToEquipmentDialog
+        open={sendDialogOpen}
+        onOpenChange={setSendDialogOpen}
+        samples={filteredSamples.filter(s => s.sector === sendDialogSector)}
+        sector={sendDialogSector}
+      />
     </div>
   );
 };
