@@ -101,6 +101,25 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
 
+  const groupedByEquipment = useMemo(() => {
+    const groups: Record<string, typeof filtered> = {};
+    filtered.forEach((item) => {
+      const eq = item.equipment || "Sem equipamento";
+      if (!groups[eq]) groups[eq] = [];
+      groups[eq].push(item);
+    });
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [filtered]);
+
+  const equipmentCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    items.forEach((item) => {
+      const eq = item.equipment || "Sem equipamento";
+      counts[eq] = (counts[eq] || 0) + 1;
+    });
+    return counts;
+  }, [items]);
+
   const sectorCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     items.forEach((item) => {
@@ -110,7 +129,9 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     return counts;
   }, [items]);
 
-  const displayedItems = activeSector
+  const displayedItems = viewMode === "equipment" && activeEquipment
+    ? filtered.filter((i) => (i.equipment || "Sem equipamento") === activeEquipment)
+    : activeSector
     ? filtered.filter((i) => (i.sector || "Sem setor") === activeSector)
     : filtered;
 
