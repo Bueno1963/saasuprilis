@@ -245,6 +245,18 @@ const Worklist = () => {
                       <CardTitle className="text-base">{sector} — {sectorSamples.length} amostras</CardTitle>
                       <div className="flex items-center gap-1">
                         <Button
+                          variant="default"
+                          size="sm"
+                          className="text-xs gap-1"
+                          disabled={sectorSamples.length === 0}
+                          onClick={() => {
+                            setSendDialogSector(sector);
+                            setSendDialogOpen(true);
+                          }}
+                        >
+                          <Send className="w-3.5 h-3.5" /> Enviar para Equipamento
+                        </Button>
+                        <Button
                           variant="outline"
                           size="sm"
                           className="text-xs"
