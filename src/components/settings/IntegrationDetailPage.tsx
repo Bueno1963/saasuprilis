@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Save, Wifi, WifiOff, Plus, Trash2, GripVertical } from "lucide-react";
 import IntegrationLogsTab from "./IntegrationLogsTab";
 import IntegrationProtocolSpecs from "./IntegrationProtocolSpecs";
+import ExamEquipmentValidation from "./ExamEquipmentValidation";
 import { useForm, Controller } from "react-hook-form";
 
 interface Props {
