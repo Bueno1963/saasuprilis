@@ -156,6 +156,37 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const bulkEquip = useMutation({
+    mutationFn: async ({ ids, equipment }: { ids: string[]; equipment: string }) => {
+      const { error } = await supabase.from("exam_catalog").update({ equipment }).in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["exam_catalog"] });
+      setSelectedIds(new Set());
+      setBulkEquipOpen(false);
+      setBulkEquipValue("");
+      toast.success("Equipamento atualizado nos exames selecionados!");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === displayedItems.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(displayedItems.map((i) => i.id)));
+    }
+  };
+
   const openEdit = (item: any) => { setEditId(item.id); reset(item); setOpen(true); };
   const openNew = () => { setEditId(null); reset(defaultValues); setOpen(true); };
 
