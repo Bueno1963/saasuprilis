@@ -290,33 +290,45 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
 
       <div className="flex items-center gap-3">
         <Input placeholder="Buscar por nome ou código..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
+        {viewMode === "equipment" && selectedIds.size > 0 && (
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBulkEquipOpen(true)}>
+            <Link2 className="h-4 w-4" />Vincular {selectedIds.size} exame(s) a equipamento
+          </Button>
+        )}
         <div className="flex gap-1 ml-auto border rounded-lg p-1 bg-muted/40">
-          <Button variant={viewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => { setViewMode("list"); setActiveSector(null); }}>
+          <Button variant={viewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => { setViewMode("list"); setActiveSector(null); setActiveEquipment(null); setSelectedIds(new Set()); }}>
             <List className="h-4 w-4 mr-1" />Lista
           </Button>
-          <Button variant={viewMode === "sector" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("sector")}>
+          <Button variant={viewMode === "sector" ? "default" : "ghost"} size="sm" onClick={() => { setViewMode("sector"); setActiveEquipment(null); setSelectedIds(new Set()); }}>
             <LayoutGrid className="h-4 w-4 mr-1" />Por Setor
+          </Button>
+          <Button variant={viewMode === "equipment" ? "default" : "ghost"} size="sm" onClick={() => { setViewMode("equipment"); setActiveSector(null); setSelectedIds(new Set()); }}>
+            <Monitor className="h-4 w-4 mr-1" />Por Equipamento
           </Button>
         </div>
       </div>
 
       {viewMode === "sector" && (
         <div className="flex flex-wrap gap-2">
-          <Badge
-            variant={activeSector === null ? "default" : "outline"}
-            className="cursor-pointer text-sm px-3 py-1"
-            onClick={() => setActiveSector(null)}
-          >
+          <Badge variant={activeSector === null ? "default" : "outline"} className="cursor-pointer text-sm px-3 py-1" onClick={() => setActiveSector(null)}>
             Todos ({items.length})
           </Badge>
           {Object.entries(sectorCounts).sort(([a], [b]) => a.localeCompare(b)).map(([sector, count]) => (
-            <Badge
-              key={sector}
-              variant={activeSector === sector ? "default" : "outline"}
-              className="cursor-pointer text-sm px-3 py-1"
-              onClick={() => setActiveSector(activeSector === sector ? null : sector)}
-            >
+            <Badge key={sector} variant={activeSector === sector ? "default" : "outline"} className="cursor-pointer text-sm px-3 py-1" onClick={() => setActiveSector(activeSector === sector ? null : sector)}>
               {sector} ({count})
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {viewMode === "equipment" && (
+        <div className="flex flex-wrap gap-2">
+          <Badge variant={activeEquipment === null ? "default" : "outline"} className="cursor-pointer text-sm px-3 py-1" onClick={() => { setActiveEquipment(null); setSelectedIds(new Set()); }}>
+            Todos ({items.length})
+          </Badge>
+          {Object.entries(equipmentCounts).sort(([a], [b]) => a.localeCompare(b)).map(([eq, count]) => (
+            <Badge key={eq} variant={activeEquipment === eq ? "default" : "outline"} className="cursor-pointer text-sm px-3 py-1" onClick={() => { setActiveEquipment(activeEquipment === eq ? null : eq); setSelectedIds(new Set()); }}>
+              {eq} ({count})
             </Badge>
           ))}
         </div>
@@ -328,13 +340,58 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             <Table>
               <TableHeader>{tableHeaders}</TableHeader>
               <TableBody>
-                {isLoading ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
-                filtered.length === 0 ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground">Nenhum exame cadastrado</TableCell></TableRow> :
+                {isLoading ? <TableRow><TableCell colSpan={colCount} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow> :
+                filtered.length === 0 ? <TableRow><TableCell colSpan={colCount} className="text-center text-muted-foreground">Nenhum exame cadastrado</TableCell></TableRow> :
                 filtered.map(renderExamRow)}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
+      ) : viewMode === "equipment" ? (
+        <div className="space-y-4">
+          {activeEquipment ? (
+            <Card>
+              <CardContent className="p-0">
+                <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-foreground flex items-center gap-2"><Monitor className="h-4 w-4" />{activeEquipment}</h3>
+                    <p className="text-xs text-muted-foreground">{displayedItems.length} exame(s)</p>
+                  </div>
+                  {selectedIds.size > 0 && (
+                    <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBulkEquipOpen(true)}>
+                      <Link2 className="h-4 w-4" />Alterar equipamento ({selectedIds.size})
+                    </Button>
+                  )}
+                </div>
+                <Table>
+                  <TableHeader>{tableHeaders}</TableHeader>
+                  <TableBody>
+                    {displayedItems.length === 0
+                      ? <TableRow><TableCell colSpan={colCount} className="text-center text-muted-foreground">Nenhum exame encontrado</TableCell></TableRow>
+                      : displayedItems.map(renderExamRow)}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          ) : (
+            groupedByEquipment.map(([eq, exams]) => (
+              <Card key={eq}>
+                <CardContent className="p-0">
+                  <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between cursor-pointer" onClick={() => { setActiveEquipment(eq); setSelectedIds(new Set()); }}>
+                    <div className="flex items-center gap-2">
+                      <Monitor className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <h3 className="font-semibold text-foreground">{eq}</h3>
+                        <p className="text-xs text-muted-foreground">{exams.length} exame(s)</p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">{exams.length}</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
       ) : (
         <div className="space-y-4">
           {activeSector ? (
@@ -348,7 +405,7 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
                   <TableHeader>{tableHeaders}</TableHeader>
                   <TableBody>
                     {displayedItems.length === 0
-                      ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Nenhum exame encontrado</TableCell></TableRow>
+                      ? <TableRow><TableCell colSpan={colCount} className="text-center text-muted-foreground">Nenhum exame encontrado</TableCell></TableRow>
                       : displayedItems.map(renderExamRow)}
                   </TableBody>
                 </Table>
