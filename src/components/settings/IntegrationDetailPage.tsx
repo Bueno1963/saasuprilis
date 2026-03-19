@@ -84,12 +84,28 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
         const { error } = await supabase.from("integrations").update(values).eq("id", integrationId);
         if (error) throw error;
       } else {
+        // Insert integration
         const { error } = await supabase.from("integrations").insert(values);
         if (error) throw error;
+
+        // Auto-create equipment record if name is provided
+        if (values.name) {
+          const protocol = values.type === "HL7" ? "HL7" : values.type === "ASTM" ? "ASTM" : values.protocol || "";
+          const { error: eqError } = await supabase.from("equipment").insert({
+            name: values.name,
+            protocol,
+            status: "active",
+            notes: `Cadastrado automaticamente via integração. Endpoint: ${values.endpoint_url || "—"}`,
+          });
+          if (eqError) {
+            console.warn("Erro ao criar equipamento automaticamente:", eqError.message);
+          }
+        }
       }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["integrations"] });
+      qc.invalidateQueries({ queryKey: ["equipment-list"] });
       toast.success("Integração salva com sucesso!");
       if (isNew) onBack();
     },
