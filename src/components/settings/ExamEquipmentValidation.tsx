@@ -142,12 +142,12 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
     return { matched, unmatchedLis, unmatchedEquip, total: rows.length };
   }, [rows]);
 
-  if (!isMaxBio) {
+  if (!isSupported) {
     return (
       <Card>
         <CardContent className="p-8 text-center text-muted-foreground text-sm">
           <FlaskConical className="h-8 w-8 mx-auto mb-3 text-muted-foreground/50" />
-          <p>A validação de códigos está disponível para equipamentos com protocolo conhecido (MaxBIO200B, MaxCell, Dymind).</p>
+          <p>A validação de códigos está disponível para equipamentos com protocolo conhecido (MaxBIO200B, MaxCell 500D/500F, Dymind).</p>
           <p className="mt-1 text-xs">Selecione uma integração com equipamento compatível.</p>
         </CardContent>
       </Card>
