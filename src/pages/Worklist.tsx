@@ -33,6 +33,8 @@ const Worklist = () => {
   const [renameValue, setRenameValue] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [editingSample, setEditingSample] = useState<any>(null);
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [sendDialogSector, setSendDialogSector] = useState("");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const queryClient = useQueryClient();
