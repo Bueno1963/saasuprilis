@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Save, Wifi, WifiOff, Plus, Trash2, GripVertical } from "lucide-react";
 import IntegrationLogsTab from "./IntegrationLogsTab";
 import IntegrationProtocolSpecs from "./IntegrationProtocolSpecs";
+import ExamEquipmentValidation from "./ExamEquipmentValidation";
 import { useForm, Controller } from "react-hook-form";
 
 interface Props {
@@ -120,10 +121,11 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
 
       {/* Tabs */}
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="general">Dados Gerais</TabsTrigger>
           <TabsTrigger value="technical">Configuração Técnica</TabsTrigger>
           <TabsTrigger value="mapping">Mapeamento de Campos</TabsTrigger>
+          <TabsTrigger value="validation">Validação de Códigos</TabsTrigger>
           <TabsTrigger value="logs">Logs / Histórico</TabsTrigger>
         </TabsList>
 
@@ -229,7 +231,15 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
           <FieldMappingTab integrationId={integrationId} protocolType={currentType} />
         </TabsContent>
 
-        {/* Tab 4: Logs / Histórico */}
+        {/* Tab 4: Validação de Códigos */}
+        <TabsContent value="validation">
+          <ExamEquipmentValidation
+            integrationId={integrationId}
+            equipmentName={currentName || integrationData?.name || ""}
+          />
+        </TabsContent>
+
+        {/* Tab 5: Logs / Histórico */}
         <TabsContent value="logs">
           <IntegrationLogsTab
             integrationId={integrationId}
