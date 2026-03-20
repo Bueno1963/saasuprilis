@@ -1,9 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { format, startOfDay, endOfDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TestTubes, FlaskConical, Microscope, BadgeCheck, Barcode, GripVertical, ClipboardCheck, ShieldCheck, AlertTriangle } from "lucide-react";
+import { TestTubes, FlaskConical, Microscope, BadgeCheck, Barcode, GripVertical, ClipboardCheck, ShieldCheck, AlertTriangle, CalendarIcon } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,6 +18,8 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const KANBAN_COLUMNS = [
   { status: "collected", label: "Recepção/Coleta", icon: TestTubes, color: "text-warning", bg: "bg-warning/10", border: "border-warning/30", headerBg: "bg-warning/15" },
@@ -58,6 +62,7 @@ const getConditionOptions = (sampleType: string) => {
 const SampleKanbanTab = () => {
   const [sectorFilter, setSectorFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const [draggedSampleId, setDraggedSampleId] = useState<string | null>(null);
   const [registerDialog, setRegisterDialog] = useState<{ open: boolean; sample: any | null }>({ open: false, sample: null });
   const [condition, setCondition] = useState("de_acordo");
@@ -191,6 +196,10 @@ const SampleKanbanTab = () => {
 
   const filtered = samples.filter(s => {
     if (sectorFilter !== "all" && s.sector !== sectorFilter) return false;
+    if (dateFilter) {
+      const sampleDate = new Date(s.collected_at);
+      if (sampleDate < startOfDay(dateFilter) || sampleDate > endOfDay(dateFilter)) return false;
+    }
     if (search) {
       const q = search.toLowerCase();
       const patientName = (s.orders as any)?.patients?.name || "";
@@ -265,6 +274,31 @@ const SampleKanbanTab = () => {
             onChange={e => setSearch(e.target.value)}
             className="w-[200px]"
           />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn("w-[180px] justify-start text-left font-normal", !dateFilter && "text-muted-foreground")}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateFilter ? format(dateFilter, "dd/MM/yyyy", { locale: ptBR }) : "Filtrar por data"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFilter}
+                onSelect={setDateFilter}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          {dateFilter && (
+            <Button variant="ghost" size="sm" onClick={() => setDateFilter(undefined)} className="text-xs">
+              Limpar data
+            </Button>
+          )}
           <Select value={sectorFilter} onValueChange={setSectorFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filtrar setor" />
