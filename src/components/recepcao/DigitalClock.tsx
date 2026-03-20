@@ -37,7 +37,7 @@ const DigitalClock = () => {
   const dateStr = format(now, "dd/MM/yyyy");
 
   return (
-    <div className="relative mx-auto w-full max-w-lg rounded-2xl bg-black p-6 shadow-2xl overflow-hidden select-none">
+    <div className="relative mx-auto w-full max-w-xs rounded-xl bg-black p-3 shadow-2xl overflow-hidden select-none scale-100">
       {/* Glossy reflection effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
 
