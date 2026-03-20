@@ -409,9 +409,14 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
           {activeSector ? (
             <Card>
               <CardContent className="p-0">
-                <div className="px-4 py-3 border-b bg-muted/30">
-                  <h3 className="font-semibold text-foreground">{activeSector}</h3>
-                  <p className="text-xs text-muted-foreground">{displayedItems.length} exame(s)</p>
+                <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-foreground">{activeSector}</h3>
+                    <p className="text-xs text-muted-foreground">{displayedItems.length} exame(s)</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setConditionsDialog({ open: true, sector: activeSector! })}>
+                    <FlaskConical className="h-3.5 w-3.5" />Condições de Amostra
+                  </Button>
                 </div>
                 <Table>
                   <TableHeader>{tableHeaders}</TableHeader>
