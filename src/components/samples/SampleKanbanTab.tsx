@@ -62,6 +62,7 @@ const getConditionOptions = (sampleType: string) => {
 const SampleKanbanTab = () => {
   const [sectorFilter, setSectorFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const [draggedSampleId, setDraggedSampleId] = useState<string | null>(null);
   const [registerDialog, setRegisterDialog] = useState<{ open: boolean; sample: any | null }>({ open: false, sample: null });
   const [condition, setCondition] = useState("de_acordo");
