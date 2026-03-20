@@ -48,9 +48,36 @@ const SorotecaPage = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterGallery, setFilterGallery] = useState("all");
-  const [samples] = useState<StoredSample[]>(MOCK_SAMPLES);
+  const [samples, setSamples] = useState<StoredSample[]>(MOCK_SAMPLES);
   const [expurgoDialog, setExpurgoDialog] = useState(false);
   const [selectedForExpurgo, setSelectedForExpurgo] = useState<string[]>([]);
+  const [editDialog, setEditDialog] = useState(false);
+  const [editingSample, setEditingSample] = useState<StoredSample | null>(null);
+  const [editGallery, setEditGallery] = useState("");
+  const [editRack, setEditRack] = useState("");
+  const [editPosition, setEditPosition] = useState("");
+  const [editTemperature, setEditTemperature] = useState("");
+
+  const openEdit = (sample: StoredSample) => {
+    setEditingSample(sample);
+    setEditGallery(sample.gallery);
+    setEditRack(sample.rack);
+    setEditPosition(sample.position);
+    setEditTemperature(sample.temperature);
+    setEditDialog(true);
+  };
+
+  const handleSaveLocation = () => {
+    if (!editingSample) return;
+    setSamples(prev => prev.map(s =>
+      s.id === editingSample.id
+        ? { ...s, gallery: editGallery, rack: editRack, position: editPosition, temperature: editTemperature }
+        : s
+    ));
+    toast.success("Localização atualizada com sucesso");
+    setEditDialog(false);
+    setEditingSample(null);
+  };
 
   const filtered = samples.filter(s => {
     if (filterStatus !== "all" && s.status !== filterStatus) return false;
