@@ -213,6 +213,29 @@ const Orders = () => {
         });
         const { error: resError } = await supabase.from("results").insert(resultRows);
         if (resError) console.error("Erro ao criar resultados:", resError);
+
+        // Auto-create samples for new sectors/materials
+        const { data: existingSamples } = await supabase.from("samples").select("sector").eq("order_id", id);
+        const existingSectors = new Set((existingSamples || []).map(s => s.sector));
+        const newSectorMaterialMap = new Map<string, string>();
+        for (const examName of newExams) {
+          const catalog = examCatalogMap.get(examName);
+          const sector = catalog?.sector || "Bioquímica";
+          const material = catalog?.material || "Sangue";
+          if (!existingSectors.has(sector) && !newSectorMaterialMap.has(sector)) {
+            newSectorMaterialMap.set(sector, material);
+          }
+        }
+        if (newSectorMaterialMap.size > 0) {
+          const sampleRows = Array.from(newSectorMaterialMap.entries()).map(([sector, material]) => ({
+            order_id: id,
+            sample_type: material,
+            sector,
+            barcode: "TEMP",
+          }));
+          const { error: sampleError } = await supabase.from("samples").insert(sampleRows);
+          if (sampleError) console.error("Erro ao criar amostras:", sampleError);
+        }
       }
 
       // Remove result records for removed exams (only if still pending)
