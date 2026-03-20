@@ -11,10 +11,15 @@ import { mockQCData } from "@/lib/mock-data";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
 import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
 import NovoAnalitoSheet from "@/components/qc/NovoAnalitoSheet";
-import { ChevronDown, FlaskConical } from "lucide-react";
+import { ChevronDown, FlaskConical, Printer, CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 const QualityControl = () => {
   const [activeView, setActiveView] = useState<string>("main");
+  const [ljDateRange, setLjDateRange] = useState<{ from?: Date; to?: Date }>({});
 
   const { data: qcData = [] } = useQuery({
     queryKey: ["qc_data"],
@@ -83,10 +88,35 @@ const QualityControl = () => {
                </div>
              </div>
              <div className="flex justify-end mt-2">
-               <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-muted/80 hover:bg-muted border-border/80 text-foreground font-semibold">
-                 Próximo analito
-                 <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
-               </Button>
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-muted/80 hover:bg-muted border-border/80 text-foreground font-semibold">
+                      <CalendarIcon className="h-3.5 w-3.5" />
+                      {ljDateRange.from && ljDateRange.to
+                        ? `${format(ljDateRange.from, "dd/MM")} — ${format(ljDateRange.to, "dd/MM")}`
+                        : "Selecionar período"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      mode="range"
+                      selected={ljDateRange.from && ljDateRange.to ? { from: ljDateRange.from, to: ljDateRange.to } : undefined}
+                      onSelect={(range) => setLjDateRange({ from: range?.from, to: range?.to })}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-muted/80 hover:bg-muted border-border/80 text-foreground font-semibold" onClick={() => window.print()}>
+                  <Printer className="h-3.5 w-3.5" />
+                  Imprimir
+                </Button>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-muted/80 hover:bg-muted border-border/80 text-foreground font-semibold">
+                  Próximo analito
+                  <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
+                </Button>
+              </div>
              </div>
            </CardHeader>
           <CardContent>
