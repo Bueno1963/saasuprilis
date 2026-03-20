@@ -274,6 +274,31 @@ const SampleKanbanTab = () => {
             onChange={e => setSearch(e.target.value)}
             className="w-[200px]"
           />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn("w-[180px] justify-start text-left font-normal", !dateFilter && "text-muted-foreground")}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateFilter ? format(dateFilter, "dd/MM/yyyy", { locale: ptBR }) : "Filtrar por data"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFilter}
+                onSelect={setDateFilter}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          {dateFilter && (
+            <Button variant="ghost" size="sm" onClick={() => setDateFilter(undefined)} className="text-xs">
+              Limpar data
+            </Button>
+          )}
           <Select value={sectorFilter} onValueChange={setSectorFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filtrar setor" />
