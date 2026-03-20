@@ -2014,6 +2014,47 @@ export type Database = {
           },
         ]
       }
+      sample_condition_options: {
+        Row: {
+          condition_label: string
+          condition_value: string
+          created_at: string
+          id: string
+          material: string
+          sector: string
+          sort_order: number
+          tenant_id: string | null
+        }
+        Insert: {
+          condition_label: string
+          condition_value: string
+          created_at?: string
+          id?: string
+          material: string
+          sector?: string
+          sort_order?: number
+          tenant_id?: string | null
+        }
+        Update: {
+          condition_label?: string
+          condition_value?: string
+          created_at?: string
+          id?: string
+          material?: string
+          sector?: string
+          sort_order?: number
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_condition_options_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sample_nonconformities: {
         Row: {
           corrective_action: string | null

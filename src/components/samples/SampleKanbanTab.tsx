@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TestTubes, FlaskConical, Microscope, BadgeCheck, Barcode, GripVertical, ClipboardCheck } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -75,6 +75,31 @@ const SampleKanbanTab = () => {
       return data;
     },
   });
+
+  const { data: dbConditions = [] } = useQuery({
+    queryKey: ["sample-condition-options-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sample_condition_options")
+        .select("*")
+        .order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const getDynamicConditionOptions = useMemo(() => {
+    return (sampleType: string, sector: string) => {
+      const materialConditions = dbConditions.filter(
+        c => c.material.toLowerCase() === (sampleType || "").toLowerCase() &&
+             (!c.sector || c.sector === sector)
+      );
+      if (materialConditions.length > 0) {
+        return materialConditions.map(c => ({ value: c.condition_value, label: c.condition_label }));
+      }
+      return getConditionOptions(sampleType);
+    };
+  }, [dbConditions]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status, previousStatus }: { id: string; status: string; previousStatus: string }) => {
@@ -335,7 +360,7 @@ const SampleKanbanTab = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {getConditionOptions(registerDialog.sample?.sample_type || "").map(opt => (
+                    {getDynamicConditionOptions(registerDialog.sample?.sample_type || "", registerDialog.sample?.sector || "").map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>

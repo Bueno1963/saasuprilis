@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, LayoutGrid, List, Monitor, Link2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, LayoutGrid, List, Monitor, Link2, FlaskConical } from "lucide-react";
+import SampleConditionsDialog from "./SampleConditionsDialog";
 import { useForm, Controller } from "react-hook-form";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +56,7 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkEquipOpen, setBulkEquipOpen] = useState(false);
   const [bulkEquipValue, setBulkEquipValue] = useState("");
+  const [conditionsDialog, setConditionsDialog] = useState<{ open: boolean; sector: string }>({ open: false, sector: "" });
   const { register, handleSubmit, reset, control } = useForm<ExamForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
@@ -90,6 +92,16 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
   }, [items, customMaterials]);
 
   const filtered = items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()) || i.code.toLowerCase().includes(search.toLowerCase()));
+
+  const materialsBySector = useMemo(() => {
+    const map: Record<string, Set<string>> = {};
+    items.forEach((i) => {
+      const sector = i.sector || "Sem setor";
+      if (!map[sector]) map[sector] = new Set();
+      if (i.material) map[sector].add(i.material);
+    });
+    return Object.fromEntries(Object.entries(map).map(([k, v]) => [k, Array.from(v).sort()]));
+  }, [items]);
 
   const groupedBySector = useMemo(() => {
     const groups: Record<string, typeof filtered> = {};
@@ -397,9 +409,14 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
           {activeSector ? (
             <Card>
               <CardContent className="p-0">
-                <div className="px-4 py-3 border-b bg-muted/30">
-                  <h3 className="font-semibold text-foreground">{activeSector}</h3>
-                  <p className="text-xs text-muted-foreground">{displayedItems.length} exame(s)</p>
+                <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-foreground">{activeSector}</h3>
+                    <p className="text-xs text-muted-foreground">{displayedItems.length} exame(s)</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setConditionsDialog({ open: true, sector: activeSector! })}>
+                    <FlaskConical className="h-3.5 w-3.5" />Condições de Amostra
+                  </Button>
                 </div>
                 <Table>
                   <TableHeader>{tableHeaders}</TableHeader>
@@ -415,12 +432,17 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             groupedBySector.map(([sector, exams]) => (
               <Card key={sector}>
                 <CardContent className="p-0">
-                  <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between cursor-pointer" onClick={() => setActiveSector(sector)}>
-                    <div>
+                  <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+                    <div className="cursor-pointer flex-1" onClick={() => setActiveSector(sector)}>
                       <h3 className="font-semibold text-foreground">{sector}</h3>
                       <p className="text-xs text-muted-foreground">{exams.length} exame(s)</p>
                     </div>
-                    <Badge variant="secondary">{exams.length}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={(e) => { e.stopPropagation(); setConditionsDialog({ open: true, sector }); }}>
+                        <FlaskConical className="h-3.5 w-3.5" />Condições
+                      </Button>
+                      <Badge variant="secondary">{exams.length}</Badge>
+                    </div>
                   </div>
                   <Table>
                     <TableHeader>{tableHeaders}</TableHeader>
@@ -524,6 +546,13 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
           </Button>
         </DialogContent>
       </Dialog>
+
+      <SampleConditionsDialog
+        open={conditionsDialog.open}
+        onOpenChange={(open) => !open && setConditionsDialog({ open: false, sector: "" })}
+        sector={conditionsDialog.sector}
+        materials={materialsBySector[conditionsDialog.sector] || []}
+      />
     </div>
   );
 };
