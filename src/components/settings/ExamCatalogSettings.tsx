@@ -546,6 +546,13 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
           </Button>
         </DialogContent>
       </Dialog>
+
+      <SampleConditionsDialog
+        open={conditionsDialog.open}
+        onOpenChange={(open) => !open && setConditionsDialog({ open: false, sector: "" })}
+        sector={conditionsDialog.sector}
+        materials={materialsBySector[conditionsDialog.sector] || []}
+      />
     </div>
   );
 };
