@@ -203,23 +203,10 @@ const QualityControl = () => {
               <DropdownMenuItem onClick={() => setActiveView("bioq-normal")}>Bioquímica Normal</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView("bioq-patologica")}>Bioquímica Patológica</DropdownMenuItem>
               <DropdownMenuItem className="mt-1 border-t pt-1" onClick={() => setActiveView("lj-bioq-normal")}>
-                Levey-Jennings — Bioq. Normal
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("lj-bioq-patologica")}>
-                Levey-Jennings — Bioq. Patológica
-              </DropdownMenuItem>
-              <DropdownMenuItem className="mt-1 border-t pt-1 font-medium text-muted-foreground text-[11px] pointer-events-none">Hematologia</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("hemato-normal")}>Hematologia Normal</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("hemato-baixa")}>Hematologia Baixa</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("hemato-alta")}>Hematologia Alta</DropdownMenuItem>
-              <DropdownMenuItem className="mt-1 border-t pt-1" onClick={() => setActiveView("lj-hemato-normal")}>
                 Levey-Jennings — Normal
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("lj-hemato-baixa")}>
-                Levey-Jennings — Baixa
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView("lj-hemato-alta")}>
-                Levey-Jennings — Alta
+              <DropdownMenuItem onClick={() => setActiveView("lj-bioq-patologica")}>
+                Levey-Jennings — Patológica
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

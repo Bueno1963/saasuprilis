@@ -181,9 +181,18 @@ const QualityControlHematologia = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setActiveView("hemato-normal")}>Hematologia Nível Normal</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveView("hemato-normal")}>Hematologia Normal</DropdownMenuItem>
             <DropdownMenuItem onClick={() => setActiveView("hemato-baixa")}>Hematologia Baixa</DropdownMenuItem>
             <DropdownMenuItem onClick={() => setActiveView("hemato-alta")}>Hematologia Alta</DropdownMenuItem>
+            <DropdownMenuItem className="mt-1 border-t pt-1" onClick={() => setActiveView("lj-hemato-normal")}>
+              Levey-Jennings — Normal
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveView("lj-hemato-baixa")}>
+              Levey-Jennings — Baixa
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveView("lj-hemato-alta")}>
+              Levey-Jennings — Alta
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
