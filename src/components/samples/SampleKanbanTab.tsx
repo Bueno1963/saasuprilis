@@ -76,6 +76,31 @@ const SampleKanbanTab = () => {
     },
   });
 
+  const { data: dbConditions = [] } = useQuery({
+    queryKey: ["sample-condition-options-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sample_condition_options")
+        .select("*")
+        .order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const getDynamicConditionOptions = useMemo(() => {
+    return (sampleType: string, sector: string) => {
+      const materialConditions = dbConditions.filter(
+        c => c.material.toLowerCase() === (sampleType || "").toLowerCase() &&
+             (!c.sector || c.sector === sector)
+      );
+      if (materialConditions.length > 0) {
+        return materialConditions.map(c => ({ value: c.condition_value, label: c.condition_label }));
+      }
+      return getConditionOptions(sampleType);
+    };
+  }, [dbConditions]);
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status, previousStatus }: { id: string; status: string; previousStatus: string }) => {
       const { error } = await supabase.from("samples").update({ status }).eq("id", id);
