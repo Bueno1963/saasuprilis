@@ -150,6 +150,22 @@ const QualityControlHematologia = () => {
     );
   }
 
+  if (activeView.startsWith("lj-")) {
+    const ljTitles: Record<string, string> = {
+      "lj-hemato-normal": "Levey-Jennings — Hematologia Normal",
+      "lj-hemato-baixa": "Levey-Jennings — Hematologia Baixa",
+      "lj-hemato-alta": "Levey-Jennings — Hematologia Alta",
+    };
+    return (
+      <div className="p-6">
+        <LeveyJenningsHematologia
+          onBack={() => setActiveView("main")}
+          title={ljTitles[activeView] || "Levey-Jennings"}
+        />
+      </div>
+    );
+  }
+
   if (activeView !== "main") {
     return (
       <div className="p-6">
