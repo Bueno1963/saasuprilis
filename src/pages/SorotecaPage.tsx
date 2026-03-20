@@ -247,6 +247,51 @@ const SorotecaPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Edit Location Dialog */}
+      <Dialog open={editDialog} onOpenChange={setEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Localização</DialogTitle>
+          </DialogHeader>
+          {editingSample && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{editingSample.patientName}</span> — {editingSample.barcode}
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Galeria</Label>
+                  <Input value={editGallery} onChange={e => setEditGallery(e.target.value)} placeholder="G1" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Rack</Label>
+                  <Input value={editRack} onChange={e => setEditRack(e.target.value)} placeholder="R01" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Posição</Label>
+                  <Input value={editPosition} onChange={e => setEditPosition(e.target.value)} placeholder="A3" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Temperatura</Label>
+                <Select value={editTemperature} onValueChange={setEditTemperature}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2-8°C">2-8°C</SelectItem>
+                    <SelectItem value="-20°C">-20°C</SelectItem>
+                    <SelectItem value="-80°C">-80°C</SelectItem>
+                    <SelectItem value="Ambiente">Ambiente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialog(false)}>Cancelar</Button>
+            <Button onClick={handleSaveLocation}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
