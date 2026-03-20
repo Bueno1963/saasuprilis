@@ -158,6 +158,19 @@ const SampleKanbanTab = () => {
         performed_by_name: performerName,
         notes: `Condição: ${condition}${notes ? ` | Obs: ${notes}` : ""}`,
       });
+
+      // Create non-conformity record for any condition that is not "de_acordo"
+      if (!goToProcessing) {
+        const conditionLabel = condition.replace(/_/g, " ");
+        await supabase.from("sample_nonconformities").insert({
+          sample_id: id,
+          reason: conditionLabel,
+          description: notes || `Condição da amostra: ${conditionLabel}`,
+          severity: "media",
+          reported_by: user?.id,
+          reported_by_name: performerName,
+        });
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["samples"] });
