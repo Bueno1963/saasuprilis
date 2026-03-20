@@ -12,6 +12,7 @@ import Patients from "./pages/Patients";
 import Orders from "./pages/Orders";
 import Samples from "./pages/Samples";
 import Worklist from "./pages/Worklist";
+import WorklistLabApoio from "./pages/WorklistLabApoio";
 import QualityControl from "./pages/QualityControl";
 import QualityControlHematologia from "./pages/QualityControlHematologia";
 
