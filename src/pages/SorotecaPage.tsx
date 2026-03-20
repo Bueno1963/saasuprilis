@@ -31,11 +31,11 @@ interface StoredSample {
 }
 
 const MOCK_SAMPLES: StoredSample[] = [
-  { id: "1", barcode: "SOR-20260301-001", patientName: "Maria Silva", material: "Soro", collectedAt: "2026-03-01", storedAt: "2026-03-01", expiresAt: "2026-03-08", gallery: "G1", rack: "R01", position: "A3", temperature: "2-8°C", status: "armazenado" },
-  { id: "2", barcode: "SOR-20260302-002", patientName: "João Santos", material: "Plasma", collectedAt: "2026-03-02", storedAt: "2026-03-02", expiresAt: "2026-03-09", gallery: "G1", rack: "R02", position: "B1", temperature: "2-8°C", status: "armazenado" },
-  { id: "3", barcode: "SOR-20260228-003", patientName: "Ana Oliveira", material: "Urina", collectedAt: "2026-02-28", storedAt: "2026-02-28", expiresAt: "2026-03-03", gallery: "G2", rack: "R01", position: "C5", temperature: "2-8°C", status: "expurgado" },
-  { id: "4", barcode: "SOR-20260303-004", patientName: "Carlos Pereira", material: "Soro", collectedAt: "2026-03-03", storedAt: "2026-03-03", expiresAt: "2026-03-10", gallery: "G1", rack: "R01", position: "A4", temperature: "-20°C", status: "em_uso" },
-  { id: "5", barcode: "SOR-20260304-005", patientName: "Fernanda Lima", material: "Sangue Total", collectedAt: "2026-03-04", storedAt: "2026-03-04", expiresAt: "2026-03-11", gallery: "G2", rack: "R03", position: "D2", temperature: "2-8°C", status: "armazenado" },
+  { id: "1", barcode: "SOR-20260301-001", patientName: "Maria Silva", material: "Soro", collectedAt: "2026-03-01", storedAt: "2026-03-01", expiresAt: "2026-03-08", gallery: "Geladeira 1", rack: "R01", position: "A3", temperature: "2-8°C", status: "armazenado" },
+  { id: "2", barcode: "SOR-20260302-002", patientName: "João Santos", material: "Plasma", collectedAt: "2026-03-02", storedAt: "2026-03-02", expiresAt: "2026-03-09", gallery: "Geladeira 1", rack: "R02", position: "B1", temperature: "2-8°C", status: "armazenado" },
+  { id: "3", barcode: "SOR-20260228-003", patientName: "Ana Oliveira", material: "Urina", collectedAt: "2026-02-28", storedAt: "2026-02-28", expiresAt: "2026-03-03", gallery: "Geladeira 2", rack: "R01", position: "C5", temperature: "2-8°C", status: "expurgado" },
+  { id: "4", barcode: "SOR-20260303-004", patientName: "Carlos Pereira", material: "Soro", collectedAt: "2026-03-03", storedAt: "2026-03-03", expiresAt: "2026-03-10", gallery: "Geladeira 1", rack: "R01", position: "A4", temperature: "-20°C", status: "em_uso" },
+  { id: "5", barcode: "SOR-20260304-005", patientName: "Fernanda Lima", material: "Sangue Total", collectedAt: "2026-03-04", storedAt: "2026-03-04", expiresAt: "2026-03-11", gallery: "Geladeira 3", rack: "R03", position: "D2", temperature: "2-8°C", status: "armazenado" },
 ];
 
 const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
