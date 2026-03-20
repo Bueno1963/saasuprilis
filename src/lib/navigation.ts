@@ -24,6 +24,7 @@ import {
   Award,
   CalendarClock,
   ShieldAlert,
+  Archive,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
