@@ -26,6 +26,8 @@ const KANBAN_COLUMNS = [
   { status: "triaged", label: "Triagem", icon: FlaskConical, color: "text-info", bg: "bg-info/10", border: "border-info/30", headerBg: "bg-info/15" },
   { status: "processing", label: "Em Análise", icon: Microscope, color: "text-phase-analytical", bg: "bg-phase-analytical/10", border: "border-phase-analytical/30", headerBg: "bg-phase-analytical/15" },
   { status: "analyzed", label: "Analisadas", icon: BadgeCheck, color: "text-success", bg: "bg-success/10", border: "border-success/30", headerBg: "bg-success/15" },
+  { status: "stored", label: "Soroteca", icon: Archive, color: "text-primary", bg: "bg-primary/10", border: "border-primary/30", headerBg: "bg-primary/15" },
+  { status: "purged", label: "Expurgo", icon: Trash2, color: "text-destructive", bg: "bg-destructive/10", border: "border-destructive/30", headerBg: "bg-destructive/15" },
 ];
 
 const CONDITION_OPTIONS_DEFAULT = [
