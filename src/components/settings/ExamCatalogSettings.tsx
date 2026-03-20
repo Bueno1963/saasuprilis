@@ -93,6 +93,16 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
 
   const filtered = items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()) || i.code.toLowerCase().includes(search.toLowerCase()));
 
+  const materialsBySector = useMemo(() => {
+    const map: Record<string, Set<string>> = {};
+    items.forEach((i) => {
+      const sector = i.sector || "Sem setor";
+      if (!map[sector]) map[sector] = new Set();
+      if (i.material) map[sector].add(i.material);
+    });
+    return Object.fromEntries(Object.entries(map).map(([k, v]) => [k, Array.from(v).sort()]));
+  }, [items]);
+
   const groupedBySector = useMemo(() => {
     const groups: Record<string, typeof filtered> = {};
     filtered.forEach((item) => {
