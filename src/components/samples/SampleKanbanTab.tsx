@@ -64,6 +64,8 @@ const SampleKanbanTab = () => {
   const [registerNotes, setRegisterNotes] = useState("");
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { role: userRole } = useUserRole();
+  const isAdmin = userRole === "admin";
 
   const { data: samples = [], isLoading } = useQuery({
     queryKey: ["samples"],
