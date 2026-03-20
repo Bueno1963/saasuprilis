@@ -55,6 +55,9 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
 };
 
 const SorotecaPage = () => {
+  const { profile } = useAuth();
+  const { role } = useUserRole();
+  const isAdmin = role === "admin";
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterGallery, setFilterGallery] = useState("all");
@@ -67,6 +70,8 @@ const SorotecaPage = () => {
   const [editRack, setEditRack] = useState("");
   const [editPosition, setEditPosition] = useState("");
   const [editTemperature, setEditTemperature] = useState("");
+  const [auditLog, setAuditLog] = useState<ExpurgoAuditEntry[]>([]);
+  const [auditDialog, setAuditDialog] = useState(false);
 
   const openEdit = (sample: StoredSample) => {
     setEditingSample(sample);
