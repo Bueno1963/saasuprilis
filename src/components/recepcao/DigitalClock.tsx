@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 const DAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
@@ -37,20 +36,21 @@ const DigitalClock = () => {
   const dateStr = format(now, "dd/MM/yyyy");
 
   return (
-    <div className="relative mx-auto w-full max-w-xs rounded-xl bg-black p-3 shadow-2xl overflow-hidden select-none scale-100">
-      {/* Glossy reflection effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
+    <div className="relative mx-auto w-full max-w-xs rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden select-none">
+      {/* Glass highlight */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent pointer-events-none rounded-2xl" />
+      <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-primary/20 blur-2xl pointer-events-none" />
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="relative flex items-center justify-between gap-3">
         {/* Days of week */}
-        <div className="flex flex-col gap-0 text-[8px] font-mono tracking-wider leading-tight">
+        <div className="flex flex-col gap-0 text-[8px] font-medium tracking-wider leading-tight">
           {DAYS_PT.map((day, i) => (
             <span
               key={day}
               className={
                 i === currentDayIndex
-                  ? "text-emerald-400 font-bold"
-                  : "text-white/30"
+                  ? "text-primary font-bold"
+                  : "text-muted-foreground/40"
               }
             >
               {day}
@@ -60,28 +60,28 @@ const DigitalClock = () => {
 
         {/* Time */}
         <div className="flex items-baseline gap-0.5 font-mono">
-          <span className="text-2xl md:text-3xl font-bold text-white tracking-tight drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+          <span className="text-3xl font-extrabold text-foreground tracking-tight">
             {hours}
           </span>
-          <span className="text-2xl md:text-3xl font-bold text-white animate-pulse">
+          <span className="text-3xl font-extrabold text-foreground/60 animate-pulse">
             :
           </span>
-          <span className="text-2xl md:text-3xl font-bold text-white tracking-tight drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+          <span className="text-3xl font-extrabold text-foreground tracking-tight">
             {minutes}
           </span>
-          <span className="text-xs text-white/50 ml-0.5 self-end font-semibold">
+          <span className="text-[10px] text-muted-foreground ml-0.5 self-end font-semibold">
             {seconds}
           </span>
         </div>
 
-        {/* Temperature */}
+        {/* Temperature & date */}
         <div className="flex flex-col items-end gap-0.5">
           {temperature !== null && (
-            <span className="text-xl md:text-2xl font-mono font-bold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.4)]">
-              {temperature}°<span className="text-xs">C</span>
+            <span className="text-xl font-mono font-bold text-primary">
+              {temperature}°<span className="text-[10px]">C</span>
             </span>
           )}
-          <span className="text-[8px] text-white/40 font-mono">
+          <span className="text-[8px] text-muted-foreground font-mono">
             {dateStr}
           </span>
         </div>
