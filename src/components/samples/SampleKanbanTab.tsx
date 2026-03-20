@@ -196,6 +196,10 @@ const SampleKanbanTab = () => {
 
   const filtered = samples.filter(s => {
     if (sectorFilter !== "all" && s.sector !== sectorFilter) return false;
+    if (dateFilter) {
+      const sampleDate = new Date(s.collected_at);
+      if (sampleDate < startOfDay(dateFilter) || sampleDate > endOfDay(dateFilter)) return false;
+    }
     if (search) {
       const q = search.toLowerCase();
       const patientName = (s.orders as any)?.patients?.name || "";
