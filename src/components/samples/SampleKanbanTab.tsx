@@ -3,10 +3,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TestTubes, FlaskConical, Microscope, BadgeCheck, Barcode, GripVertical, ClipboardCheck } from "lucide-react";
+import { TestTubes, FlaskConical, Microscope, BadgeCheck, Barcode, GripVertical, ClipboardCheck, ShieldCheck, AlertTriangle } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -63,6 +64,8 @@ const SampleKanbanTab = () => {
   const [registerNotes, setRegisterNotes] = useState("");
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { role: userRole } = useUserRole();
+  const isAdmin = userRole === "admin";
 
   const { data: samples = [], isLoading } = useQuery({
     queryKey: ["samples"],
@@ -131,9 +134,12 @@ const SampleKanbanTab = () => {
 
   const registerSampleMutation = useMutation({
     mutationFn: async ({ id, condition, notes }: { id: string; condition: string; notes: string }) => {
+      const goToProcessing = condition === "de_acordo";
+      const newStatus = goToProcessing ? "processing" : "triaged";
+
       const { error } = await supabase.from("samples").update({
         condition,
-        status: "processing",
+        status: newStatus,
       }).eq("id", id);
       if (error) throw error;
 
@@ -145,18 +151,22 @@ const SampleKanbanTab = () => {
 
       await supabase.from("sample_tracking_events").insert({
         sample_id: id,
-        event_type: "registered",
+        event_type: goToProcessing ? "registered" : "pending_admin_review",
         previous_status: "triaged",
-        new_status: "processing",
+        new_status: newStatus,
         performed_by: user?.id,
         performed_by_name: performerName,
         notes: `Condição: ${condition}${notes ? ` | Obs: ${notes}` : ""}`,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["samples"] });
       queryClient.invalidateQueries({ queryKey: ["sample-tracking-events"] });
-      toast.success("Amostra registrada e movida para análise");
+      if (variables.condition === "de_acordo") {
+        toast.success("Amostra registrada e movida para análise");
+      } else {
+        toast.warning("Amostra registrada com pendência — aguarda aprovação do Administrador");
+      }
       setRegisterDialog({ open: false, sample: null });
       setCondition("de_acordo");
       setRegisterNotes("");
@@ -194,6 +204,15 @@ const SampleKanbanTab = () => {
       setDraggedSampleId(null);
       return;
     }
+
+    // Block non-admin from moving samples with condition != "de_acordo" to processing/analyzed
+    const sampleCondition = (sample as any).condition || "de_acordo";
+    if (sampleCondition !== "de_acordo" && !isAdmin && (targetStatus === "processing" || targetStatus === "analyzed")) {
+      toast.error("Amostra com condição pendente — somente Administrador pode liberar para análise");
+      setDraggedSampleId(null);
+      return;
+    }
+
     updateStatusMutation.mutate({ id: sampleId, status: targetStatus, previousStatus: sample.status });
     setDraggedSampleId(null);
   };
@@ -300,7 +319,17 @@ const SampleKanbanTab = () => {
                           {(sample.orders as any)?.order_number}
                         </p>
 
-                        {col.status === "triaged" && (
+                        {/* Show condition badge when not "de_acordo" */}
+                        {(sample as any).condition && (sample as any).condition !== "de_acordo" && (
+                          <div className="pl-5 flex items-center gap-1.5">
+                            <AlertTriangle className="w-3 h-3 text-warning" />
+                            <span className="text-[10px] font-medium text-warning">
+                              {(sample as any).condition.replace(/_/g, " ")}
+                            </span>
+                          </div>
+                        )}
+
+                        {col.status === "triaged" && (!(sample as any).condition || (sample as any).condition === "de_acordo") && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -313,6 +342,29 @@ const SampleKanbanTab = () => {
                             <ClipboardCheck className="w-3.5 h-3.5" />
                             Registrar Amostra
                           </Button>
+                        )}
+
+                        {/* Admin approve button for samples with non-de_acordo condition */}
+                        {col.status === "triaged" && (sample as any).condition && (sample as any).condition !== "de_acordo" && isAdmin && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="w-full mt-2 text-xs gap-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateStatusMutation.mutate({ id: sample.id, status: "processing", previousStatus: sample.status });
+                            }}
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            Aprovar e Enviar para Análise
+                          </Button>
+                        )}
+
+                        {/* Non-admin sees pending message */}
+                        {col.status === "triaged" && (sample as any).condition && (sample as any).condition !== "de_acordo" && !isAdmin && (
+                          <p className="text-[10px] text-warning italic pl-5 mt-1">
+                            Aguardando aprovação do Administrador
+                          </p>
                         )}
                       </CardContent>
                     </Card>
