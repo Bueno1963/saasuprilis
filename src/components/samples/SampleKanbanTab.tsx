@@ -5,7 +5,7 @@ import { ptBR } from "date-fns/locale";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TestTubes, FlaskConical, Microscope, BadgeCheck, Barcode, GripVertical, ClipboardCheck, ShieldCheck, AlertTriangle, CalendarIcon } from "lucide-react";
+import { TestTubes, FlaskConical, Microscope, BadgeCheck, Barcode, GripVertical, ClipboardCheck, ShieldCheck, AlertTriangle, CalendarIcon, Archive, Trash2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
