@@ -150,6 +150,25 @@ const QualityControlHematologia = () => {
     );
   }
 
+  if (activeView.startsWith("lj-")) {
+    return (
+      <div className="p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => setActiveView("main")}>
+            <span className="text-lg">←</span>
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              {activeView === "lj-hemato-normal" ? "Levey-Jennings — Hematologia Normal" : activeView === "lj-hemato-baixa" ? "Levey-Jennings — Hematologia Baixa" : "Levey-Jennings — Hematologia Alta"}
+            </h1>
+            <p className="text-sm text-muted-foreground">Gráfico de controle estatístico de processo</p>
+          </div>
+        </div>
+        <LeveyJenningsHematologia />
+      </div>
+    );
+  }
+
   if (activeView !== "main") {
     return (
       <div className="p-6">
@@ -181,9 +200,18 @@ const QualityControlHematologia = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setActiveView("hemato-normal")}>Hematologia Nível Normal</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveView("hemato-normal")}>Hematologia Normal</DropdownMenuItem>
             <DropdownMenuItem onClick={() => setActiveView("hemato-baixa")}>Hematologia Baixa</DropdownMenuItem>
             <DropdownMenuItem onClick={() => setActiveView("hemato-alta")}>Hematologia Alta</DropdownMenuItem>
+            <DropdownMenuItem className="mt-1 border-t pt-1" onClick={() => setActiveView("lj-hemato-normal")}>
+              Levey-Jennings — Normal
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveView("lj-hemato-baixa")}>
+              Levey-Jennings — Baixa
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveView("lj-hemato-alta")}>
+              Levey-Jennings — Alta
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
