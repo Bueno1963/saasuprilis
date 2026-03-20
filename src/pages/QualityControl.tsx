@@ -73,16 +73,22 @@ const QualityControl = () => {
             <p className="text-sm text-muted-foreground">Gráfico de controle estatístico de processo</p>
           </div>
         </div>
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Glicose — Nível 1 — Cobas c311</CardTitle>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span>Média: <strong className="text-foreground">{mean} mg/dL</strong></span>
-                <span>DP: <strong className="text-foreground">{sd}</strong></span>
-              </div>
-            </div>
-          </CardHeader>
+         <Card>
+           <CardHeader className="pb-3">
+             <div className="flex items-center justify-between">
+               <CardTitle className="text-base">Glicose — Nível 1 — Cobas c311</CardTitle>
+               <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                 <span>Média: <strong className="text-foreground">{mean} mg/dL</strong></span>
+                 <span>DP: <strong className="text-foreground">{sd}</strong></span>
+               </div>
+             </div>
+             <div className="flex justify-end mt-2">
+               <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                 Próximo analito
+                 <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
+               </Button>
+             </div>
+           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>
               <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 10, left: 10 }}>
