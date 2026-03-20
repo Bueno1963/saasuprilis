@@ -54,6 +54,12 @@ const QualityControl = () => {
     "bioq-patologica": "Bioquímica Patológica",
     "lj-bioq-normal": "Levey-Jennings — Bioquímica Normal",
     "lj-bioq-patologica": "Levey-Jennings — Bioquímica Patológica",
+    "hemato-normal": "Hematologia Normal",
+    "hemato-baixa": "Hematologia Baixa",
+    "hemato-alta": "Hematologia Alta",
+    "lj-hemato-normal": "Levey-Jennings — Hematologia Normal",
+    "lj-hemato-baixa": "Levey-Jennings — Hematologia Baixa",
+    "lj-hemato-alta": "Levey-Jennings — Hematologia Alta",
   };
 
   if (activeView === "novo-analito-pro-in" || activeView === "novo-analito-niveis") {
