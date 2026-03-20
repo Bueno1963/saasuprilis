@@ -10,9 +10,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Archive, Trash2, MapPin, Thermometer, Clock, Plus, PackageOpen } from "lucide-react";
+import { Search, Archive, Trash2, MapPin, Thermometer, Clock, Plus, PackageOpen, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+
+interface ExpurgoAuditEntry {
+  id: string;
+  barcode: string;
+  patientName: string;
+  expurgoAt: string;
+  responsavel: string;
+}
 
 interface StoredSample {
   id: string;
