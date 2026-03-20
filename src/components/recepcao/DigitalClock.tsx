@@ -37,13 +37,13 @@ const DigitalClock = () => {
   const dateStr = format(now, "dd/MM/yyyy");
 
   return (
-    <div className="relative mx-auto w-full max-w-lg rounded-2xl bg-black p-6 shadow-2xl overflow-hidden select-none">
+    <div className="relative mx-auto w-full max-w-xs rounded-xl bg-black p-3 shadow-2xl overflow-hidden select-none scale-100">
       {/* Glossy reflection effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-2">
         {/* Days of week */}
-        <div className="flex flex-col gap-0.5 text-[11px] font-mono tracking-wider">
+        <div className="flex flex-col gap-0 text-[8px] font-mono tracking-wider leading-tight">
           {DAYS_PT.map((day, i) => (
             <span
               key={day}
@@ -59,29 +59,29 @@ const DigitalClock = () => {
         </div>
 
         {/* Time */}
-        <div className="flex items-baseline gap-1 font-mono">
-          <span className="text-5xl md:text-6xl font-bold text-white tracking-tight drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]">
+        <div className="flex items-baseline gap-0.5 font-mono">
+          <span className="text-2xl md:text-3xl font-bold text-white tracking-tight drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
             {hours}
           </span>
-          <span className="text-5xl md:text-6xl font-bold text-white animate-pulse">
+          <span className="text-2xl md:text-3xl font-bold text-white animate-pulse">
             :
           </span>
-          <span className="text-5xl md:text-6xl font-bold text-white tracking-tight drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]">
+          <span className="text-2xl md:text-3xl font-bold text-white tracking-tight drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
             {minutes}
           </span>
-          <span className="text-lg text-white/50 ml-1 self-end mb-1 font-semibold">
+          <span className="text-xs text-white/50 ml-0.5 self-end font-semibold">
             {seconds}
           </span>
         </div>
 
         {/* Temperature */}
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex flex-col items-end gap-0.5">
           {temperature !== null && (
-            <span className="text-3xl md:text-4xl font-mono font-bold text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.4)]">
-              {temperature}°<span className="text-lg">C</span>
+            <span className="text-xl md:text-2xl font-mono font-bold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.4)]">
+              {temperature}°<span className="text-xs">C</span>
             </span>
           )}
-          <span className="text-[10px] text-white/40 font-mono">
+          <span className="text-[8px] text-white/40 font-mono">
             {dateStr}
           </span>
         </div>
