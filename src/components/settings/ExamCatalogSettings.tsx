@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, LayoutGrid, List, Monitor, Link2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, LayoutGrid, List, Monitor, Link2, FlaskConical } from "lucide-react";
+import SampleConditionsDialog from "./SampleConditionsDialog";
 import { useForm, Controller } from "react-hook-form";
 import { cn } from "@/lib/utils";
 
