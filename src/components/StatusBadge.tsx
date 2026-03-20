@@ -27,7 +27,7 @@ const statusStyles: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   registered: "Registrado",
-  collected: "Coletado",
+  collected: "Recepção/Coleta",
   triaged: "Triado",
   processing: "Processando",
   analyzed: "Analisado",

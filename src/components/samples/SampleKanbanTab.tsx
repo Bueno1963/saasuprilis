@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 const KANBAN_COLUMNS = [
-  { status: "collected", label: "Coletadas", icon: TestTubes, color: "text-warning", bg: "bg-warning/10", border: "border-warning/30", headerBg: "bg-warning/15" },
+  { status: "collected", label: "Recepção/Coleta", icon: TestTubes, color: "text-warning", bg: "bg-warning/10", border: "border-warning/30", headerBg: "bg-warning/15" },
   { status: "triaged", label: "Triadas", icon: FlaskConical, color: "text-info", bg: "bg-info/10", border: "border-info/30", headerBg: "bg-info/15" },
   { status: "processing", label: "Em Análise", icon: Microscope, color: "text-phase-analytical", bg: "bg-phase-analytical/10", border: "border-phase-analytical/30", headerBg: "bg-phase-analytical/15" },
   { status: "analyzed", label: "Analisadas", icon: BadgeCheck, color: "text-success", bg: "bg-success/10", border: "border-success/30", headerBg: "bg-success/15" },
