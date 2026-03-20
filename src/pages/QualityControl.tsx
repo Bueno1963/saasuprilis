@@ -19,6 +19,7 @@ import { format } from "date-fns";
 
 const QualityControl = () => {
   const [activeView, setActiveView] = useState<string>("main");
+  const [ljDateRange, setLjDateRange] = useState<{ from?: Date; to?: Date }>({});
 
   const { data: qcData = [] } = useQuery({
     queryKey: ["qc_data"],
