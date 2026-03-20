@@ -83,7 +83,7 @@ const QualityControl = () => {
                </div>
              </div>
              <div className="flex justify-end mt-2">
-               <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-muted/80 hover:bg-muted border-border/80 text-foreground/80">
+               <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-muted/80 hover:bg-muted border-border/80 text-foreground font-semibold">
                  Próximo analito
                  <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
                </Button>
