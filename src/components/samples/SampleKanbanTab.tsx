@@ -204,6 +204,15 @@ const SampleKanbanTab = () => {
       setDraggedSampleId(null);
       return;
     }
+
+    // Block non-admin from moving samples with condition != "de_acordo" to processing/analyzed
+    const sampleCondition = (sample as any).condition || "de_acordo";
+    if (sampleCondition !== "de_acordo" && !isAdmin && (targetStatus === "processing" || targetStatus === "analyzed")) {
+      toast.error("Amostra com condição pendente — somente Administrador pode liberar para análise");
+      setDraggedSampleId(null);
+      return;
+    }
+
     updateStatusMutation.mutate({ id: sampleId, status: targetStatus, previousStatus: sample.status });
     setDraggedSampleId(null);
   };
