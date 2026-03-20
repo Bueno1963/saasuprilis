@@ -34,7 +34,6 @@ const CONDITION_OPTIONS_DEFAULT = [
 
 const CONDITION_OPTIONS_FEZES = [
   { value: "de_acordo", label: "De acordo" },
-  { value: "coletado", label: "Coletado" },
   { value: "larvas_visiveis", label: "Amostra com Larvas Visíveis" },
   { value: "nao_coletada", label: "Amostra não coletada" },
   { value: "insuficiente", label: "Insuficiente" },
