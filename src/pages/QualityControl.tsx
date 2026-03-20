@@ -47,6 +47,8 @@ const QualityControl = () => {
   const dailySheetViews: Record<string, string> = {
     "bioq-normal": "Bioquímica Normal",
     "bioq-patologica": "Bioquímica Patológica",
+    "lj-bioq-normal": "Levey-Jennings — Bioquímica Normal",
+    "lj-bioq-patologica": "Levey-Jennings — Bioquímica Patológica",
   };
 
   if (activeView === "novo-analito-pro-in" || activeView === "novo-analito-niveis") {
