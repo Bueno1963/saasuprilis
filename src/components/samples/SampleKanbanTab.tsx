@@ -40,9 +40,17 @@ const CONDITION_OPTIONS_FEZES = [
   { value: "enviado_lab_apoio", label: "Enviado para Laboratório Apoio" },
 ];
 
+const CONDITION_OPTIONS_URINA = [
+  { value: "de_acordo", label: "De acordo" },
+  { value: "insuficiente", label: "Insuficiente" },
+  { value: "hematuria_visual", label: "Hematúria Visual" },
+  { value: "nao_coletado", label: "Não coletado" },
+];
+
 const getConditionOptions = (sampleType: string) => {
   const lower = (sampleType || "").toLowerCase();
   if (lower.includes("fezes") || lower.includes("feces")) return CONDITION_OPTIONS_FEZES;
+  if (lower.includes("urina") || lower.includes("urine")) return CONDITION_OPTIONS_URINA;
   return CONDITION_OPTIONS_DEFAULT;
 };
 
