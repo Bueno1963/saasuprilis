@@ -173,7 +173,7 @@ const SorotecaPage = () => {
           </SelectContent>
         </Select>
         <Select value={filterGallery} onValueChange={setFilterGallery}>
-          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Galeria" /></SelectTrigger>
+          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Geladeira" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas</SelectItem>
             {galleries.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
