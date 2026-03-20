@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import DigitalClock from "@/components/recepcao/DigitalClock";
+import DigitalClockToggle from "@/components/recepcao/DigitalClockToggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
