@@ -328,7 +328,7 @@ const SampleKanbanTab = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CONDITION_OPTIONS.map(opt => (
+                    {getConditionOptions(registerDialog.sample?.sample_type || "").map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>
