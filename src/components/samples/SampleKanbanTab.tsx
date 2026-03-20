@@ -319,7 +319,17 @@ const SampleKanbanTab = () => {
                           {(sample.orders as any)?.order_number}
                         </p>
 
-                        {col.status === "triaged" && (
+                        {/* Show condition badge when not "de_acordo" */}
+                        {(sample as any).condition && (sample as any).condition !== "de_acordo" && (
+                          <div className="pl-5 flex items-center gap-1.5">
+                            <AlertTriangle className="w-3 h-3 text-warning" />
+                            <span className="text-[10px] font-medium text-warning">
+                              {(sample as any).condition.replace(/_/g, " ")}
+                            </span>
+                          </div>
+                        )}
+
+                        {col.status === "triaged" && (!(sample as any).condition || (sample as any).condition === "de_acordo") && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -332,6 +342,29 @@ const SampleKanbanTab = () => {
                             <ClipboardCheck className="w-3.5 h-3.5" />
                             Registrar Amostra
                           </Button>
+                        )}
+
+                        {/* Admin approve button for samples with non-de_acordo condition */}
+                        {col.status === "triaged" && (sample as any).condition && (sample as any).condition !== "de_acordo" && isAdmin && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="w-full mt-2 text-xs gap-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateStatusMutation.mutate({ id: sample.id, status: "processing", previousStatus: sample.status });
+                            }}
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            Aprovar e Enviar para Análise
+                          </Button>
+                        )}
+
+                        {/* Non-admin sees pending message */}
+                        {col.status === "triaged" && (sample as any).condition && (sample as any).condition !== "de_acordo" && !isAdmin && (
+                          <p className="text-[10px] text-warning italic pl-5 mt-1">
+                            Aguardando aprovação do Administrador
+                          </p>
                         )}
                       </CardContent>
                     </Card>
