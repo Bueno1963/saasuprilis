@@ -10,9 +10,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Archive, Trash2, MapPin, Thermometer, Clock, Plus, PackageOpen } from "lucide-react";
+import { Search, Archive, Trash2, MapPin, Thermometer, Clock, Plus, PackageOpen, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+
+interface ExpurgoAuditEntry {
+  id: string;
+  barcode: string;
+  patientName: string;
+  expurgoAt: string;
+  responsavel: string;
+}
 
 interface StoredSample {
   id: string;
@@ -45,6 +55,9 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
 };
 
 const SorotecaPage = () => {
+  const { profile } = useAuth();
+  const { role } = useUserRole();
+  const isAdmin = role === "admin";
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterGallery, setFilterGallery] = useState("all");
@@ -57,6 +70,8 @@ const SorotecaPage = () => {
   const [editRack, setEditRack] = useState("");
   const [editPosition, setEditPosition] = useState("");
   const [editTemperature, setEditTemperature] = useState("");
+  const [auditLog, setAuditLog] = useState<ExpurgoAuditEntry[]>([]);
+  const [auditDialog, setAuditDialog] = useState(false);
 
   const openEdit = (sample: StoredSample) => {
     setEditingSample(sample);
@@ -99,7 +114,24 @@ const SorotecaPage = () => {
   const galleries = [...new Set(samples.map(s => s.gallery))];
 
   const handleExpurgo = () => {
-    toast.success(`${selectedForExpurgo.length} amostra(s) marcada(s) para expurgo`);
+    const now = new Date().toISOString();
+    const responsavel = profile?.full_name || "Usuário";
+    const purgedSamples = samples.filter(s => selectedForExpurgo.includes(s.id));
+    
+    // Create audit entries
+    const newAuditEntries: ExpurgoAuditEntry[] = purgedSamples.map(s => ({
+      id: crypto.randomUUID(),
+      barcode: s.barcode,
+      patientName: s.patientName,
+      expurgoAt: now,
+      responsavel,
+    }));
+    
+    setAuditLog(prev => [...prev, ...newAuditEntries]);
+    setSamples(prev => prev.map(s =>
+      selectedForExpurgo.includes(s.id) ? { ...s, status: "expurgado" as const } : s
+    ));
+    toast.success(`${selectedForExpurgo.length} amostra(s) expurgada(s) com sucesso`);
     setExpurgoDialog(false);
     setSelectedForExpurgo([]);
   };
@@ -111,18 +143,26 @@ const SorotecaPage = () => {
           <h1 className="text-2xl font-bold text-foreground">Soroteca</h1>
           <p className="text-sm text-muted-foreground">Gestão de armazenamento, pesquisa e expurgo de amostras</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
-          const expiring = samples.filter(s => s.status === "armazenado" && new Date(s.expiresAt) <= new Date());
-          if (expiring.length === 0) {
-            toast.info("Nenhuma amostra vencida para expurgo");
-            return;
-          }
-          setSelectedForExpurgo(expiring.map(s => s.id));
-          setExpurgoDialog(true);
-        }}>
-          <Trash2 className="h-4 w-4" />
-          Expurgo Automático
-        </Button>
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setAuditDialog(true)}>
+              <ShieldCheck className="h-4 w-4" />
+              Auditoria Expurgo
+            </Button>
+          )}
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
+            const expiring = samples.filter(s => s.status === "armazenado" && new Date(s.expiresAt) <= new Date());
+            if (expiring.length === 0) {
+              toast.info("Nenhuma amostra vencida para expurgo");
+              return;
+            }
+            setSelectedForExpurgo(expiring.map(s => s.id));
+            setExpurgoDialog(true);
+          }}>
+            <Trash2 className="h-4 w-4" />
+            Expurgo Automático
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -296,6 +336,47 @@ const SorotecaPage = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialog(false)}>Cancelar</Button>
             <Button onClick={handleSaveLocation}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Auditoria Expurgo Dialog */}
+      <Dialog open={auditDialog} onOpenChange={setAuditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              Auditoria de Expurgo
+            </DialogTitle>
+          </DialogHeader>
+          {auditLog.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">Nenhum registro de expurgo encontrado.</p>
+          ) : (
+            <div className="max-h-[400px] overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Código</TableHead>
+                    <TableHead>Data / Hora</TableHead>
+                    <TableHead>Paciente</TableHead>
+                    <TableHead>Responsável</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {auditLog.map(entry => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="font-mono text-xs">{entry.barcode}</TableCell>
+                      <TableCell className="text-xs">{format(new Date(entry.expurgoAt), "dd/MM/yyyy HH:mm:ss")}</TableCell>
+                      <TableCell className="font-medium text-sm">{entry.patientName}</TableCell>
+                      <TableCell className="text-sm">{entry.responsavel}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAuditDialog(false)}>Fechar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
