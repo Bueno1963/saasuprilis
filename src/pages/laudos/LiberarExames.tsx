@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import DigitalClock from "@/components/recepcao/DigitalClock";
+import DigitalClockToggle from "@/components/recepcao/DigitalClockToggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -487,7 +487,7 @@ const LiberarExames = () => {
   if (!selectedSector) {
     return (
       <div className="p-6 space-y-6">
-        <DigitalClock />
+        <DigitalClockToggle />
         <div>
           <h1 className="text-2xl font-bold text-foreground">Liberar Exames</h1>
           <p className="text-sm text-muted-foreground">Selecione o setor do laboratório para liberar exames validados</p>

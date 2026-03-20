@@ -28,7 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import DigitalClock from "@/components/recepcao/DigitalClock";
+import DigitalClockToggle from "@/components/recepcao/DigitalClockToggle";
 
 const statusColors: Record<string, string> = {
   agendado: "bg-blue-100 text-blue-800 border-blue-200",
@@ -173,7 +173,7 @@ const RecepcaoPage = () => {
   return (
     <div className="flex-1 flex flex-col p-6 gap-6">
       {/* Digital Clock */}
-      <DigitalClock />
+      <DigitalClockToggle />
       {/* Quick-access buttons */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl mx-auto">
         {sections.map(({ key, title, subtitle, icon: Icon, href }) => (
