@@ -173,7 +173,7 @@ const RecepcaoPage = () => {
   return (
     <div className="flex-1 flex flex-col p-6 gap-6">
       {/* Digital Clock */}
-      <DigitalClock />
+      <DigitalClockToggle />
       {/* Quick-access buttons */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl mx-auto">
         {sections.map(({ key, title, subtitle, icon: Icon, href }) => (
