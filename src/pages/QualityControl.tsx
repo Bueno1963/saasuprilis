@@ -221,6 +221,7 @@ const QualityControl = () => {
               <DropdownMenuItem onClick={() => setActiveView("lj-hemato-alta")}>
                 Levey-Jennings — Alta
               </DropdownMenuItem>
+            </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
