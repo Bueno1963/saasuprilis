@@ -333,9 +333,38 @@ const SorotecaPage = () => {
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialog(false)}>Cancelar</Button>
-            <Button onClick={handleSaveLocation}>Salvar</Button>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            {editingSample && editingSample.status !== "expurgado" && (
+              <Button
+                variant="destructive"
+                className="gap-1.5 mr-auto"
+                onClick={() => {
+                  if (!editingSample) return;
+                  const now = new Date().toISOString();
+                  const responsavel = profile?.full_name || "Usuário";
+                  setAuditLog(prev => [...prev, {
+                    id: crypto.randomUUID(),
+                    barcode: editingSample.barcode,
+                    patientName: editingSample.patientName,
+                    expurgoAt: now,
+                    responsavel,
+                  }]);
+                  setSamples(prev => prev.map(s =>
+                    s.id === editingSample.id ? { ...s, status: "expurgado" as const } : s
+                  ));
+                  toast.success("Amostra expurgada com sucesso");
+                  setEditDialog(false);
+                  setEditingSample(null);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                Confirmar Expurgo
+              </Button>
+            )}
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditDialog(false)}>Cancelar</Button>
+              <Button onClick={handleSaveLocation}>Salvar</Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
