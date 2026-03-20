@@ -13,6 +13,7 @@ import Orders from "./pages/Orders";
 import Samples from "./pages/Samples";
 import Worklist from "./pages/Worklist";
 import WorklistLabApoio from "./pages/WorklistLabApoio";
+import SorotecaPage from "./pages/SorotecaPage";
 import QualityControl from "./pages/QualityControl";
 import QualityControlHematologia from "./pages/QualityControlHematologia";
 
@@ -103,6 +104,7 @@ const ProtectedRoutes = () => {
         <Route path="/amostras" element={<DynamicGuard route="/amostras"><Samples /></DynamicGuard>} />
         <Route path="/worklist" element={<DynamicGuard route="/worklist"><Worklist /></DynamicGuard>} />
         <Route path="/worklist-lab-apoio" element={<DynamicGuard route="/worklist"><WorklistLabApoio /></DynamicGuard>} />
+        <Route path="/soroteca" element={<DynamicGuard route="/worklist"><SorotecaPage /></DynamicGuard>} />
         <Route path="/controle-qualidade" element={<DynamicGuard route="/controle-qualidade"><QualityControl /></DynamicGuard>} />
         <Route path="/controle-qualidade-hematologia" element={<DynamicGuard route="/controle-qualidade-hematologia"><QualityControlHematologia /></DynamicGuard>} />
         

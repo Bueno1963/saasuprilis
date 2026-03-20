@@ -24,6 +24,7 @@ import {
   Award,
   CalendarClock,
   ShieldAlert,
+  Archive,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
@@ -47,7 +48,8 @@ export const navItems: NavItem[] = [
   { title: "Amostras", href: "/amostras", icon: TestTubes, phase: "analytical", allowedRoles: ["admin", "tecnico", "recepcao"] },
   { title: "Esteira de Produção", href: "/worklist", icon: FlaskConical, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
   { title: "Esteira Lab. Apoio", href: "/worklist-lab-apoio", icon: FlaskConical, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
-  
+  { title: "Soroteca", href: "/soroteca", icon: Archive, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
+
   {
     title: "Laudos",
     href: "/laudos",
