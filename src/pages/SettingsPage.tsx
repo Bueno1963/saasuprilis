@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug, Printer, FlaskRound, LayoutTemplate, ListTree, ShieldCheck, PenTool } from "lucide-react";
+import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug, Printer, FlaskRound, LayoutTemplate, ListTree, ShieldCheck, PenTool, BookOpen } from "lucide-react";
 import LabSettings from "@/components/settings/LabSettings";
 import EquipmentSettings from "@/components/settings/EquipmentSettings";
 import ExamCatalogSettings from "@/components/settings/ExamCatalogSettings";
@@ -11,10 +11,10 @@ import PrinterSettings from "@/components/settings/PrinterSettings";
 import SupportLabSettings from "@/components/settings/SupportLabSettings";
 import ReportLayoutListSettings from "@/components/settings/ReportLayoutListSettings";
 import CadastroParametrosSettings from "@/components/settings/CadastroParametrosSettings";
-
 import SectorSignersSettings from "@/components/settings/SectorSignersSettings";
+import UserManualSettings from "@/components/settings/UserManualSettings";
 
-type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers";
+type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers" | "user_manual";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
@@ -28,7 +28,7 @@ const sections = [
   { key: "support_lab" as Section, title: "Lab. de Apoio", desc: "Integração com laboratórios terceirizados para exames encaminhados", icon: FlaskRound },
   { key: "report_layouts" as Section, title: "Cadastro de Layout", desc: "Modelos de impressão de laudos por exame: colunas, cabeçalho, rodapé e observações", icon: LayoutTemplate },
   { key: "cadastro_parametros" as Section, title: "Cadastro de Parâmetros", desc: "Modelo de exames por setor com parâmetros para digitação de laudos", icon: ListTree },
-  
+  { key: "user_manual" as Section, title: "Manual do Usuário", desc: "Guia completo de funcionalidades e fluxos do sistema", icon: BookOpen },
 ];
 
 const SettingsPage = () => {
@@ -46,8 +46,8 @@ const SettingsPage = () => {
   if (section === "support_lab") return <SupportLabSettings onBack={goBack} />;
   if (section === "report_layouts") return <ReportLayoutListSettings onBack={goBack} />;
   if (section === "cadastro_parametros") return <CadastroParametrosSettings onBack={goBack} />;
-  
   if (section === "sector_signers") return <SectorSignersSettings onBack={goBack} />;
+  if (section === "user_manual") return <UserManualSettings onBack={goBack} />;
 
   return (
     <div className="p-6 space-y-6">
