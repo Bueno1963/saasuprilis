@@ -315,7 +315,7 @@ const SampleKanbanTab = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 min-h-[500px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 min-h-[500px]">
         {KANBAN_COLUMNS.map(col => {
           const columnSamples = filtered.filter(s => s.status === col.status);
           return (
