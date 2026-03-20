@@ -14,6 +14,7 @@ import Samples from "./pages/Samples";
 import Worklist from "./pages/Worklist";
 import WorklistLabApoio from "./pages/WorklistLabApoio";
 import SorotecaPage from "./pages/SorotecaPage";
+import KanbanPage from "./pages/KanbanPage";
 import QualityControl from "./pages/QualityControl";
 import QualityControlHematologia from "./pages/QualityControlHematologia";
 
@@ -101,6 +102,7 @@ const ProtectedRoutes = () => {
         <Route path="/" element={<DefaultRedirect />} />
         <Route path="/pacientes" element={<DynamicGuard route="/pacientes"><Patients /></DynamicGuard>} />
         <Route path="/pedidos" element={<DynamicGuard route="/pedidos"><Orders /></DynamicGuard>} />
+        <Route path="/kanban" element={<DynamicGuard route="/amostras"><KanbanPage /></DynamicGuard>} />
         <Route path="/amostras" element={<DynamicGuard route="/amostras"><Samples /></DynamicGuard>} />
         <Route path="/worklist" element={<DynamicGuard route="/worklist"><Worklist /></DynamicGuard>} />
         <Route path="/worklist-lab-apoio" element={<DynamicGuard route="/worklist"><WorklistLabApoio /></DynamicGuard>} />

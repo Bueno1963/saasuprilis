@@ -25,6 +25,7 @@ import {
   CalendarClock,
   ShieldAlert,
   Archive,
+  Columns3,
 } from "lucide-react";
 
 export type AppRole = "admin" | "tecnico" | "recepcao";
@@ -45,6 +46,7 @@ export const navItems: NavItem[] = [
   { title: "Pacientes", href: "/pacientes", icon: Users, phase: "pre", allowedRoles: ["admin", "tecnico", "recepcao"] },
   { title: "Pedidos", href: "/pedidos", icon: ClipboardList, phase: "pre", allowedRoles: ["admin", "tecnico", "recepcao"] },
   
+  { title: "Kanban", href: "/kanban", icon: Columns3, phase: "analytical", allowedRoles: ["admin", "tecnico", "recepcao"] },
   { title: "Amostras", href: "/amostras", icon: TestTubes, phase: "analytical", allowedRoles: ["admin", "tecnico", "recepcao"] },
   { title: "Esteira de Produção", href: "/worklist", icon: FlaskConical, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
   { title: "Esteira Lab. Apoio", href: "/worklist-lab-apoio", icon: FlaskConical, phase: "analytical", allowedRoles: ["admin", "tecnico"] },
