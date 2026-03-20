@@ -114,7 +114,24 @@ const SorotecaPage = () => {
   const galleries = [...new Set(samples.map(s => s.gallery))];
 
   const handleExpurgo = () => {
-    toast.success(`${selectedForExpurgo.length} amostra(s) marcada(s) para expurgo`);
+    const now = new Date().toISOString();
+    const responsavel = profile?.full_name || "Usuário";
+    const purgedSamples = samples.filter(s => selectedForExpurgo.includes(s.id));
+    
+    // Create audit entries
+    const newAuditEntries: ExpurgoAuditEntry[] = purgedSamples.map(s => ({
+      id: crypto.randomUUID(),
+      barcode: s.barcode,
+      patientName: s.patientName,
+      expurgoAt: now,
+      responsavel,
+    }));
+    
+    setAuditLog(prev => [...prev, ...newAuditEntries]);
+    setSamples(prev => prev.map(s =>
+      selectedForExpurgo.includes(s.id) ? { ...s, status: "expurgado" as const } : s
+    ));
+    toast.success(`${selectedForExpurgo.length} amostra(s) expurgada(s) com sucesso`);
     setExpurgoDialog(false);
     setSelectedForExpurgo([]);
   };
@@ -126,18 +143,26 @@ const SorotecaPage = () => {
           <h1 className="text-2xl font-bold text-foreground">Soroteca</h1>
           <p className="text-sm text-muted-foreground">Gestão de armazenamento, pesquisa e expurgo de amostras</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
-          const expiring = samples.filter(s => s.status === "armazenado" && new Date(s.expiresAt) <= new Date());
-          if (expiring.length === 0) {
-            toast.info("Nenhuma amostra vencida para expurgo");
-            return;
-          }
-          setSelectedForExpurgo(expiring.map(s => s.id));
-          setExpurgoDialog(true);
-        }}>
-          <Trash2 className="h-4 w-4" />
-          Expurgo Automático
-        </Button>
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setAuditDialog(true)}>
+              <ShieldCheck className="h-4 w-4" />
+              Auditoria Expurgo
+            </Button>
+          )}
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
+            const expiring = samples.filter(s => s.status === "armazenado" && new Date(s.expiresAt) <= new Date());
+            if (expiring.length === 0) {
+              toast.info("Nenhuma amostra vencida para expurgo");
+              return;
+            }
+            setSelectedForExpurgo(expiring.map(s => s.id));
+            setExpurgoDialog(true);
+          }}>
+            <Trash2 className="h-4 w-4" />
+            Expurgo Automático
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
