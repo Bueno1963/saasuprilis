@@ -23,7 +23,7 @@ const KANBAN_COLUMNS = [
   { status: "analyzed", label: "Analisadas", icon: BadgeCheck, color: "text-success", bg: "bg-success/10", border: "border-success/30", headerBg: "bg-success/15" },
 ];
 
-const CONDITION_OPTIONS = [
+const CONDITION_OPTIONS_DEFAULT = [
   { value: "de_acordo", label: "De acordo" },
   { value: "hemolisada", label: "Hemolisada" },
   { value: "insuficiente", label: "Insuficiente" },
@@ -31,6 +31,21 @@ const CONDITION_OPTIONS = [
   { value: "coagulada", label: "Coagulada" },
   { value: "enviado_lab_apoio", label: "Enviado para Laboratório Apoio" },
 ];
+
+const CONDITION_OPTIONS_FEZES = [
+  { value: "de_acordo", label: "De acordo" },
+  { value: "coletado", label: "Coletado" },
+  { value: "larvas_visiveis", label: "Amostra com Larvas Visíveis" },
+  { value: "nao_coletada", label: "Amostra não coletada" },
+  { value: "insuficiente", label: "Insuficiente" },
+  { value: "enviado_lab_apoio", label: "Enviado para Laboratório Apoio" },
+];
+
+const getConditionOptions = (sampleType: string) => {
+  const lower = (sampleType || "").toLowerCase();
+  if (lower.includes("fezes") || lower.includes("feces")) return CONDITION_OPTIONS_FEZES;
+  return CONDITION_OPTIONS_DEFAULT;
+};
 
 const SampleKanbanTab = () => {
   const [sectorFilter, setSectorFilter] = useState<string>("all");
