@@ -18,6 +18,9 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button as Btn } from "@/components/ui/button";
 
 const KANBAN_COLUMNS = [
   { status: "collected", label: "Recepção/Coleta", icon: TestTubes, color: "text-warning", bg: "bg-warning/10", border: "border-warning/30", headerBg: "bg-warning/15" },
