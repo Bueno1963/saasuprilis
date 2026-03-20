@@ -29,6 +29,7 @@ const CONDITION_OPTIONS = [
   { value: "insuficiente", label: "Insuficiente" },
   { value: "lipêmica", label: "Lipêmica" },
   { value: "coagulada", label: "Coagulada" },
+  { value: "enviado_lab_apoio", label: "Enviado para Laboratório Apoio" },
 ];
 
 const SampleKanbanTab = () => {

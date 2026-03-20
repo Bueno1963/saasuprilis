@@ -102,6 +102,7 @@ const ProtectedRoutes = () => {
         <Route path="/pedidos" element={<DynamicGuard route="/pedidos"><Orders /></DynamicGuard>} />
         <Route path="/amostras" element={<DynamicGuard route="/amostras"><Samples /></DynamicGuard>} />
         <Route path="/worklist" element={<DynamicGuard route="/worklist"><Worklist /></DynamicGuard>} />
+        <Route path="/worklist-lab-apoio" element={<DynamicGuard route="/worklist"><WorklistLabApoio /></DynamicGuard>} />
         <Route path="/controle-qualidade" element={<DynamicGuard route="/controle-qualidade"><QualityControl /></DynamicGuard>} />
         <Route path="/controle-qualidade-hematologia" element={<DynamicGuard route="/controle-qualidade-hematologia"><QualityControlHematologia /></DynamicGuard>} />
         
