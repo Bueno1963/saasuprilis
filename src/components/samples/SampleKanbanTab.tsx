@@ -360,7 +360,7 @@ const SampleKanbanTab = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {getConditionOptions(registerDialog.sample?.sample_type || "").map(opt => (
+                    {getDynamicConditionOptions(registerDialog.sample?.sample_type || "", registerDialog.sample?.sector || "").map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>
