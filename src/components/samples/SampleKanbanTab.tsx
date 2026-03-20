@@ -134,9 +134,12 @@ const SampleKanbanTab = () => {
 
   const registerSampleMutation = useMutation({
     mutationFn: async ({ id, condition, notes }: { id: string; condition: string; notes: string }) => {
+      const goToProcessing = condition === "de_acordo";
+      const newStatus = goToProcessing ? "processing" : "triaged";
+
       const { error } = await supabase.from("samples").update({
         condition,
-        status: "processing",
+        status: newStatus,
       }).eq("id", id);
       if (error) throw error;
 
@@ -148,18 +151,22 @@ const SampleKanbanTab = () => {
 
       await supabase.from("sample_tracking_events").insert({
         sample_id: id,
-        event_type: "registered",
+        event_type: goToProcessing ? "registered" : "pending_admin_review",
         previous_status: "triaged",
-        new_status: "processing",
+        new_status: newStatus,
         performed_by: user?.id,
         performed_by_name: performerName,
         notes: `Condição: ${condition}${notes ? ` | Obs: ${notes}` : ""}`,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["samples"] });
       queryClient.invalidateQueries({ queryKey: ["sample-tracking-events"] });
-      toast.success("Amostra registrada e movida para análise");
+      if (variables.condition === "de_acordo") {
+        toast.success("Amostra registrada e movida para análise");
+      } else {
+        toast.warning("Amostra registrada com pendência — aguarda aprovação do Administrador");
+      }
       setRegisterDialog({ open: false, sample: null });
       setCondition("de_acordo");
       setRegisterNotes("");
