@@ -248,6 +248,7 @@ const Orders = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["results-pending"] });
+      queryClient.invalidateQueries({ queryKey: ["samples"] });
       toast.success("Pedido atualizado!");
       setEditOpen(false);
       setEditingOrder(null);
