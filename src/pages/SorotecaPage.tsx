@@ -208,7 +208,7 @@ const SorotecaPage = () => {
                 filtered.map(s => {
                   const isExpiring = s.status === "armazenado" && new Date(s.expiresAt) <= addDays(new Date(), 2);
                   return (
-                    <TableRow key={s.id} className={isExpiring ? "bg-destructive/5" : ""}>
+                    <TableRow key={s.id} className={`${isExpiring ? "bg-destructive/5" : ""} cursor-pointer hover:bg-muted/70`} onClick={() => openEdit(s)}>
                       <TableCell className="font-mono text-xs">{s.barcode}</TableCell>
                       <TableCell className="font-medium">{s.patientName}</TableCell>
                       <TableCell>{s.material}</TableCell>
