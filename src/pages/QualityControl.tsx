@@ -88,10 +88,35 @@ const QualityControl = () => {
                </div>
              </div>
              <div className="flex justify-end mt-2">
-               <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-muted/80 hover:bg-muted border-border/80 text-foreground font-semibold">
-                 Próximo analito
-                 <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
-               </Button>
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-muted/80 hover:bg-muted border-border/80 text-foreground font-semibold">
+                      <CalendarIcon className="h-3.5 w-3.5" />
+                      {ljDateRange.from && ljDateRange.to
+                        ? `${format(ljDateRange.from, "dd/MM")} — ${format(ljDateRange.to, "dd/MM")}`
+                        : "Selecionar período"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      mode="range"
+                      selected={ljDateRange.from && ljDateRange.to ? { from: ljDateRange.from, to: ljDateRange.to } : undefined}
+                      onSelect={(range) => setLjDateRange({ from: range?.from, to: range?.to })}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-muted/80 hover:bg-muted border-border/80 text-foreground font-semibold" onClick={() => window.print()}>
+                  <Printer className="h-3.5 w-3.5" />
+                  Imprimir
+                </Button>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-muted/80 hover:bg-muted border-border/80 text-foreground font-semibold">
+                  Próximo analito
+                  <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
+                </Button>
+              </div>
              </div>
            </CardHeader>
           <CardContent>
