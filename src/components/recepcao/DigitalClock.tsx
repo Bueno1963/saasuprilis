@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 
-const DAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const DAYS_PT = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
+const DAY_MAP = [6, 0, 1, 2, 3, 4, 5]; // JS getDay() → PT index
 
 const DigitalClock = () => {
   const [now, setNow] = useState(new Date());
@@ -31,59 +32,65 @@ const DigitalClock = () => {
 
   const hours = format(now, "HH");
   const minutes = format(now, "mm");
-  const seconds = format(now, "ss");
-  const currentDayIndex = now.getDay();
-  const dateStr = format(now, "dd/MM/yyyy");
+  const currentDayIndex = DAY_MAP[now.getDay()];
+  const dateStr = format(now, "dd/MM");
 
   return (
-    <div className="relative mx-auto w-full max-w-xs rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden select-none">
-      {/* Glass highlight */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent pointer-events-none rounded-2xl" />
-      <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-primary/20 blur-2xl pointer-events-none" />
+    <div className="mx-auto w-full max-w-md select-none">
+      <div className="relative rounded-xl border-2 border-foreground/80 bg-[hsl(var(--muted)/0.4)] p-4 shadow-lg overflow-hidden"
+        style={{ background: "linear-gradient(160deg, hsl(var(--muted)) 0%, hsl(var(--muted)/0.6) 100%)" }}
+      >
+        {/* LCD screen inner area */}
+        <div className="rounded-lg border border-foreground/10 bg-[hsl(120,25%,88%)] px-5 py-4"
+          style={{ background: "linear-gradient(180deg, hsl(120 20% 85%) 0%, hsl(120 15% 80%) 100%)" }}
+        >
+          {/* Top row: time + temp/date */}
+          <div className="flex items-center justify-between gap-4">
+            {/* Main time */}
+            <div className="flex items-baseline gap-1">
+              <span className="text-6xl font-mono font-black tracking-tight text-[hsl(120,10%,15%)] leading-none"
+                style={{ fontFamily: "'Courier New', 'Lucida Console', monospace", letterSpacing: "0.05em" }}
+              >
+                {hours}
+              </span>
+              <span className="text-5xl font-mono font-black text-[hsl(120,10%,15%)/0.6] animate-pulse leading-none">
+                :
+              </span>
+              <span className="text-6xl font-mono font-black tracking-tight text-[hsl(120,10%,15%)] leading-none"
+                style={{ fontFamily: "'Courier New', 'Lucida Console', monospace", letterSpacing: "0.05em" }}
+              >
+                {minutes}
+              </span>
+            </div>
 
-      <div className="relative flex items-center justify-between gap-3">
-        {/* Days of week */}
-        <div className="flex flex-col gap-0 text-[8px] font-medium tracking-wider leading-tight">
-          {DAYS_PT.map((day, i) => (
-            <span
-              key={day}
-              className={
-                i === currentDayIndex
-                  ? "text-primary font-bold"
-                  : "text-muted-foreground/40"
-              }
-            >
-              {day}
-            </span>
-          ))}
-        </div>
+            {/* Right side: temperature + date */}
+            <div className="flex flex-col items-end gap-1">
+              {temperature !== null && (
+                <span className="text-2xl font-mono font-bold text-[hsl(120,10%,15%)] leading-none">
+                  {temperature}°<span className="text-base">C</span>
+                </span>
+              )}
+              <span className="text-sm font-mono font-semibold text-[hsl(120,10%,15%)/0.7] leading-none">
+                {dateStr}
+              </span>
+            </div>
+          </div>
 
-        {/* Time */}
-        <div className="flex items-baseline gap-0.5 font-mono">
-          <span className="text-3xl font-extrabold text-foreground tracking-tight">
-            {hours}
-          </span>
-          <span className="text-3xl font-extrabold text-foreground/60 animate-pulse">
-            :
-          </span>
-          <span className="text-3xl font-extrabold text-foreground tracking-tight">
-            {minutes}
-          </span>
-          <span className="text-[10px] text-muted-foreground ml-0.5 self-end font-semibold">
-            {seconds}
-          </span>
-        </div>
-
-        {/* Temperature & date */}
-        <div className="flex flex-col items-end gap-0.5">
-          {temperature !== null && (
-            <span className="text-xl font-mono font-bold text-primary">
-              {temperature}°<span className="text-[10px]">C</span>
-            </span>
-          )}
-          <span className="text-[8px] text-muted-foreground font-mono">
-            {dateStr}
-          </span>
+          {/* Bottom row: days of week */}
+          <div className="flex justify-between mt-3 pt-2 border-t border-[hsl(120,10%,15%)/0.1]">
+            {DAYS_PT.map((day, i) => (
+              <span
+                key={day}
+                className={`text-[11px] font-mono font-bold tracking-wide transition-all ${
+                  i === currentDayIndex
+                    ? "text-[hsl(120,10%,15%)] scale-110"
+                    : "text-[hsl(120,10%,15%)/0.25]"
+                }`}
+              >
+                {day}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
