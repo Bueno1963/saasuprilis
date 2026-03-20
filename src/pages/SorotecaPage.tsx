@@ -260,8 +260,15 @@ const SorotecaPage = () => {
               </p>
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1.5">
-                  <Label>Galeria</Label>
-                  <Input value={editGallery} onChange={e => setEditGallery(e.target.value)} placeholder="G1" />
+                  <Label>Geladeira</Label>
+                  <Select value={editGallery} onValueChange={setEditGallery}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Geladeira 1">Geladeira 1</SelectItem>
+                      <SelectItem value="Geladeira 2">Geladeira 2</SelectItem>
+                      <SelectItem value="Geladeira 3">Geladeira 3</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Rack</Label>
