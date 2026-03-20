@@ -339,6 +339,47 @@ const SorotecaPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Auditoria Expurgo Dialog */}
+      <Dialog open={auditDialog} onOpenChange={setAuditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              Auditoria de Expurgo
+            </DialogTitle>
+          </DialogHeader>
+          {auditLog.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">Nenhum registro de expurgo encontrado.</p>
+          ) : (
+            <div className="max-h-[400px] overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Código</TableHead>
+                    <TableHead>Data / Hora</TableHead>
+                    <TableHead>Paciente</TableHead>
+                    <TableHead>Responsável</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {auditLog.map(entry => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="font-mono text-xs">{entry.barcode}</TableCell>
+                      <TableCell className="text-xs">{format(new Date(entry.expurgoAt), "dd/MM/yyyy HH:mm:ss")}</TableCell>
+                      <TableCell className="font-medium text-sm">{entry.patientName}</TableCell>
+                      <TableCell className="text-sm">{entry.responsavel}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAuditDialog(false)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
