@@ -151,17 +151,20 @@ const QualityControlHematologia = () => {
   }
 
   if (activeView.startsWith("lj-")) {
-    const ljTitles: Record<string, string> = {
-      "lj-hemato-normal": "Levey-Jennings — Hematologia Normal",
-      "lj-hemato-baixa": "Levey-Jennings — Hematologia Baixa",
-      "lj-hemato-alta": "Levey-Jennings — Hematologia Alta",
-    };
     return (
-      <div className="p-6">
-        <LeveyJenningsHematologia
-          onBack={() => setActiveView("main")}
-          title={ljTitles[activeView] || "Levey-Jennings"}
-        />
+      <div className="p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => setActiveView("main")}>
+            <span className="text-lg">←</span>
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              {activeView === "lj-hemato-normal" ? "Levey-Jennings — Hematologia Normal" : activeView === "lj-hemato-baixa" ? "Levey-Jennings — Hematologia Baixa" : "Levey-Jennings — Hematologia Alta"}
+            </h1>
+            <p className="text-sm text-muted-foreground">Gráfico de controle estatístico de processo</p>
+          </div>
+        </div>
+        <LeveyJenningsHematologia />
       </div>
     );
   }
