@@ -14,6 +14,7 @@ import Samples from "./pages/Samples";
 import Worklist from "./pages/Worklist";
 import WorklistLabApoio from "./pages/WorklistLabApoio";
 import SorotecaPage from "./pages/SorotecaPage";
+import KanbanPage from "./pages/KanbanPage";
 import QualityControl from "./pages/QualityControl";
 import QualityControlHematologia from "./pages/QualityControlHematologia";
 
