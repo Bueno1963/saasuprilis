@@ -11,7 +11,11 @@ import { mockQCData } from "@/lib/mock-data";
 import QCManagementSettings from "@/components/settings/QCManagementSettings";
 import BioquimicaDailySheet from "@/components/qc/BioquimicaDailySheet";
 import NovoAnalitoSheet from "@/components/qc/NovoAnalitoSheet";
-import { ChevronDown, FlaskConical } from "lucide-react";
+import { ChevronDown, FlaskConical, Printer, CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 const QualityControl = () => {
   const [activeView, setActiveView] = useState<string>("main");
