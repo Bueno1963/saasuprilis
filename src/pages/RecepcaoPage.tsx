@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import DigitalClock from "@/components/recepcao/DigitalClock";
 
 const statusColors: Record<string, string> = {
   agendado: "bg-blue-100 text-blue-800 border-blue-200",
