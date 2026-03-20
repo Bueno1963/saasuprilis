@@ -48,9 +48,36 @@ const SorotecaPage = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterGallery, setFilterGallery] = useState("all");
-  const [samples] = useState<StoredSample[]>(MOCK_SAMPLES);
+  const [samples, setSamples] = useState<StoredSample[]>(MOCK_SAMPLES);
   const [expurgoDialog, setExpurgoDialog] = useState(false);
   const [selectedForExpurgo, setSelectedForExpurgo] = useState<string[]>([]);
+  const [editDialog, setEditDialog] = useState(false);
+  const [editingSample, setEditingSample] = useState<StoredSample | null>(null);
+  const [editGallery, setEditGallery] = useState("");
+  const [editRack, setEditRack] = useState("");
+  const [editPosition, setEditPosition] = useState("");
+  const [editTemperature, setEditTemperature] = useState("");
+
+  const openEdit = (sample: StoredSample) => {
+    setEditingSample(sample);
+    setEditGallery(sample.gallery);
+    setEditRack(sample.rack);
+    setEditPosition(sample.position);
+    setEditTemperature(sample.temperature);
+    setEditDialog(true);
+  };
+
+  const handleSaveLocation = () => {
+    if (!editingSample) return;
+    setSamples(prev => prev.map(s =>
+      s.id === editingSample.id
+        ? { ...s, gallery: editGallery, rack: editRack, position: editPosition, temperature: editTemperature }
+        : s
+    ));
+    toast.success("Localização atualizada com sucesso");
+    setEditDialog(false);
+    setEditingSample(null);
+  };
 
   const filtered = samples.filter(s => {
     if (filterStatus !== "all" && s.status !== filterStatus) return false;
@@ -181,7 +208,7 @@ const SorotecaPage = () => {
                 filtered.map(s => {
                   const isExpiring = s.status === "armazenado" && new Date(s.expiresAt) <= addDays(new Date(), 2);
                   return (
-                    <TableRow key={s.id} className={isExpiring ? "bg-destructive/5" : ""}>
+                    <TableRow key={s.id} className={`${isExpiring ? "bg-destructive/5" : ""} cursor-pointer hover:bg-muted/70`} onClick={() => openEdit(s)}>
                       <TableCell className="font-mono text-xs">{s.barcode}</TableCell>
                       <TableCell className="font-medium">{s.patientName}</TableCell>
                       <TableCell>{s.material}</TableCell>
@@ -217,6 +244,51 @@ const SorotecaPage = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setExpurgoDialog(false)}>Cancelar</Button>
             <Button variant="destructive" onClick={handleExpurgo}>Confirmar Expurgo</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Edit Location Dialog */}
+      <Dialog open={editDialog} onOpenChange={setEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Localização</DialogTitle>
+          </DialogHeader>
+          {editingSample && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{editingSample.patientName}</span> — {editingSample.barcode}
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Galeria</Label>
+                  <Input value={editGallery} onChange={e => setEditGallery(e.target.value)} placeholder="G1" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Rack</Label>
+                  <Input value={editRack} onChange={e => setEditRack(e.target.value)} placeholder="R01" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Posição</Label>
+                  <Input value={editPosition} onChange={e => setEditPosition(e.target.value)} placeholder="A3" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Temperatura</Label>
+                <Select value={editTemperature} onValueChange={setEditTemperature}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2-8°C">2-8°C</SelectItem>
+                    <SelectItem value="-20°C">-20°C</SelectItem>
+                    <SelectItem value="-80°C">-80°C</SelectItem>
+                    <SelectItem value="Ambiente">Ambiente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialog(false)}>Cancelar</Button>
+            <Button onClick={handleSaveLocation}>Salvar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
