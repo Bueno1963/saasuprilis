@@ -432,12 +432,17 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
             groupedBySector.map(([sector, exams]) => (
               <Card key={sector}>
                 <CardContent className="p-0">
-                  <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between cursor-pointer" onClick={() => setActiveSector(sector)}>
-                    <div>
+                  <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+                    <div className="cursor-pointer flex-1" onClick={() => setActiveSector(sector)}>
                       <h3 className="font-semibold text-foreground">{sector}</h3>
                       <p className="text-xs text-muted-foreground">{exams.length} exame(s)</p>
                     </div>
-                    <Badge variant="secondary">{exams.length}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={(e) => { e.stopPropagation(); setConditionsDialog({ open: true, sector }); }}>
+                        <FlaskConical className="h-3.5 w-3.5" />Condições
+                      </Button>
+                      <Badge variant="secondary">{exams.length}</Badge>
+                    </div>
                   </div>
                   <Table>
                     <TableHeader>{tableHeaders}</TableHeader>
