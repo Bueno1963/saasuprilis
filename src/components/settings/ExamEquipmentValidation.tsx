@@ -66,13 +66,18 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
   const isSupported = isMaxBio || isMaxCell;
 
   const { data: exams = [], isLoading } = useQuery({
-    queryKey: ["exam-catalog-for-validation"],
+    queryKey: ["exam-catalog-for-validation", equipmentName],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("exam_catalog")
-        .select("code, name, sector, status")
-        .eq("status", "active")
-        .order("code");
+        .select("code, name, sector, status, equipment")
+        .eq("status", "active");
+
+      if (isSupported) {
+        query = query.ilike("equipment", `%${equipmentName}%`);
+      }
+
+      const { data, error } = await query.order("code");
       if (error) throw error;
       return data || [];
     },
