@@ -125,6 +125,12 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
       }
     }
 
+    result.sort((a, b) => {
+      const codeA = (a.status === "unmatched_equip" ? a.equipCode : a.lisCode).toLowerCase();
+      const codeB = (b.status === "unmatched_equip" ? b.equipCode : b.lisCode).toLowerCase();
+      return codeA.localeCompare(codeB);
+    });
+
     return result;
   }, [exams, analyteMap]);
 
