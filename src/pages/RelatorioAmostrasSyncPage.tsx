@@ -1,11 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, ArrowDownUp, CheckCircle2, XCircle, Clock, Users, FlaskConical } from "lucide-react";
-
+import { BarChart3, ArrowDownUp, CheckCircle2, XCircle, Clock, Users, FlaskConical, Send, Download } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
 const RelatorioAmostrasSyncPage = () => {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["sync-logs-report"],
