@@ -10,17 +10,22 @@ import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical, RefreshCw, 
 import { toast } from "sonner";
 
 const MAXBIO_ANALYTES: Record<string, string> = {
-  GLI: "Glicose", ALT: "ALT (TGP)", AST: "AST (TGO)",
-  ALB: "Albumina", URE: "Ureia", CRE: "Creatinina",
-  AUR: "Ácido Úrico",
-  COL: "Colesterol Total", TRI: "Triglicerídeos",
-  HDL: "HDL-Colesterol", LDH: "Desidrogenase Láctica",
-  BILT: "Bilirrubina Total", BILD: "Bilirrubina Direta",
-  ALP: "Fosfatase Alcalina", GT: "Gama-GT",
-  AMY: "Amilase", LIP: "Lipase",
-  FOS: "Fósforo", CA: "Cálcio", MG: "Magnésio",
-  PCR: "PCR (Proteína C Reativa)",
-  ASO: "ASLO",
+  ALB: "Albumina", ALP: "Fosfatase Alcalina", ALT: "TGP (ALT)", AMY: "Amilase",
+  ASO: "ASO (TURBID)", AST: "TGO (AST)", AUR: "Ácido Úrico",
+  BILD: "Bilirruina Direta", BILT: "Bilirruina Toal",
+  BUN: "Ureia", Ca: "Calcio", CA: "Cálcio",
+  CHOL: "Colesterol Total", CK: "Creatina Quinase", CKMB: "CK-MB", CL: "Cloreto",
+  COL: "Colesterol Total", CRE: "Creatinina", CREA: "Creatinina",
+  CRP: "PCR (Proteína C Reativa)", DBIL: "Bilirrubina Direta",
+  FE: "Ferro Sérico", FOS: "Fosforo", GGT: "Gama-GT",
+  GLI: "Glicose", GLU: "Glicose", GT: "Gama GT",
+  HBA1C: "Hemoglobina Glicada", HDL: "Colesterol HDL",
+  K: "Potássio", LDH: "LDH", LDL: "LDL-Colesterol",
+  Lip: "Lipase", LIP: "Lipase", Mg: "Magnesio", MG: "Magnésio",
+  NA: "Sódio", P: "Fósforo", PCR: "Proteína C Reativa",
+  RF: "Fator Reumatoide", TBIL: "Bilirrubina Total",
+  TG: "Triglicerídeos", TRI: "Triglicerídeos",
+  UA: "Ácido Úrico", URE: "Ureia", VLDL: "VLDL-Colesterol",
 };
 
 const MAXCELL_ANALYTES: Record<string, string> = {
