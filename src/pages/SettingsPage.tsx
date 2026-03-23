@@ -18,7 +18,7 @@ type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | 
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
-  { key: "equipment" as Section, title: "Interface Terceirizada", desc: "Gerenciamento de analisadores e protocolos de interfaceamento", icon: Cpu },
+  { key: "equipment" as Section, title: "Manual Interface", desc: "Gerenciamento de analisadores e protocolos de interfaceamento", icon: Cpu },
   { key: "exams" as Section, title: "Exames", desc: "Catálogo de exames, valores de referência e regras de decisão", icon: FlaskConical },
   { key: "insurance" as Section, title: "Convênios", desc: "Tabelas de preços, regras de faturamento e glosas", icon: HeartHandshake },
   { key: "users" as Section, title: "Usuários", desc: "Controle de acesso, perfis e permissões do sistema", icon: Users },
