@@ -440,13 +440,14 @@ export async function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
           sectionGroups[sectionGroups.length - 1].params.push(p);
         }
 
+        const examDisplayName = r.exam.toLowerCase().includes("hemograma") ? "HEMOGRAMA COMPLETO" : r.exam;
         doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 55, 90);
-        doc.text(r.exam, hMargin, y);
+        doc.text(examDisplayName, hMargin, y);
         doc.setDrawColor(20, 55, 90);
         doc.setLineWidth(0.4);
-        doc.line(hMargin, y + 1.5, hMargin + doc.getTextWidth(r.exam), y + 1.5);
+        doc.line(hMargin, y + 1.5, hMargin + doc.getTextWidth(examDisplayName), y + 1.5);
         y += 7;
 
         for (const group of sectionGroups) {
