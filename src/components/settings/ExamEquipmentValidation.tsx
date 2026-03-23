@@ -423,27 +423,47 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                               className="h-7 w-7"
                               disabled={saving}
                               onClick={async () => {
-                                if (!row.paramId) {
-                                  toast.error("Este registro não pode ser editado (sem ID)");
-                                  return;
-                                }
                                 setSaving(true);
-                                const { error } = await supabase
-                                  .from("exam_parameters")
-                                  .update({
-                                    lis_code: editValues.lisCode,
-                                    lis_name: editValues.lisName,
-                                    equip_code: editValues.equipCode,
-                                    equip_analyte: editValues.equipName,
-                                  })
-                                  .eq("id", row.paramId);
-                                setSaving(false);
-                                if (error) {
-                                  toast.error("Erro ao salvar: " + error.message);
-                                } else {
-                                  toast.success("Registro atualizado com sucesso");
+                                try {
+                                  if (row.paramId) {
+                                    const { error } = await supabase
+                                      .from("exam_parameters")
+                                      .update({
+                                        lis_code: editValues.lisCode,
+                                        lis_name: editValues.lisName,
+                                        equip_code: editValues.equipCode,
+                                        equip_analyte: editValues.equipName,
+                                      })
+                                      .eq("id", row.paramId);
+                                    if (error) throw error;
+                                    toast.success("Registro atualizado com sucesso");
+                                  } else {
+                                    // Create new param for unmatched equipment analyte
+                                    const targetExam = exams[0];
+                                    if (!targetExam) {
+                                      toast.error("Nenhum exame encontrado para vincular. Cadastre um exame primeiro.");
+                                      setSaving(false);
+                                      return;
+                                    }
+                                    const { error } = await supabase.from("exam_parameters").insert({
+                                      exam_id: targetExam.id,
+                                      name: editValues.equipName || editValues.lisName,
+                                      lis_code: editValues.lisCode,
+                                      lis_name: editValues.lisName,
+                                      equip_code: editValues.equipCode,
+                                      equip_analyte: editValues.equipName,
+                                      section: targetExam.sector || "",
+                                      sort_order: params.length + 1,
+                                    });
+                                    if (error) throw error;
+                                    toast.success("Novo parâmetro cadastrado com sucesso");
+                                  }
                                   setEditingIdx(null);
                                   queryClient.invalidateQueries({ queryKey: ["exam-params-for-validation", equipmentName] });
+                                } catch (err: any) {
+                                  toast.error("Erro ao salvar: " + err.message);
+                                } finally {
+                                  setSaving(false);
                                 }
                               }}
                             >
@@ -453,7 +473,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                               <X className="h-3.5 w-3.5" />
                             </Button>
                           </div>
-                        ) : row.paramId ? (
+                        ) : (
                           <Button
                             size="icon"
                             variant="ghost"
@@ -461,16 +481,16 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                             onClick={() => {
                               setEditingIdx(i);
                               setEditValues({
-                                lisCode: row.lisCode,
-                                lisName: row.lisName,
+                                lisCode: row.lisCode === "—" ? "" : row.lisCode,
+                                lisName: row.lisName === "Não cadastrado no LIS" ? "" : row.lisName,
                                 equipCode: row.equipCode,
-                                equipName: row.equipName,
+                                equipName: row.equipName === "Sem correspondência" ? "" : row.equipName,
                               });
                             }}
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                        ) : null}
+                        )}
                       </TableCell>
                     </TableRow>
                   );
