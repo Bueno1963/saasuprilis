@@ -22,6 +22,7 @@ interface ExamForm {
 }
 interface ParamForm {
   section: string; name: string; unit: string; reference_range: string; sort_order: number;
+  lis_code: string; lis_name: string; equip_code: string; equip_analyte: string;
 }
 interface RefRangeForm {
   age_group: string; gender: string; reference_value: string; sort_order: number;
@@ -38,7 +39,7 @@ const emptyExamForm: ExamForm = {
   code: "", name: "", material: "Sangue", method: "", unit: "",
   reference_range: "", equipment: "", turnaround_hours: 24, price: 0,
 };
-const emptyParamForm: ParamForm = { section: "", name: "", unit: "", reference_range: "", sort_order: 0 };
+const emptyParamForm: ParamForm = { section: "", name: "", unit: "", reference_range: "", sort_order: 0, lis_code: "", lis_name: "", equip_code: "", equip_analyte: "" };
 const emptyRefRangeForm: RefRangeForm = { age_group: "", gender: "Ambos", reference_value: "", sort_order: 0 };
 
 const EditableSelect = ({ value, onChange, options, placeholder }: {
@@ -270,7 +271,7 @@ const CadastroLaudos = () => {
   };
   const openEditParam = (param: any) => {
     setEditingParamId(param.id);
-    setParamForm({ section: param.section || "", name: param.name, unit: param.unit || "", reference_range: param.reference_range || "", sort_order: param.sort_order ?? 0 });
+    setParamForm({ section: param.section || "", name: param.name, unit: param.unit || "", reference_range: param.reference_range || "", sort_order: param.sort_order ?? 0, lis_code: param.lis_code || "", lis_name: param.lis_name || "", equip_code: param.equip_code || "", equip_analyte: param.equip_analyte || "" });
     setParamDialogOpen(true);
   };
 
@@ -504,7 +505,7 @@ const CadastroLaudos = () => {
 
       {/* Parameter Dialog */}
       <Dialog open={paramDialogOpen} onOpenChange={setParamDialogOpen}>
-        <DialogContent className="max-w-[18rem]">
+        <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>{editingParamId ? "Editar Parâmetro" : "Novo Parâmetro"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
@@ -544,6 +545,28 @@ const CadastroLaudos = () => {
             <div className="space-y-1">
               <Label className="text-xs">Ordem</Label>
               <Input type="number" value={paramForm.sort_order} onChange={(e) => setP("sort_order", Number(e.target.value))} />
+            </div>
+            {/* Mapeamento Equipamento */}
+            <div className="pt-2 border-t border-border space-y-2">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mapeamento LIS ↔ Equipamento</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Código LIS</Label>
+                  <Input value={paramForm.lis_code} onChange={(e) => setP("lis_code", e.target.value)} placeholder="Ex: RBC" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Nome no LIS</Label>
+                  <Input value={paramForm.lis_name} onChange={(e) => setP("lis_name", e.target.value)} placeholder="Ex: Hemácias" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Código Equipamento</Label>
+                  <Input value={paramForm.equip_code} onChange={(e) => setP("equip_code", e.target.value)} placeholder="Ex: RBC" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Analito no Equipamento</Label>
+                  <Input value={paramForm.equip_analyte} onChange={(e) => setP("equip_analyte", e.target.value)} placeholder="Ex: Red Blood Cells" />
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>
