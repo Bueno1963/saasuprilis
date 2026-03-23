@@ -235,9 +235,30 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
                   <IntegrationProtocolSpecs type={currentType} name={currentName || integrationData?.name || ""} />
                 </div>
 
-                <Button type="submit" disabled={save.isPending} className="gap-2">
-                  <Save className="h-4 w-4" /> Salvar Configuração Técnica
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button type="submit" disabled={save.isPending} className="gap-2">
+                    <Save className="h-4 w-4" /> Salvar Configuração Técnica
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => {
+                      const vals = watch();
+                      generateIntegrationTechPdf({
+                        name: vals.name || integrationData?.name || "",
+                        type: vals.type || currentType,
+                        protocol: vals.protocol || "",
+                        endpointUrl: vals.endpoint_url || "",
+                        apiKeyName: vals.api_key_name || "",
+                        status: vals.status || "inactive",
+                        notes: vals.notes || "",
+                      });
+                    }}
+                  >
+                    <Printer className="h-4 w-4" /> Imprimir PDF
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>
