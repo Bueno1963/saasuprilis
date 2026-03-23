@@ -481,6 +481,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                                 setEditValues({
                                   lisCode: row.lisCode === "—" ? "" : row.lisCode,
                                   lisName: row.lisName === "Não cadastrado no LIS" ? "" : row.lisName,
+                                  equipCode: row.equipCode,
                                 });
                               }}
                             >
