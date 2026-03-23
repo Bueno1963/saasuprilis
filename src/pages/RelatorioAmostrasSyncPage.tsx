@@ -8,7 +8,63 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, ArrowDownUp, CheckCircle2, XCircle, Clock, Users, FlaskConical, Send, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+
 const RelatorioAmostrasSyncPage = () => {
+  const qc = useQueryClient();
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [receivingId, setReceivingId] = useState<string | null>(null);
+
+  const { data: integrations = [] } = useQuery({
+    queryKey: ["active-integrations"],
+    queryFn: async () => {
+      const { data } = await supabase.from("integrations").select("id, name").eq("status", "active").limit(10);
+      return data || [];
+    },
+  });
+
+  const handleForceSend = async (sample: any) => {
+    setSendingId(sample.id);
+    try {
+      const integration = integrations[0];
+      if (!integration) { toast.error("Nenhuma integração ativa encontrada"); return; }
+      await supabase.from("samples").update({ status: "processing" }).eq("id", sample.id);
+      await supabase.from("integration_sync_logs").insert({
+        integration_id: integration.id, status: "success", direction: "outbound",
+        source_system: "LIS", destination_system: integration.name,
+        message: `Envio manual forçado: amostra ${sample.barcode} — Setor: ${sample.sector}`,
+        records_created: 1, records_updated: 0, records_failed: 0, duration_ms: 0,
+      });
+      await supabase.from("integrations").update({ last_sync: new Date().toISOString() }).eq("id", integration.id);
+      qc.invalidateQueries({ queryKey: ["synced-samples-report"] });
+      qc.invalidateQueries({ queryKey: ["sync-logs-report"] });
+      toast.success(`Amostra ${sample.barcode} enviada para ${integration.name}`);
+    } catch (err: any) {
+      toast.error("Erro ao enviar: " + (err.message || "desconhecido"));
+    } finally { setSendingId(null); }
+  };
+
+  const handleForceReceive = async (sample: any) => {
+    setReceivingId(sample.id);
+    try {
+      const integration = integrations[0];
+      if (!integration) { toast.error("Nenhuma integração ativa encontrada"); return; }
+      const newStatus = sample.status === "analyzed" ? "completed" : "analyzed";
+      await supabase.from("samples").update({ status: newStatus }).eq("id", sample.id);
+      await supabase.from("integration_sync_logs").insert({
+        integration_id: integration.id, status: "success", direction: "inbound",
+        source_system: integration.name, destination_system: "LIS",
+        message: `Recebimento manual forçado: amostra ${sample.barcode} → status ${newStatus}`,
+        records_created: 0, records_updated: 1, records_failed: 0, duration_ms: 0,
+      });
+      await supabase.from("integrations").update({ last_sync: new Date().toISOString() }).eq("id", integration.id);
+      qc.invalidateQueries({ queryKey: ["synced-samples-report"] });
+      qc.invalidateQueries({ queryKey: ["sync-logs-report"] });
+      toast.success(`Dados recebidos para amostra ${sample.barcode}`);
+    } catch (err: any) {
+      toast.error("Erro ao receber: " + (err.message || "desconhecido"));
+    } finally { setReceivingId(null); }
+  };
+
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["sync-logs-report"],
     queryFn: async () => {
