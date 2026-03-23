@@ -223,9 +223,27 @@ const UsersSettings = ({ onBack }: Props) => {
                         </Select>
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openEdit(p)}>
+                              <Pencil className="h-4 w-4 mr-2" /> Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setConfirmAction({ userId: p.user_id, name: p.full_name || "Usuário", action: "suspend" })}>
+                              <Pause className="h-4 w-4 mr-2" /> Suspender
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setConfirmAction({ userId: p.user_id, name: p.full_name || "Usuário", action: "reactivate" })}>
+                              <Play className="h-4 w-4 mr-2" /> Reativar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setConfirmAction({ userId: p.user_id, name: p.full_name || "Usuário", action: "delete" })}>
+                              <Trash2 className="h-4 w-4 mr-2" /> Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
