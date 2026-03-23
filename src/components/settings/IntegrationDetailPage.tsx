@@ -64,6 +64,9 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
 
   const currentStatus = watch("status");
   const currentType = watch("type");
+  const [pollingEnabled, setPollingEnabled] = useState(false);
+
+  const polling = useIntegrationPolling(integrationId, pollingEnabled);
 
   const { data: integrationData } = useQuery({
     queryKey: ["integration-detail", integrationId],
