@@ -59,6 +59,7 @@ interface ValidationRow {
   lisName: string;
   equipCode: string;
   equipName: string;
+  examId?: string;
 }
 
 const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
