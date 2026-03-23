@@ -486,7 +486,6 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                                   lisCode: row.lisCode === "—" ? "" : row.lisCode,
                                   lisName: row.lisName === "Não cadastrado no LIS" ? "" : row.lisName,
                                   equipCode: row.equipCode,
-                                  equipName: row.equipName === "Sem correspondência" ? "" : row.equipName,
                                 });
                               }}
                             >
