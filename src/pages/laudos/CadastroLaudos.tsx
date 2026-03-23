@@ -546,7 +546,28 @@ const CadastroLaudos = () => {
               <Label className="text-xs">Ordem</Label>
               <Input type="number" value={paramForm.sort_order} onChange={(e) => setP("sort_order", Number(e.target.value))} />
             </div>
-          </div>
+            {/* Mapeamento Equipamento */}
+            <div className="pt-2 border-t border-border space-y-2">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mapeamento LIS ↔ Equipamento</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Código LIS</Label>
+                  <Input value={paramForm.lis_code} onChange={(e) => setP("lis_code", e.target.value)} placeholder="Ex: RBC" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Nome no LIS</Label>
+                  <Input value={paramForm.lis_name} onChange={(e) => setP("lis_name", e.target.value)} placeholder="Ex: Hemácias" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Código Equipamento</Label>
+                  <Input value={paramForm.equip_code} onChange={(e) => setP("equip_code", e.target.value)} placeholder="Ex: RBC" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Analito no Equipamento</Label>
+                  <Input value={paramForm.equip_analyte} onChange={(e) => setP("equip_analyte", e.target.value)} placeholder="Ex: Red Blood Cells" />
+                </div>
+              </div>
+            </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeParamDialog}>Cancelar</Button>
             <Button onClick={() => {
