@@ -31,26 +31,11 @@ const MAXBIO_ANALYTES: Record<string, string> = {
  * Codes correspond to the 17 parameters configured in the Hemograma (HEMO).
  */
 const MAXCELL_ANALYTES: Record<string, string> = {
-  // Eritrograma
-  RBC: "Hemácias em milhões",
-  HGB: "Hemoglobina",
-  HCT: "Hematócrito",
-  MCV: "VCM",
-  MCH: "HCM",
-  MCHC: "CHCM",
-  RDW: "RDW",
-  // Leucograma
-  WBC: "Leucócitos",
-  BAST: "Bastonetes",
-  SEG: "Segmentados",
-  NEU: "Neutrófilos",
-  EOS: "Eosinófilos",
-  BAS: "Basófilos",
-  LYM: "Linfócitos",
-  MON: "Monócitos",
-  // Plaquetas
-  PLT: "Contagem",
-  MPV: "VPM",
+  RBC: "RBC", HGB: "HGB", HCT: "HCT",
+  MCV: "MCV", MCH: "MCH", MCHC: "MCHC", RDW: "RDW",
+  WBC: "WBC", BAST: "BAST", SEG: "SEG",
+  NEU: "NEU", EOS: "EOS", BAS: "BAS",
+  LYM: "LYM", MON: "MON", PLT: "PLT", MPV: "MPV",
 };
 
 interface Props {
