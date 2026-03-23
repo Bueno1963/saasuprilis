@@ -377,8 +377,10 @@ export async function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     const DIFFERENTIAL_PARAMS = [
       "basófilos", "basofilos", "eosinófilos", "eosinofilos",
       "mielócitos", "mielocitos", "metamielócitos", "metamielocitos",
-      "bastões", "bastoes", "segmentados",
+      "bastões", "bastoes", "bastonetes", "segmentados",
+      "neutrófilos", "neutrofilos",
       "linfócitos típicos", "linfocitos tipicos", "linfócitos atípicos", "linfocitos atipicos",
+      "linfócitos", "linfocitos",
       "monócitos", "monocitos"
     ];
 
