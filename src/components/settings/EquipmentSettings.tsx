@@ -76,7 +76,14 @@ const EquipmentSettings = ({ onBack, onNavigateIntegrations }: Props) => {
             <p className="text-sm text-muted-foreground">Gerenciamento de analisadores</p>
           </div>
         </div>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Equipamento</Button>
+        <div className="flex items-center gap-2">
+          {onNavigateIntegrations && (
+            <Button variant="outline" onClick={onNavigateIntegrations}>
+              <Plug className="h-4 w-4 mr-2" />Interface com Terceiro
+            </Button>
+          )}
+          <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Equipamento</Button>
+        </div>
       </div>
 
       <Card>
