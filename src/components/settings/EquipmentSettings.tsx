@@ -101,6 +101,7 @@ const EquipmentSettings = ({ onBack }: Props) => {
                   <TableCell><Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status === "active" ? "Ativo" : "Inativo"}</Badge></TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" title="Biblioteca" onClick={() => { setLibraryEquip({ id: item.id, name: item.name }); setLibraryOpen(true); }}><BookOpen className="h-4 w-4 text-primary" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(item)}><Pencil className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => remove.mutate(item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
