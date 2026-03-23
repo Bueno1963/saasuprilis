@@ -208,23 +208,27 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                 const printContent = `
                   <html><head><title>Validação de Códigos — ${equipmentName}</title>
                   <style>
-                    body { font-family: Arial, sans-serif; font-size: 11px; padding: 20px; }
-                    h2 { font-size: 14px; margin-bottom: 4px; }
-                    p { color: #666; font-size: 10px; margin-bottom: 12px; }
-                    table { width: 100%; border-collapse: collapse; }
-                    th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; }
-                    th { background: #f5f5f5; font-weight: 600; }
+                    @page { size: A4 portrait; margin: 14mm; }
+                    body { font-family: Arial, sans-serif; font-size: 9px; padding: 0; margin: 0; }
+                    h2 { font-size: 13px; margin: 0 0 2px 0; }
+                    .subtitle { color: #666; font-size: 8px; margin-bottom: 8px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+                    th, td { border: 1px solid #ccc; padding: 3px 6px; text-align: left; font-size: 8px; }
+                    th { background: #f0f0f0; font-weight: 700; font-size: 8px; }
                     .matched { color: #16a34a; } .unmatched { color: #d97706; } .missing { color: #dc2626; }
-                    .stats { margin-bottom: 10px; font-size: 10px; }
+                    .stats { margin-bottom: 6px; font-size: 8px; display: flex; gap: 12px; }
+                    .footer { margin-top: 10px; font-size: 7px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 4px; }
                   </style></head><body>
                   <h2>Validação de Códigos — LIS ↔ ${equipmentName}</h2>
-                  <p>Gerado em ${new Date().toLocaleString("pt-BR")}</p>
-                  <div class="stats">✅ ${stats.matched} vinculados | ⚠️ ${stats.unmatchedLis} sem correspondência | ✕ ${stats.unmatchedEquip} sem cadastro</div>
-                  <table><thead><tr><th>Status</th><th>Código LIS</th><th>Nome no LIS</th><th>Código Equip.</th><th>Analito Equip.</th></tr></thead><tbody>
+                  <div class="subtitle">Gerado em ${new Date().toLocaleString("pt-BR")}</div>
+                  <div class="stats"><span>✅ ${stats.matched} vinculados</span><span>⚠️ ${stats.unmatchedLis} sem correspondência</span><span>✕ ${stats.unmatchedEquip} sem cadastro</span></div>
+                  <table><thead><tr><th style="width:8%">Status</th><th style="width:15%">Código LIS</th><th style="width:30%">Nome no LIS</th><th style="width:15%">Código Equip.</th><th style="width:32%">Analito Equip.</th></tr></thead><tbody>
                   ${filtered.map(r => `<tr><td>${r.status === "matched" ? '<span class="matched">✅</span>' : r.status === "unmatched_lis" ? '<span class="unmatched">⚠️</span>' : '<span class="missing">✕</span>'}</td><td>${r.lisCode}</td><td>${r.lisName}</td><td>${r.equipCode}</td><td>${r.equipName}</td></tr>`).join("")}
-                  </tbody></table></body></html>`;
+                  </tbody></table>
+                  <div class="footer">Documento gerado automaticamente pelo sistema LIS — Validação de interfaceamento</div>
+                  </body></html>`;
                 const w = window.open("", "_blank");
-                if (w) { w.document.write(printContent); w.document.close(); w.print(); }
+                if (w) { w.document.write(printContent); w.document.close(); setTimeout(() => w.print(), 300); }
               }}
             >
               <Printer className="h-3.5 w-3.5" />
