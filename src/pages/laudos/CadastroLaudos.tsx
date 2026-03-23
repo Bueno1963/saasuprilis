@@ -271,7 +271,7 @@ const CadastroLaudos = () => {
   };
   const openEditParam = (param: any) => {
     setEditingParamId(param.id);
-    setParamForm({ section: param.section || "", name: param.name, unit: param.unit || "", reference_range: param.reference_range || "", sort_order: param.sort_order ?? 0 });
+    setParamForm({ section: param.section || "", name: param.name, unit: param.unit || "", reference_range: param.reference_range || "", sort_order: param.sort_order ?? 0, lis_code: param.lis_code || "", lis_name: param.lis_name || "", equip_code: param.equip_code || "", equip_analyte: param.equip_analyte || "" });
     setParamDialogOpen(true);
   };
 
