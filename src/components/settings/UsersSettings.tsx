@@ -10,7 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, History, UserPlus, Pencil } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ArrowLeft, History, UserPlus, Pencil, MoreHorizontal, Pause, Play, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { type AppRole } from "@/lib/navigation";
 import CreateUserDialog from "./CreateUserDialog";
@@ -49,6 +51,8 @@ const UsersSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [editProfile, setEditProfile] = useState<EditProfile | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ userId: string; name: string; action: "suspend" | "reactivate" | "delete" } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ["all_profiles"],
@@ -137,6 +141,26 @@ const UsersSettings = ({ onBack }: Props) => {
     });
   };
 
+  const handleManageUser = async () => {
+    if (!confirmAction) return;
+    setActionLoading(true);
+    try {
+      const res = await supabase.functions.invoke("admin-manage-user", {
+        body: { action: confirmAction.action, user_id: confirmAction.userId },
+      });
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success(res.data?.message || "Ação realizada com sucesso!");
+      qc.invalidateQueries({ queryKey: ["all_profiles"] });
+      qc.invalidateQueries({ queryKey: ["all_tenant_members"] });
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao executar ação");
+    } finally {
+      setActionLoading(false);
+      setConfirmAction(null);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
@@ -199,9 +223,27 @@ const UsersSettings = ({ onBack }: Props) => {
                         </Select>
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openEdit(p)}>
+                              <Pencil className="h-4 w-4 mr-2" /> Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setConfirmAction({ userId: p.user_id, name: p.full_name || "Usuário", action: "suspend" })}>
+                              <Pause className="h-4 w-4 mr-2" /> Suspender
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setConfirmAction({ userId: p.user_id, name: p.full_name || "Usuário", action: "reactivate" })}>
+                              <Play className="h-4 w-4 mr-2" /> Reativar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setConfirmAction({ userId: p.user_id, name: p.full_name || "Usuário", action: "delete" })}>
+                              <Trash2 className="h-4 w-4 mr-2" /> Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -311,6 +353,34 @@ const UsersSettings = ({ onBack }: Props) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Confirm Suspend/Delete Dialog */}
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmAction?.action === "delete" ? "Excluir Usuário" : confirmAction?.action === "suspend" ? "Suspender Usuário" : "Reativar Usuário"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmAction?.action === "delete"
+                ? `Tem certeza que deseja excluir permanentemente "${confirmAction?.name}"? Esta ação não pode ser desfeita.`
+                : confirmAction?.action === "suspend"
+                ? `Deseja suspender o acesso de "${confirmAction?.name}"? O usuário não poderá fazer login até ser reativado.`
+                : `Deseja reativar o acesso de "${confirmAction?.name}"?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleManageUser}
+              disabled={actionLoading}
+              className={confirmAction?.action === "delete" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            >
+              {actionLoading ? "Aguarde..." : confirmAction?.action === "delete" ? "Excluir" : confirmAction?.action === "suspend" ? "Suspender" : "Reativar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
