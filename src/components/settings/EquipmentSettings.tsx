@@ -14,7 +14,7 @@ import { ArrowLeft, Plus, Pencil, Trash2, BookOpen } from "lucide-react";
 import EquipmentLibraryDialog from "./EquipmentLibraryDialog";
 import { useForm, Controller } from "react-hook-form";
 
-interface Props { onBack: () => void; }
+interface Props { onBack: () => void; onNavigateIntegrations?: () => void; }
 
 interface EquipForm {
   name: string; manufacturer: string; model: string; serial_number: string;
