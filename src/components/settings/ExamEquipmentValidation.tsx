@@ -362,7 +362,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                   <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                   <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                     Carregando parâmetros...
                   </TableCell>
                 </TableRow>
