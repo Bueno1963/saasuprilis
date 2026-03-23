@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.portal-doctor-access]
 verify_jwt = false
+
+[functions.lis-query]
+verify_jwt = false
