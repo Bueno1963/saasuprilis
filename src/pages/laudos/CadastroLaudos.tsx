@@ -39,7 +39,7 @@ const emptyExamForm: ExamForm = {
   code: "", name: "", material: "Sangue", method: "", unit: "",
   reference_range: "", equipment: "", turnaround_hours: 24, price: 0,
 };
-const emptyParamForm: ParamForm = { section: "", name: "", unit: "", reference_range: "", sort_order: 0 };
+const emptyParamForm: ParamForm = { section: "", name: "", unit: "", reference_range: "", sort_order: 0, lis_code: "", lis_name: "", equip_code: "", equip_analyte: "" };
 const emptyRefRangeForm: RefRangeForm = { age_group: "", gender: "Ambos", reference_value: "", sort_order: 0 };
 
 const EditableSelect = ({ value, onChange, options, placeholder }: {
