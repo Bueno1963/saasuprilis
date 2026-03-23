@@ -353,6 +353,34 @@ const UsersSettings = ({ onBack }: Props) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Confirm Suspend/Delete Dialog */}
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmAction?.action === "delete" ? "Excluir Usuário" : confirmAction?.action === "suspend" ? "Suspender Usuário" : "Reativar Usuário"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmAction?.action === "delete"
+                ? `Tem certeza que deseja excluir permanentemente "${confirmAction?.name}"? Esta ação não pode ser desfeita.`
+                : confirmAction?.action === "suspend"
+                ? `Deseja suspender o acesso de "${confirmAction?.name}"? O usuário não poderá fazer login até ser reativado.`
+                : `Deseja reativar o acesso de "${confirmAction?.name}"?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleManageUser}
+              disabled={actionLoading}
+              className={confirmAction?.action === "delete" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            >
+              {actionLoading ? "Aguarde..." : confirmAction?.action === "delete" ? "Excluir" : confirmAction?.action === "suspend" ? "Suspender" : "Reativar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
