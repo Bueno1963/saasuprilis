@@ -73,8 +73,8 @@ const EquipmentSettings = ({ onBack, onNavigateIntegrations }: Props) => {
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={onBack}><ArrowLeft className="h-4 w-4" /></Button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Equipamentos</h1>
-            <p className="text-sm text-muted-foreground">Gerenciamento de analisadores</p>
+            <h1 className="text-2xl font-bold text-foreground">Interface Terceirizada</h1>
+            <p className="text-sm text-muted-foreground">Gerenciamento de analisadores e protocolos de interfaceamento</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
