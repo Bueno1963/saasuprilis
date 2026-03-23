@@ -27,23 +27,30 @@ const MAXBIO_ANALYTES: Record<string, string> = {
 };
 
 /**
- * Known analyte codes for the MAXCELL 500D/500F analyzer (hematologia 5-diff).
- * Codes match the OBX-3 identifiers transmitted via HL7 ORU^R01.
+ * Known analyte codes for the MAXCELL 500D analyzer (hematologia).
+ * Codes correspond to the 17 parameters configured in the Hemograma (HEMO).
  */
 const MAXCELL_ANALYTES: Record<string, string> = {
-  WBC: "Leucócitos (WBC)", RBC: "Eritrócitos (RBC)", HGB: "Hemoglobina",
-  HCT: "Hematócrito", MCV: "VCM (Volume Corpuscular Médio)",
-  MCH: "HCM (Hemoglobina Corpuscular Média)", MCHC: "CHCM (Conc. Hb Corp. Média)",
-  RDW_CV: "RDW-CV", RDW_SD: "RDW-SD", PLT: "Plaquetas",
-  MPV: "Volume Plaquetário Médio (MPV)", PDW: "PDW (Amplitude Plaquetária)",
-  PCT: "Plaquetócrito (PCT)", "P-LCR": "P-LCR (Plaq. Gigantes %)",
-  NEU_ABS: "Neutrófilos (#)", NEU_PCT: "Neutrófilos (%)",
-  LYM_ABS: "Linfócitos (#)", LYM_PCT: "Linfócitos (%)",
-  MON_ABS: "Monócitos (#)", MON_PCT: "Monócitos (%)",
-  EOS_ABS: "Eosinófilos (#)", EOS_PCT: "Eosinófilos (%)",
-  BAS_ABS: "Basófilos (#)", BAS_PCT: "Basófilos (%)",
-  NRBC: "Eritroblastos (NRBC)", IG_ABS: "Granulócitos Imaturos (#)",
-  IG_PCT: "Granulócitos Imaturos (%)",
+  // Eritrograma
+  RBC: "Hemácias em milhões",
+  HGB: "Hemoglobina",
+  HCT: "Hematócrito",
+  MCV: "VCM",
+  MCH: "HCM",
+  MCHC: "CHCM",
+  RDW: "RDW",
+  // Leucograma
+  WBC: "Leucócitos",
+  BAST: "Bastonetes",
+  SEG: "Segmentados",
+  NEU: "Neutrófilos",
+  EOS: "Eosinófilos",
+  BAS: "Basófilos",
+  LYM: "Linfócitos",
+  MON: "Monócitos",
+  // Plaquetas
+  PLT: "Contagem",
+  MPV: "VPM",
 };
 
 interface Props {
