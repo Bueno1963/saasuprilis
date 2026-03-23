@@ -432,12 +432,11 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                                       setSaving(false);
                                       return;
                                     }
-                                    const { error } = await supabase.from("exam_parameters").insert({
+                                     const { error } = await supabase.from("exam_parameters").insert({
                                       exam_id: targetExam.id,
                                       name: editValues.lisName,
                                       lis_code: editValues.lisCode,
                                       lis_name: editValues.lisName,
-                                      equip_code: editValues.equipCode,
                                       equip_analyte: "",
                                       section: targetExam.sector || "",
                                       sort_order: params.length + 1,
