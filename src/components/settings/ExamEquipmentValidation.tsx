@@ -11,15 +11,19 @@ import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical } from "luci
  * Known analyte codes for the MaxBIO200B analyzer (bioquímica).
  */
 const MAXBIO_ANALYTES: Record<string, string> = {
-  GLU: "Glicose", ALT: "ALT (TGP)", AST: "AST (TGO)", TP: "Proteínas Totais",
-  ALB: "Albumina", BUN: "Ureia", CREA: "Creatinina", UA: "Ácido Úrico",
-  CHOL: "Colesterol Total", TG: "Triglicerídeos", HDL: "HDL-Colesterol",
-  LDL: "LDL-Colesterol", VLDL: "VLDL-Colesterol", TBIL: "Bilirrubina Total",
-  DBIL: "Bilirrubina Direta", ALP: "Fosfatase Alcalina", GGT: "Gama-GT",
+  GLU: "Glicose", GLI: "Glicose", ALT: "ALT (TGP)", AST: "AST (TGO)", TP: "Proteínas Totais",
+  ALB: "Albumina", BUN: "Ureia", URE: "Ureia", CREA: "Creatinina", CRE: "Creatinina",
+  UA: "Ácido Úrico", AUR: "Ácido Úrico",
+  CHOL: "Colesterol Total", COL: "Colesterol Total", TG: "Triglicerídeos", TRI: "Triglicerídeos",
+  HDL: "HDL-Colesterol", LDL: "LDL-Colesterol", VLDL: "VLDL-Colesterol",
+  TBIL: "Bilirrubina Total", "BIL T": "Bilirrubina Total",
+  DBIL: "Bilirrubina Direta", "BIL D": "Bilirrubina Direta",
+  ALP: "Fosfatase Alcalina", GGT: "Gama-GT", GT: "Gama-GT",
   AMY: "Amilase", LIP: "Lipase", CK: "Creatina Quinase", CKMB: "CK-MB",
   LDH: "Desidrogenase Láctica", FE: "Ferro Sérico", CA: "Cálcio", MG: "Magnésio",
-  P: "Fósforo", NA: "Sódio", K: "Potássio", CL: "Cloreto",
-  CRP: "PCR (Proteína C Reativa)", RF: "Fator Reumatoide", ASO: "ASLO",
+  P: "Fósforo", FOS: "Fósforo", NA: "Sódio", K: "Potássio", CL: "Cloreto",
+  CRP: "PCR (Proteína C Reativa)", PCR: "PCR (Proteína C Reativa)",
+  RF: "Fator Reumatoide", ASO: "ASLO",
   HBA1C: "Hemoglobina Glicada",
 };
 
