@@ -51,7 +51,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
-  const [editValues, setEditValues] = useState({ lisCode: "", lisName: "" });
+  const [editValues, setEditValues] = useState({ lisCode: "", lisName: "", equipCode: "" });
   const [saving, setSaving] = useState(false);
   const [autoRegistering, setAutoRegistering] = useState(false);
   const isMaxBio = /maxbio/i.test(equipmentName);
@@ -177,7 +177,8 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
      return rows.filter(
       (r) =>
         r.lisCode.toLowerCase().includes(s) ||
-        r.lisName.toLowerCase().includes(s)
+        r.lisName.toLowerCase().includes(s) ||
+        r.equipCode.toLowerCase().includes(s)
     );
   }, [rows, search]);
 
@@ -303,8 +304,8 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                     <h2>Validação de Códigos — LIS ↔ ${equipmentName}</h2>
                     <div class="subtitle">Gerado em ${new Date().toLocaleString("pt-BR")}</div>
                     <div class="stats"><span>✅ ${stats.matched} vinculados</span><span>⚠️ ${stats.unmatchedLis} sem correspondência</span><span>✕ ${stats.unmatchedEquip} sem cadastro</span></div>
-                     <table><thead><tr><th style="width:10%">Status</th><th style="width:30%">Código LIS</th><th style="width:60%">Nome no LIS</th></tr></thead><tbody>
-                     ${filtered.map(r => `<tr><td>${r.status === "matched" ? '<span class="matched">✅</span>' : r.status === "unmatched_lis" ? '<span class="unmatched">⚠️</span>' : '<span class="missing">✕</span>'}</td><td>${r.lisCode}</td><td>${r.lisName}</td></tr>`).join("")}
+                     <table><thead><tr><th style="width:10%">Status</th><th style="width:20%">Código LIS</th><th style="width:40%">Nome no LIS</th><th style="width:30%">Código Equip.</th></tr></thead><tbody>
+                     ${filtered.map(r => `<tr><td>${r.status === "matched" ? '<span class="matched">✅</span>' : r.status === "unmatched_lis" ? '<span class="unmatched">⚠️</span>' : '<span class="missing">✕</span>'}</td><td>${r.lisCode}</td><td>${r.lisName}</td><td>${r.equipCode}</td></tr>`).join("")}
                     </tbody></table>
                     <div class="footer">Documento gerado automaticamente pelo sistema LIS — Validação de interfaceamento</div>
                     </body></html>`;
@@ -354,19 +355,20 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                 <TableHead className="w-10">Status</TableHead>
                 <TableHead>Código LIS</TableHead>
                 <TableHead>Nome no LIS</TableHead>
+                <TableHead>Código Equipamento</TableHead>
                 <TableHead className="w-20 text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                   <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                   <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                     Carregando parâmetros...
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                     Nenhum resultado encontrado.
                   </TableCell>
                 </TableRow>
@@ -403,6 +405,13 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                           <span className="text-xs">{row.lisName}</span>
                         )}
                       </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <Input value={editValues.equipCode} onChange={(e) => setEditValues(v => ({ ...v, equipCode: e.target.value }))} className="h-7 text-xs font-mono w-24" />
+                        ) : (
+                          <Badge variant="outline" className="font-mono text-xs">{row.equipCode}</Badge>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         {isEditing ? (
                           <div className="flex items-center justify-end gap-1">
@@ -420,6 +429,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                                       .update({
                                        lis_code: editValues.lisCode,
                                         lis_name: editValues.lisName,
+                                        equip_code: editValues.equipCode,
                                       })
                                       .eq("id", row.paramId);
                                     if (error) throw error;
@@ -437,6 +447,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                                       name: editValues.lisName,
                                       lis_code: editValues.lisCode,
                                       lis_name: editValues.lisName,
+                                      equip_code: editValues.equipCode,
                                       equip_analyte: "",
                                       section: targetExam.sector || "",
                                       sort_order: params.length + 1,
@@ -470,6 +481,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                                 setEditValues({
                                   lisCode: row.lisCode === "—" ? "" : row.lisCode,
                                   lisName: row.lisName === "Não cadastrado no LIS" ? "" : row.lisName,
+                                  equipCode: row.equipCode,
                                 });
                               }}
                             >
