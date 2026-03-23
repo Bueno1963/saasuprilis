@@ -505,7 +505,7 @@ const CadastroLaudos = () => {
 
       {/* Parameter Dialog */}
       <Dialog open={paramDialogOpen} onOpenChange={setParamDialogOpen}>
-        <DialogContent className="max-w-[18rem]">
+        <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>{editingParamId ? "Editar Parâmetro" : "Novo Parâmetro"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
