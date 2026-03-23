@@ -154,6 +154,15 @@ const EquipmentSettings = ({ onBack }: Props) => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {libraryEquip && (
+        <EquipmentLibraryDialog
+          open={libraryOpen}
+          onOpenChange={setLibraryOpen}
+          equipmentId={libraryEquip.id}
+          equipmentName={libraryEquip.name}
+        />
+      )}
     </div>
   );
 };
