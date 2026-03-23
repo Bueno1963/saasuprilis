@@ -149,11 +149,18 @@ const SaaSLandingPage = () => {
             <a href="#planos" className="text-muted-foreground hover:text-foreground transition-colors">Planos</a>
             <a href="#contato" className="text-muted-foreground hover:text-foreground transition-colors">Contato</a>
           </div>
-          <a href="#contato">
-            <Button size="sm" className="rounded-md px-5 text-sm bg-[hsl(170,55%,45%)] hover:bg-[hsl(170,55%,38%)] text-white font-semibold">
-              Começar Grátis
-            </Button>
-          </a>
+          <div className="flex items-center gap-3">
+            <Link to="/auth">
+              <Button variant="outline" size="sm" className="rounded-md px-5 text-sm font-semibold border-[hsl(210,50%,25%)] text-[hsl(210,50%,25%)] hover:bg-[hsl(210,50%,25%)] hover:text-white">
+                Entrar
+              </Button>
+            </Link>
+            <a href="#contato">
+              <Button size="sm" className="rounded-md px-5 text-sm bg-[hsl(170,55%,45%)] hover:bg-[hsl(170,55%,38%)] text-white font-semibold">
+                Começar Grátis
+              </Button>
+            </a>
+          </div>
         </div>
       </nav>
 
