@@ -403,13 +403,6 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                           <span className="text-xs">{row.lisName}</span>
                         )}
                       </TableCell>
-                      <TableCell>
-                        {isEditing ? (
-                          <Input value={editValues.equipCode} onChange={(e) => setEditValues(v => ({ ...v, equipCode: e.target.value }))} className="h-7 text-xs font-mono w-24" />
-                        ) : (
-                          <Badge variant="outline" className="font-mono text-xs">{row.equipCode}</Badge>
-                        )}
-                      </TableCell>
                       <TableCell className="text-right">
                         {isEditing ? (
                           <div className="flex items-center justify-end gap-1">
