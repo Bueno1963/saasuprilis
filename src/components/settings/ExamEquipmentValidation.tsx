@@ -63,9 +63,23 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
   const { data: params = [], isLoading } = useQuery({
     queryKey: ["exam-params-for-validation", equipmentName],
     queryFn: async () => {
+      // First get exam IDs that belong to this equipment
+      const sectorFilter = isMaxBio ? "Bioquímica" : isMaxCell ? "Hematologia" : null;
+      let examQuery = supabase
+        .from("exam_catalog")
+        .select("id")
+        .eq("status", "active");
+      if (sectorFilter) {
+        examQuery = examQuery.eq("sector", sectorFilter);
+      }
+      const { data: examsForSector } = await examQuery;
+      if (!examsForSector || examsForSector.length === 0) return [];
+      
+      const examIds = examsForSector.map(e => e.id);
       const { data, error } = await supabase
         .from("exam_parameters")
         .select("id, exam_id, name, lis_code, lis_name, equip_code, equip_analyte, section")
+        .in("exam_id", examIds)
         .order("equip_code");
       if (error) throw error;
       return data || [];
