@@ -51,6 +51,8 @@ const UsersSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [editProfile, setEditProfile] = useState<EditProfile | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ userId: string; name: string; action: "suspend" | "reactivate" | "delete" } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ["all_profiles"],
