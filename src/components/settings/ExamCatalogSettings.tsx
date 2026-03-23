@@ -57,6 +57,8 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
   const [bulkEquipOpen, setBulkEquipOpen] = useState(false);
   const [bulkEquipValue, setBulkEquipValue] = useState("");
   const [conditionsDialog, setConditionsDialog] = useState<{ open: boolean; sector: string }>({ open: false, sector: "" });
+  const [editingSector, setEditingSector] = useState<string | null>(null);
+  const [editingSectorName, setEditingSectorName] = useState("");
   const { register, handleSubmit, reset, control } = useForm<ExamForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
