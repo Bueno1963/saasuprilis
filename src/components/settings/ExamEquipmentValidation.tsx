@@ -434,7 +434,6 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                                         lis_code: editValues.lisCode,
                                         lis_name: editValues.lisName,
                                         equip_code: editValues.equipCode,
-                                        equip_analyte: editValues.equipName,
                                       })
                                       .eq("id", row.paramId);
                                     if (error) throw error;
