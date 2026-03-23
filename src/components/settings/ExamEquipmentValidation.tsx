@@ -62,6 +62,7 @@ interface ValidationRow {
 }
 
 const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
 
   const isMaxBio = /maxbio/i.test(equipmentName);
