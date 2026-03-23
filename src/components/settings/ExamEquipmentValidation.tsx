@@ -18,7 +18,7 @@ const MAXBIO_ANALYTES: Record<string, string> = {
   AUR: "Ácido Úrico",
   COL: "Colesterol Total", TRI: "Triglicerídeos",
   HDL: "HDL-Colesterol", LDH: "Desidrogenase Láctica",
-  "BIL T": "Bilirrubina Total", "BIL D": "Bilirrubina Direta",
+  BILT: "Bilirrubina Total", BILD: "Bilirrubina Direta",
   ALP: "Fosfatase Alcalina", GT: "Gama-GT",
   AMY: "Amilase", LIP: "Lipase",
   FOS: "Fósforo", CA: "Cálcio", MG: "Magnésio",
