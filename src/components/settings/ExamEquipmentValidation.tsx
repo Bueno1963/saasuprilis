@@ -246,43 +246,121 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     Carregando catálogo de exames...
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     Nenhum resultado encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((row, i) => (
-                  <TableRow
-                    key={`${row.lisCode}-${row.equipCode}-${i}`}
-                    className={
-                      row.status === "matched"
-                        ? ""
-                        : row.status === "unmatched_equip"
-                        ? "bg-destructive/5"
-                        : "bg-amber-500/5"
-                    }
-                  >
-                    <TableCell>
-                      {row.status === "matched" && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
-                      {row.status === "unmatched_lis" && <AlertTriangle className="h-4 w-4 text-amber-500" />}
-                      {row.status === "unmatched_equip" && <XCircle className="h-4 w-4 text-destructive" />}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{row.lisCode}</TableCell>
-                    <TableCell className="text-xs">{row.lisName}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="font-mono text-xs">
-                        {row.equipCode}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{row.equipName}</TableCell>
-                  </TableRow>
-                ))
+                filtered.map((row, i) => {
+                  const isEditing = editingIdx === i;
+                  return (
+                    <TableRow
+                      key={`${row.lisCode}-${row.equipCode}-${i}`}
+                      className={
+                        row.status === "matched"
+                          ? ""
+                          : row.status === "unmatched_equip"
+                          ? "bg-destructive/5"
+                          : "bg-amber-500/5"
+                      }
+                    >
+                      <TableCell>
+                        {row.status === "matched" && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
+                        {row.status === "unmatched_lis" && <AlertTriangle className="h-4 w-4 text-amber-500" />}
+                        {row.status === "unmatched_equip" && <XCircle className="h-4 w-4 text-destructive" />}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <Input value={editValues.lisCode} onChange={(e) => setEditValues(v => ({ ...v, lisCode: e.target.value }))} className="h-7 text-xs font-mono w-24" />
+                        ) : (
+                          <span className="font-mono text-xs">{row.lisCode}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <Input value={editValues.lisName} onChange={(e) => setEditValues(v => ({ ...v, lisName: e.target.value }))} className="h-7 text-xs w-40" />
+                        ) : (
+                          <span className="text-xs">{row.lisName}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <Input value={editValues.equipCode} onChange={(e) => setEditValues(v => ({ ...v, equipCode: e.target.value }))} className="h-7 text-xs font-mono w-24" />
+                        ) : (
+                          <Badge variant="outline" className="font-mono text-xs">{row.equipCode}</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <Input value={editValues.equipName} onChange={(e) => setEditValues(v => ({ ...v, equipName: e.target.value }))} className="h-7 text-xs w-40" />
+                        ) : (
+                          <span className="text-xs text-muted-foreground">{row.equipName}</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {isEditing ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              disabled={saving}
+                              onClick={async () => {
+                                if (!row.examId) {
+                                  toast.error("Este registro não pode ser editado (sem ID)");
+                                  return;
+                                }
+                                setSaving(true);
+                                const { error } = await supabase
+                                  .from("exam_catalog")
+                                  .update({ code: editValues.lisCode, name: editValues.lisName })
+                                  .eq("id", row.examId);
+                                setSaving(false);
+                                if (error) {
+                                  toast.error("Erro ao salvar: " + error.message);
+                                } else {
+                                  toast.success("Registro atualizado com sucesso");
+                                  setEditingIdx(null);
+                                  queryClient.invalidateQueries({ queryKey: ["exam-catalog-for-validation", equipmentName] });
+                                }
+                              }}
+                            >
+                              <Save className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditingIdx(null)}>
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          row.examId && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              onClick={() => {
+                                setEditingIdx(i);
+                                setEditValues({
+                                  lisCode: row.lisCode,
+                                  lisName: row.lisName,
+                                  equipCode: row.equipCode,
+                                  equipName: row.equipName,
+                                });
+                              }}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                          )
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
