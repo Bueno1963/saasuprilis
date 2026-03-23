@@ -192,6 +192,23 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const renameSector = useMutation({
+    mutationFn: async ({ oldName, newName }: { oldName: string; newName: string }) => {
+      const ids = items.filter(i => i.sector === oldName).map(i => i.id);
+      if (ids.length === 0) return;
+      const { error } = await supabase.from("exam_catalog").update({ sector: newName }).in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["exam_catalog"] });
+      if (activeSector === vars.oldName) setActiveSector(vars.newName);
+      setEditingSector(null);
+      setEditingSectorName("");
+      toast.success("Setor renomeado!");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
