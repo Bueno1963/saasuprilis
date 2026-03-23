@@ -93,7 +93,9 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
         .from("exam_catalog")
         .select("id, code, name, sector, status, equipment")
         .eq("status", "active");
-      if (isSupported) {
+      if (isMaxBio) {
+        query = query.eq("sector", "Bioquímica");
+      } else if (isSupported) {
         query = query.ilike("equipment", `%${equipmentName}%`);
       }
       const { data, error } = await query.order("code");
@@ -102,7 +104,18 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
     },
   });
 
-  const analyteMap = isMaxBio ? MAXBIO_ANALYTES : isMaxCell ? MAXCELL_ANALYTES : {};
+  // Build analyte map dynamically from exam_catalog for MaxBIO
+  const analyteMap = useMemo<Record<string, string>>(() => {
+    if (isMaxBio) {
+      const map: Record<string, string> = {};
+      for (const exam of exams) {
+        if (exam.code) map[exam.code] = exam.name;
+      }
+      return map;
+    }
+    if (isMaxCell) return MAXCELL_ANALYTES;
+    return {};
+  }, [isMaxBio, isMaxCell, exams]);
 
   const rows = useMemo<ValidationRow[]>(() => {
     const result: ValidationRow[] = [];
