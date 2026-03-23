@@ -452,7 +452,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                                       lis_code: editValues.lisCode,
                                       lis_name: editValues.lisName,
                                       equip_code: editValues.equipCode,
-                                      equip_analyte: editValues.equipName,
+                                      equip_analyte: "",
                                       section: targetExam.sector || "",
                                       sort_order: params.length + 1,
                                     });
