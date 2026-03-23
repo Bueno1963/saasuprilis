@@ -485,22 +485,62 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                             </Button>
                           </div>
                         ) : (
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7"
-                            onClick={() => {
-                              setEditingIdx(i);
-                              setEditValues({
-                                lisCode: row.lisCode === "—" ? "" : row.lisCode,
-                                lisName: row.lisName === "Não cadastrado no LIS" ? "" : row.lisName,
-                                equipCode: row.equipCode,
-                                equipName: row.equipName === "Sem correspondência" ? "" : row.equipName,
-                              });
-                            }}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              onClick={() => {
+                                setEditingIdx(i);
+                                setEditValues({
+                                  lisCode: row.lisCode === "—" ? "" : row.lisCode,
+                                  lisName: row.lisName === "Não cadastrado no LIS" ? "" : row.lisName,
+                                  equipCode: row.equipCode,
+                                  equipName: row.equipName === "Sem correspondência" ? "" : row.equipName,
+                                });
+                              }}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            {row.paramId && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Excluir parâmetro</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Deseja excluir o parâmetro <strong>{row.lisName}</strong> ({row.equipCode})? Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      onClick={async () => {
+                                        try {
+                                          const { error } = await supabase
+                                            .from("exam_parameters")
+                                            .delete()
+                                            .eq("id", row.paramId!);
+                                          if (error) throw error;
+                                          toast.success("Parâmetro excluído com sucesso");
+                                          queryClient.invalidateQueries({ queryKey: ["exam-params-for-validation", equipmentName] });
+                                        } catch (err: any) {
+                                          toast.error("Erro ao excluir: " + err.message);
+                                        }
+                                      }}
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
                         )}
                       </TableCell>
                     </TableRow>
