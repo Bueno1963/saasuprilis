@@ -448,7 +448,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                                     }
                                     const { error } = await supabase.from("exam_parameters").insert({
                                       exam_id: targetExam.id,
-                                      name: editValues.equipName || editValues.lisName,
+                                      name: editValues.lisName,
                                       lis_code: editValues.lisCode,
                                       lis_name: editValues.lisName,
                                       equip_code: editValues.equipCode,
