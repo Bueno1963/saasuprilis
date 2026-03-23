@@ -568,6 +568,7 @@ const CadastroLaudos = () => {
                 </div>
               </div>
             </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeParamDialog}>Cancelar</Button>
             <Button onClick={() => {
