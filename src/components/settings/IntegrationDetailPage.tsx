@@ -153,8 +153,8 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
               <form onSubmit={handleSubmit((v) => save.mutate(v))} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label>Nome da Integração *</Label>
-                    <Input {...register("name", { required: true })} placeholder="Ex: Analisador Bioquímico XYZ" />
+                    <Label>Equipamento *</Label>
+                    <Input {...register("name", { required: true })} placeholder="Ex: MaxBIO200B, MaxCell Dymind, etc." />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Tipo</Label>
