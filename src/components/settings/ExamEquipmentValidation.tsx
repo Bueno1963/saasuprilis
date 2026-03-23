@@ -20,24 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
-const MAXBIO_ANALYTES: Record<string, string> = {
-  ALB: "Albumina", ALP: "Fosfatase Alcalina", ALT: "TGP (ALT)", AMY: "Amilase",
-  ASO: "ASO (TURBID)", AST: "TGO (AST)", AUR: "Ácido Úrico",
-  BILD: "Bilirruina Direta", BILT: "Bilirruina Toal",
-  BUN: "Ureia", Ca: "Calcio", CA: "Cálcio",
-  CHOL: "Colesterol Total", CK: "Creatina Quinase", CKMB: "CK-MB",
-  COL: "Colesterol Total", CRE: "Creatinina", CREA: "Creatinina",
-  CRP: "PCR (Proteína C Reativa)", DBIL: "Bilirrubina Direta",
-  FE: "Ferro Sérico", FOS: "Fosforo", GGT: "Gama-GT",
-  GLI: "Glicose", GLU: "Glicose", GT: "Gama GT",
-  HBA1C: "Hemoglobina Glicada", HDL: "Colesterol HDL",
-  LDH: "LDH",
-  Lip: "Lipase", LIP: "Lipase", Mg: "Magnesio", MG: "Magnésio",
-  NA: "Sódio", P: "Fósforo", PCR: "Proteína C Reativa",
-  RF: "Fator Reumatoide", TBIL: "Bilirrubina Total",
-  TG: "Triglicerídeos", TRI: "Triglicerídeos",
-  UA: "Ácido Úrico", URE: "Ureia", VLDL: "VLDL-Colesterol",
-};
+// MaxBIO analytes are now loaded dynamically from exam_catalog
 
 const MAXCELL_ANALYTES: Record<string, string> = {
   RBC: "RBC", HGB: "HGB", HCT: "HCT",
@@ -110,7 +93,9 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
         .from("exam_catalog")
         .select("id, code, name, sector, status, equipment")
         .eq("status", "active");
-      if (isSupported) {
+      if (isMaxBio) {
+        query = query.eq("sector", "Bioquímica");
+      } else if (isSupported) {
         query = query.ilike("equipment", `%${equipmentName}%`);
       }
       const { data, error } = await query.order("code");
@@ -119,7 +104,18 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
     },
   });
 
-  const analyteMap = isMaxBio ? MAXBIO_ANALYTES : isMaxCell ? MAXCELL_ANALYTES : {};
+  // Build analyte map dynamically from exam_catalog for MaxBIO
+  const analyteMap = useMemo<Record<string, string>>(() => {
+    if (isMaxBio) {
+      const map: Record<string, string> = {};
+      for (const exam of exams) {
+        if (exam.code) map[exam.code] = exam.name;
+      }
+      return map;
+    }
+    if (isMaxCell) return MAXCELL_ANALYTES;
+    return {};
+  }, [isMaxBio, isMaxCell, exams]);
 
   const rows = useMemo<ValidationRow[]>(() => {
     const result: ValidationRow[] = [];
