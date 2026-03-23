@@ -110,7 +110,11 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
       if (!groups[sector]) groups[sector] = [];
       groups[sector].push(item);
     });
-    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+    // Sort exams alphabetically within each sector
+    for (const key of Object.keys(groups)) {
+      groups[key].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    }
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b, 'pt-BR'));
   }, [filtered]);
 
   const groupedByEquipment = useMemo(() => {
@@ -120,7 +124,10 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
       if (!groups[eq]) groups[eq] = [];
       groups[eq].push(item);
     });
-    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+    for (const key of Object.keys(groups)) {
+      groups[key].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    }
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b, 'pt-BR'));
   }, [filtered]);
 
   const equipmentCounts = useMemo(() => {
