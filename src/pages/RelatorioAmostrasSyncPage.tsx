@@ -1,12 +1,70 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, ArrowDownUp, CheckCircle2, XCircle, Clock, Users, FlaskConical } from "lucide-react";
+import { BarChart3, ArrowDownUp, CheckCircle2, XCircle, Clock, Users, FlaskConical, Send, Download } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
 
 const RelatorioAmostrasSyncPage = () => {
+  const qc = useQueryClient();
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [receivingId, setReceivingId] = useState<string | null>(null);
+
+  const { data: integrations = [] } = useQuery({
+    queryKey: ["active-integrations"],
+    queryFn: async () => {
+      const { data } = await supabase.from("integrations").select("id, name").eq("status", "active").limit(10);
+      return data || [];
+    },
+  });
+
+  const handleForceSend = async (sample: any) => {
+    setSendingId(sample.id);
+    try {
+      const integration = integrations[0];
+      if (!integration) { toast.error("Nenhuma integração ativa encontrada"); return; }
+      await supabase.from("samples").update({ status: "processing" }).eq("id", sample.id);
+      await supabase.from("integration_sync_logs").insert({
+        integration_id: integration.id, status: "success", direction: "outbound",
+        source_system: "LIS", destination_system: integration.name,
+        message: `Envio manual forçado: amostra ${sample.barcode} — Setor: ${sample.sector}`,
+        records_created: 1, records_updated: 0, records_failed: 0, duration_ms: 0,
+      });
+      await supabase.from("integrations").update({ last_sync: new Date().toISOString() }).eq("id", integration.id);
+      qc.invalidateQueries({ queryKey: ["synced-samples-report"] });
+      qc.invalidateQueries({ queryKey: ["sync-logs-report"] });
+      toast.success(`Amostra ${sample.barcode} enviada para ${integration.name}`);
+    } catch (err: any) {
+      toast.error("Erro ao enviar: " + (err.message || "desconhecido"));
+    } finally { setSendingId(null); }
+  };
+
+  const handleForceReceive = async (sample: any) => {
+    setReceivingId(sample.id);
+    try {
+      const integration = integrations[0];
+      if (!integration) { toast.error("Nenhuma integração ativa encontrada"); return; }
+      const newStatus = sample.status === "analyzed" ? "completed" : "analyzed";
+      await supabase.from("samples").update({ status: newStatus }).eq("id", sample.id);
+      await supabase.from("integration_sync_logs").insert({
+        integration_id: integration.id, status: "success", direction: "inbound",
+        source_system: integration.name, destination_system: "LIS",
+        message: `Recebimento manual forçado: amostra ${sample.barcode} → status ${newStatus}`,
+        records_created: 0, records_updated: 1, records_failed: 0, duration_ms: 0,
+      });
+      await supabase.from("integrations").update({ last_sync: new Date().toISOString() }).eq("id", integration.id);
+      qc.invalidateQueries({ queryKey: ["synced-samples-report"] });
+      qc.invalidateQueries({ queryKey: ["sync-logs-report"] });
+      toast.success(`Dados recebidos para amostra ${sample.barcode}`);
+    } catch (err: any) {
+      toast.error("Erro ao receber: " + (err.message || "desconhecido"));
+    } finally { setReceivingId(null); }
+  };
+
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["sync-logs-report"],
     queryFn: async () => {
@@ -183,22 +241,28 @@ const RelatorioAmostrasSyncPage = () => {
                         <TableCell className="text-sm font-mono">{orderNumber}</TableCell>
                         <TableCell className="text-sm">{exams.join(", ") || "—"}</TableCell>
                         <TableCell>
-                          {outboundLog ? (
-                            <Badge variant={outboundLog.status === "success" ? "default" : "destructive"} className="text-xs">
-                              {outboundLog.status === "success" ? "✓ Enviado" : "✗ Erro"}
-                            </Badge>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
+                          <Button
+                            size="sm"
+                            variant={outboundLog?.status === "success" ? "secondary" : "default"}
+                            className="gap-1 text-xs h-7"
+                            disabled={sendingId === s.id}
+                            onClick={() => handleForceSend(s)}
+                          >
+                            <Send className="h-3 w-3" />
+                            {outboundLog?.status === "success" ? "Reenviar" : "Enviar"}
+                          </Button>
                         </TableCell>
                         <TableCell>
-                          {inboundLog ? (
-                            <Badge variant={inboundLog.status === "success" ? "default" : "destructive"} className="text-xs">
-                              {inboundLog.status === "success" ? "✓ Recebido" : "✗ Erro"}
-                            </Badge>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
+                          <Button
+                            size="sm"
+                            variant={inboundLog?.status === "success" ? "secondary" : "outline"}
+                            className="gap-1 text-xs h-7"
+                            disabled={receivingId === s.id}
+                            onClick={() => handleForceReceive(s)}
+                          >
+                            <Download className="h-3 w-3" />
+                            {inboundLog?.status === "success" ? "Recebido ✓" : "Receber"}
+                          </Button>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
                           {sampleLogs.length > 0
