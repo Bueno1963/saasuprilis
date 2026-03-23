@@ -106,6 +106,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
           lisName: exam.name,
           equipCode: code,
           equipName: analyteMap[code],
+          examId: exam.id,
         });
         matchedEquipCodes.add(code);
       } else {
