@@ -116,6 +116,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
           lisName: exam.name,
           equipCode: "—",
           equipName: "Sem correspondência",
+          examId: exam.id,
         });
       }
     }
