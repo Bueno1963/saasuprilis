@@ -174,11 +174,10 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
   const filtered = useMemo(() => {
     if (!search) return rows;
     const s = search.toLowerCase();
-    return rows.filter(
+     return rows.filter(
       (r) =>
         r.lisCode.toLowerCase().includes(s) ||
-        r.lisName.toLowerCase().includes(s) ||
-        r.equipCode.toLowerCase().includes(s)
+        r.lisName.toLowerCase().includes(s)
     );
   }, [rows, search]);
 
