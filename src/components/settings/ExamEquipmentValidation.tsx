@@ -308,8 +308,8 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                     <h2>Validação de Códigos — LIS ↔ ${equipmentName}</h2>
                     <div class="subtitle">Gerado em ${new Date().toLocaleString("pt-BR")}</div>
                     <div class="stats"><span>✅ ${stats.matched} vinculados</span><span>⚠️ ${stats.unmatchedLis} sem correspondência</span><span>✕ ${stats.unmatchedEquip} sem cadastro</span></div>
-                    <table><thead><tr><th style="width:8%">Status</th><th style="width:15%">Código LIS</th><th style="width:30%">Nome no LIS</th><th style="width:15%">Código Equip.</th><th style="width:32%">Analito Equip.</th></tr></thead><tbody>
-                    ${filtered.map(r => `<tr><td>${r.status === "matched" ? '<span class="matched">✅</span>' : r.status === "unmatched_lis" ? '<span class="unmatched">⚠️</span>' : '<span class="missing">✕</span>'}</td><td>${r.lisCode}</td><td>${r.lisName}</td><td>${r.equipCode}</td><td>${r.equipName}</td></tr>`).join("")}
+                     <table><thead><tr><th style="width:10%">Status</th><th style="width:20%">Código LIS</th><th style="width:40%">Nome no LIS</th><th style="width:30%">Código Equip.</th></tr></thead><tbody>
+                     ${filtered.map(r => `<tr><td>${r.status === "matched" ? '<span class="matched">✅</span>' : r.status === "unmatched_lis" ? '<span class="unmatched">⚠️</span>' : '<span class="missing">✕</span>'}</td><td>${r.lisCode}</td><td>${r.lisName}</td><td>${r.equipCode}</td></tr>`).join("")}
                     </tbody></table>
                     <div class="footer">Documento gerado automaticamente pelo sistema LIS — Validação de interfaceamento</div>
                     </body></html>`;
