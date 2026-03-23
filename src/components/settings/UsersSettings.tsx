@@ -141,6 +141,26 @@ const UsersSettings = ({ onBack }: Props) => {
     });
   };
 
+  const handleManageUser = async () => {
+    if (!confirmAction) return;
+    setActionLoading(true);
+    try {
+      const res = await supabase.functions.invoke("admin-manage-user", {
+        body: { action: confirmAction.action, user_id: confirmAction.userId },
+      });
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success(res.data?.message || "Ação realizada com sucesso!");
+      qc.invalidateQueries({ queryKey: ["all_profiles"] });
+      qc.invalidateQueries({ queryKey: ["all_tenant_members"] });
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao executar ação");
+    } finally {
+      setActionLoading(false);
+      setConfirmAction(null);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
