@@ -78,9 +78,19 @@ const EquipmentSettings = ({ onBack, onNavigateIntegrations }: Props) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              const baseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+              generateLisIntegrationGuidePdf(baseUrl);
+              toast.success("PDF do Guia de Integração gerado com sucesso!");
+            }}
+          >
+            <FileText className="h-4 w-4 mr-2" />Interface com Terceiro
+          </Button>
           {onNavigateIntegrations && (
             <Button variant="outline" onClick={onNavigateIntegrations}>
-              <Plug className="h-4 w-4 mr-2" />Interface com Terceiro
+              <Plug className="h-4 w-4 mr-2" />Integrações
             </Button>
           )}
           <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Equipamento</Button>
