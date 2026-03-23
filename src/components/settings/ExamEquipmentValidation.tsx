@@ -177,7 +177,8 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
      return rows.filter(
       (r) =>
         r.lisCode.toLowerCase().includes(s) ||
-        r.lisName.toLowerCase().includes(s)
+        r.lisName.toLowerCase().includes(s) ||
+        r.equipCode.toLowerCase().includes(s)
     );
   }, [rows, search]);
 
