@@ -54,6 +54,7 @@ import ExamesPage from "./pages/landing/ExamesPage";
 import ConveniosPage from "./pages/landing/ConveniosPage";
 import VacinasPage from "./pages/landing/VacinasPage";
 import SaaSLandingPage from "./pages/SaaSLandingPage";
+import RelatorioAmostrasSyncPage from "./pages/RelatorioAmostrasSyncPage";
 
 const queryClient = new QueryClient();
 
