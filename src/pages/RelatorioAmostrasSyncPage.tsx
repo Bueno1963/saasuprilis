@@ -138,15 +138,15 @@ const RelatorioAmostrasSyncPage = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="patients" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="patients">
-            <Users className="h-4 w-4 mr-1.5" /> Pacientes Sincronizados
+        <TabsList className="bg-muted/60 border border-border p-1 h-auto gap-1 flex-wrap">
+          <TabsTrigger value="patients" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md px-5 py-2.5 text-sm font-semibold rounded-md transition-all">
+            <Users className="h-4 w-4 mr-2" /> Pacientes Sincronizados
           </TabsTrigger>
-          <TabsTrigger value="exams">
-            <FlaskConical className="h-4 w-4 mr-1.5" /> Exames Sincronizados
+          <TabsTrigger value="exams" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md px-5 py-2.5 text-sm font-semibold rounded-md transition-all">
+            <FlaskConical className="h-4 w-4 mr-2" /> Exames Sincronizados
           </TabsTrigger>
-          <TabsTrigger value="logs">
-            <ArrowDownUp className="h-4 w-4 mr-1.5" /> Log de Sincronização
+          <TabsTrigger value="logs" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md px-5 py-2.5 text-sm font-semibold rounded-md transition-all">
+            <ArrowDownUp className="h-4 w-4 mr-2" /> Log de Sincronização
           </TabsTrigger>
         </TabsList>
 
