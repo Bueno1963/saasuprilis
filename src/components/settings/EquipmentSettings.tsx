@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, BookOpen } from "lucide-react";
+import EquipmentLibraryDialog from "./EquipmentLibraryDialog";
 import { useForm, Controller } from "react-hook-form";
 
 interface Props { onBack: () => void; }
@@ -26,6 +27,8 @@ const EquipmentSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [libraryEquip, setLibraryEquip] = useState<{ id: string; name: string } | null>(null);
   const { register, handleSubmit, reset, control } = useForm<EquipForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
@@ -98,6 +101,7 @@ const EquipmentSettings = ({ onBack }: Props) => {
                   <TableCell><Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status === "active" ? "Ativo" : "Inativo"}</Badge></TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" title="Biblioteca" onClick={() => { setLibraryEquip({ id: item.id, name: item.name }); setLibraryOpen(true); }}><BookOpen className="h-4 w-4 text-primary" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(item)}><Pencil className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => remove.mutate(item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
@@ -150,6 +154,15 @@ const EquipmentSettings = ({ onBack }: Props) => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {libraryEquip && (
+        <EquipmentLibraryDialog
+          open={libraryOpen}
+          onOpenChange={setLibraryOpen}
+          equipmentId={libraryEquip.id}
+          equipmentName={libraryEquip.name}
+        />
+      )}
     </div>
   );
 };

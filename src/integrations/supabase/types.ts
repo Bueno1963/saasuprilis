@@ -400,6 +400,57 @@ export type Database = {
           },
         ]
       }
+      equipment_library: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          created_by: string | null
+          equipment_id: string
+          id: string
+          question: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          answer?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          equipment_id: string
+          id?: string
+          question: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          equipment_id?: string
+          id?: string
+          question?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_library_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_library_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exam_catalog: {
         Row: {
           code: string
