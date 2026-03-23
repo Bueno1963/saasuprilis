@@ -429,6 +429,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                                       .update({
                                        lis_code: editValues.lisCode,
                                         lis_name: editValues.lisName,
+                                        equip_code: editValues.equipCode,
                                       })
                                       .eq("id", row.paramId);
                                     if (error) throw error;
