@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 
 /**
  * Known analyte codes for the MaxBIO200B analyzer (bioquímica).
@@ -60,6 +62,7 @@ interface ValidationRow {
 }
 
 const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
 
   const isMaxBio = /maxbio/i.test(equipmentName);
@@ -171,13 +174,27 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
       <CardContent className="p-0">
         {/* Header */}
         <div className="p-4 border-b border-border space-y-3">
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">
-              Validação de Códigos — LIS ↔ {equipmentName}
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Compara os códigos do Catálogo de Exames (LIS) com os analitos reconhecidos pelo equipamento via OBR-4 / OBX-3.
-            </p>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">
+                Validação de Códigos — LIS ↔ {equipmentName}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Compara os códigos do Catálogo de Exames (LIS) com os analitos reconhecidos pelo equipamento via OBR-4 / OBX-3.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0 gap-1.5 text-xs"
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: ["exam-catalog-for-validation", equipmentName] });
+                toast.success("Códigos LIS atualizados pelo Catálogo de Exames");
+              }}
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Atualizar Código LIS
+            </Button>
           </div>
 
           {/* Stats */}
