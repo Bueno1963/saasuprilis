@@ -27,6 +27,8 @@ const EquipmentSettings = ({ onBack }: Props) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [libraryEquip, setLibraryEquip] = useState<{ id: string; name: string } | null>(null);
   const { register, handleSubmit, reset, control } = useForm<EquipForm>({ defaultValues });
 
   const { data: items = [], isLoading } = useQuery({
