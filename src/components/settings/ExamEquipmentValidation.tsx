@@ -6,7 +6,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical, RefreshCw, Pencil, Save, X, Printer, PlusCircle } from "lucide-react";
+import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical, RefreshCw, Pencil, Save, X, Printer, PlusCircle, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 const MAXBIO_ANALYTES: Record<string, string> = {
