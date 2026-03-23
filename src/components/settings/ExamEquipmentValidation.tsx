@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical, RefreshCw, Pencil, Save, X } from "lucide-react";
+import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical, RefreshCw, Pencil, Save, X, Printer } from "lucide-react";
 import { toast } from "sonner";
 
 /**
@@ -199,6 +199,36 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
             >
               <RefreshCw className="h-3.5 w-3.5" />
               Atualizar Código LIS
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0 gap-1.5 text-xs"
+              onClick={() => {
+                const printContent = `
+                  <html><head><title>Validação de Códigos — ${equipmentName}</title>
+                  <style>
+                    body { font-family: Arial, sans-serif; font-size: 11px; padding: 20px; }
+                    h2 { font-size: 14px; margin-bottom: 4px; }
+                    p { color: #666; font-size: 10px; margin-bottom: 12px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; }
+                    th { background: #f5f5f5; font-weight: 600; }
+                    .matched { color: #16a34a; } .unmatched { color: #d97706; } .missing { color: #dc2626; }
+                    .stats { margin-bottom: 10px; font-size: 10px; }
+                  </style></head><body>
+                  <h2>Validação de Códigos — LIS ↔ ${equipmentName}</h2>
+                  <p>Gerado em ${new Date().toLocaleString("pt-BR")}</p>
+                  <div class="stats">✅ ${stats.matched} vinculados | ⚠️ ${stats.unmatchedLis} sem correspondência | ✕ ${stats.unmatchedEquip} sem cadastro</div>
+                  <table><thead><tr><th>Status</th><th>Código LIS</th><th>Nome no LIS</th><th>Código Equip.</th><th>Analito Equip.</th></tr></thead><tbody>
+                  ${filtered.map(r => `<tr><td>${r.status === "matched" ? '<span class="matched">✅</span>' : r.status === "unmatched_lis" ? '<span class="unmatched">⚠️</span>' : '<span class="missing">✕</span>'}</td><td>${r.lisCode}</td><td>${r.lisName}</td><td>${r.equipCode}</td><td>${r.equipName}</td></tr>`).join("")}
+                  </tbody></table></body></html>`;
+                const w = window.open("", "_blank");
+                if (w) { w.document.write(printContent); w.document.close(); w.print(); }
+              }}
+            >
+              <Printer className="h-3.5 w-3.5" />
+              Imprimir Lista
             </Button>
           </div>
 
