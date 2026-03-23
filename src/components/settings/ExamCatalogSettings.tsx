@@ -460,10 +460,40 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
                 <CardContent className="p-0">
                   <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
                     <div className="cursor-pointer flex-1" onClick={() => setActiveSector(sector)}>
-                      <h3 className="font-semibold text-foreground">{sector}</h3>
-                      <p className="text-xs text-muted-foreground">{exams.length} exame(s)</p>
+                      {editingSector === sector ? (
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Input
+                            value={editingSectorName}
+                            onChange={(e) => setEditingSectorName(e.target.value)}
+                            className="h-8 w-48"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                const trimmed = editingSectorName.trim();
+                                if (trimmed && trimmed !== sector) renameSector.mutate({ oldName: sector, newName: trimmed });
+                                else { setEditingSector(null); setEditingSectorName(""); }
+                              }
+                              if (e.key === "Escape") { setEditingSector(null); setEditingSectorName(""); }
+                            }}
+                          />
+                          <Button size="sm" variant="ghost" onClick={() => {
+                            const trimmed = editingSectorName.trim();
+                            if (trimmed && trimmed !== sector) renameSector.mutate({ oldName: sector, newName: trimmed });
+                            else { setEditingSector(null); setEditingSectorName(""); }
+                          }}>OK</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setEditingSector(null); setEditingSectorName(""); }}>✕</Button>
+                        </div>
+                      ) : (
+                        <>
+                          <h3 className="font-semibold text-foreground">{sector}</h3>
+                          <p className="text-xs text-muted-foreground">{exams.length} exame(s)</p>
+                        </>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setEditingSector(sector); setEditingSectorName(sector); }}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
                       <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={(e) => { e.stopPropagation(); setConditionsDialog({ open: true, sector }); }}>
                         <FlaskConical className="h-3.5 w-3.5" />Condições
                       </Button>
