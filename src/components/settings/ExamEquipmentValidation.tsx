@@ -355,6 +355,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                 <TableHead className="w-10">Status</TableHead>
                 <TableHead>Código LIS</TableHead>
                 <TableHead>Nome no LIS</TableHead>
+                <TableHead>Código Equipamento</TableHead>
                 <TableHead className="w-20 text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
