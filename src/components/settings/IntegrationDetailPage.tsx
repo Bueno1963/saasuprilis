@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Wifi, WifiOff, Plus, Trash2, GripVertical, Printer } from "lucide-react";
+import { ArrowLeft, Save, Wifi, WifiOff, Plus, Trash2, GripVertical, Printer, Play, Square, Radio } from "lucide-react";
+import { useIntegrationPolling } from "@/hooks/useIntegrationPolling";
 import { generateIntegrationTechPdf } from "@/lib/generate-integration-pdf";
 import IntegrationLogsTab from "./IntegrationLogsTab";
 import IntegrationProtocolSpecs from "./IntegrationProtocolSpecs";
@@ -63,6 +64,9 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
 
   const currentStatus = watch("status");
   const currentType = watch("type");
+  const [pollingEnabled, setPollingEnabled] = useState(false);
+
+  const polling = useIntegrationPolling(integrationId, pollingEnabled);
 
   const { data: integrationData } = useQuery({
     queryKey: ["integration-detail", integrationId],
@@ -130,10 +134,46 @@ const IntegrationDetailPage = ({ integrationId, onBack }: Props) => {
             </p>
           </div>
         </div>
-        <Badge variant={currentStatus === "active" ? "default" : "secondary"} className="gap-1">
-          {currentStatus === "active" ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-          {currentStatus === "active" ? "Ativo" : "Inativo"}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {!isNew && (
+            <div className="flex items-center gap-2 mr-2">
+              {polling.isRunning ? (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => { setPollingEnabled(false); polling.stop(); }}
+                >
+                  <Square className="h-3 w-3" /> Parar Sync
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => setPollingEnabled(true)}
+                  disabled={currentStatus !== "active"}
+                >
+                  <Play className="h-3 w-3" /> Iniciar Sync (5s)
+                </Button>
+              )}
+              {polling.isRunning && (
+                <Badge variant="outline" className="gap-1 animate-pulse border-emerald-500 text-emerald-600">
+                  <Radio className="h-3 w-3" /> Sincronizando
+                </Badge>
+              )}
+              {polling.lastPoll && (
+                <span className="text-xs text-muted-foreground">
+                  Último poll: {polling.lastPoll.toLocaleTimeString("pt-BR")}
+                </span>
+              )}
+            </div>
+          )}
+          <Badge variant={currentStatus === "active" ? "default" : "secondary"} className="gap-1">
+            {currentStatus === "active" ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+            {currentStatus === "active" ? "Ativo" : "Inativo"}
+          </Badge>
+        </div>
       </div>
 
       {/* Tabs */}
