@@ -10,11 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, BookOpen } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Plug } from "lucide-react";
 import EquipmentLibraryDialog from "./EquipmentLibraryDialog";
 import { useForm, Controller } from "react-hook-form";
 
-interface Props { onBack: () => void; }
+interface Props { onBack: () => void; onNavigateIntegrations?: () => void; }
 
 interface EquipForm {
   name: string; manufacturer: string; model: string; serial_number: string;
@@ -23,7 +23,7 @@ interface EquipForm {
 
 const defaultValues: EquipForm = { name: "", manufacturer: "", model: "", serial_number: "", sector: "", protocol: "ASTM", status: "active", notes: "" };
 
-const EquipmentSettings = ({ onBack }: Props) => {
+const EquipmentSettings = ({ onBack, onNavigateIntegrations }: Props) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -76,7 +76,14 @@ const EquipmentSettings = ({ onBack }: Props) => {
             <p className="text-sm text-muted-foreground">Gerenciamento de analisadores</p>
           </div>
         </div>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Equipamento</Button>
+        <div className="flex items-center gap-2">
+          {onNavigateIntegrations && (
+            <Button variant="outline" onClick={onNavigateIntegrations}>
+              <Plug className="h-4 w-4 mr-2" />Interface com Terceiro
+            </Button>
+          )}
+          <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Novo Equipamento</Button>
+        </div>
       </div>
 
       <Card>

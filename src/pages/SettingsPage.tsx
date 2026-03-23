@@ -37,7 +37,7 @@ const SettingsPage = () => {
   const goBack = () => setSection("menu");
 
   if (section === "lab") return <LabSettings onBack={goBack} />;
-  if (section === "equipment") return <EquipmentSettings onBack={goBack} />;
+  if (section === "equipment") return <EquipmentSettings onBack={goBack} onNavigateIntegrations={() => setSection("integrations")} />;
   if (section === "exams") return <ExamCatalogSettings onBack={goBack} />;
   if (section === "insurance") return <InsuranceSettings onBack={goBack} />;
   if (section === "users") return <UsersSettings onBack={goBack} />;
