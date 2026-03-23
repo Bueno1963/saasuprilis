@@ -10,8 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Plug } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Plug, FileText } from "lucide-react";
 import EquipmentLibraryDialog from "./EquipmentLibraryDialog";
+import { generateLisIntegrationGuidePdf } from "@/lib/generate-lis-guide-pdf";
 import { useForm, Controller } from "react-hook-form";
 
 interface Props { onBack: () => void; onNavigateIntegrations?: () => void; }
