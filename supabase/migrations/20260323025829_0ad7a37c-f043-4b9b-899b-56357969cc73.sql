@@ -1,0 +1,6 @@
+
+ALTER TABLE public.exam_parameters
+  ADD COLUMN IF NOT EXISTS lis_code text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS lis_name text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS equip_code text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS equip_analyte text NOT NULL DEFAULT '';

@@ -525,8 +525,12 @@ export type Database = {
       exam_parameters: {
         Row: {
           created_at: string
+          equip_analyte: string
+          equip_code: string
           exam_id: string
           id: string
+          lis_code: string
+          lis_name: string
           name: string
           reference_range: string | null
           section: string
@@ -536,8 +540,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          equip_analyte?: string
+          equip_code?: string
           exam_id: string
           id?: string
+          lis_code?: string
+          lis_name?: string
           name: string
           reference_range?: string | null
           section?: string
@@ -547,8 +555,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          equip_analyte?: string
+          equip_code?: string
           exam_id?: string
           id?: string
+          lis_code?: string
+          lis_name?: string
           name?: string
           reference_range?: string | null
           section?: string
