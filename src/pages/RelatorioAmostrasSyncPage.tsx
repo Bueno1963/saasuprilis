@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, ArrowDownUp, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart3, ArrowDownUp, CheckCircle2, XCircle, Clock, Users, FlaskConical } from "lucide-react";
 
 const RelatorioAmostrasSyncPage = () => {
   const { data: logs = [], isLoading } = useQuery({
@@ -19,10 +20,57 @@ const RelatorioAmostrasSyncPage = () => {
     },
   });
 
+  // Samples that were synced (processing/completed status = touched by integration)
+  const { data: syncedSamples = [], isLoading: samplesLoading } = useQuery({
+    queryKey: ["synced-samples-report"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("samples")
+        .select("*, orders(order_number, doctor_name, exams, patient_id, patients(name, cpf, birth_date, gender))")
+        .in("status", ["processing", "completed", "analyzed"])
+        .order("collected_at", { ascending: false })
+        .limit(300);
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const totalSuccess = logs.filter((l) => l.status === "success").length;
   const totalError = logs.filter((l) => l.status === "error").length;
   const totalRecordsCreated = logs.reduce((s, l) => s + (l.records_created || 0), 0);
   const totalRecordsUpdated = logs.reduce((s, l) => s + (l.records_updated || 0), 0);
+
+  // Unique patients from synced samples
+  const patientMap = new Map<string, any>();
+  syncedSamples.forEach((s: any) => {
+    const patient = s.orders?.patients;
+    if (patient && s.orders?.patient_id) {
+      patientMap.set(s.orders.patient_id, {
+        ...patient,
+        id: s.orders.patient_id,
+        order_number: s.orders.order_number,
+        doctor_name: s.orders.doctor_name,
+      });
+    }
+  });
+  const uniquePatients = Array.from(patientMap.values());
+
+  // Exams from synced samples
+  const examsList: { exam: string; barcode: string; patient: string; status: string; sector: string; collectedAt: string }[] = [];
+  syncedSamples.forEach((s: any) => {
+    const patientName = s.orders?.patients?.name || "—";
+    const exams: string[] = s.orders?.exams || [];
+    exams.forEach((exam) => {
+      examsList.push({
+        exam,
+        barcode: s.barcode,
+        patient: patientName,
+        status: s.status,
+        sector: s.sector || "—",
+        collectedAt: s.collected_at,
+      });
+    });
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -32,12 +80,12 @@ const RelatorioAmostrasSyncPage = () => {
           Relatório de Amostras Sincronizadas
         </h1>
         <p className="text-sm text-muted-foreground">
-          Histórico de sincronizações entre o LIS e equipamentos integrados
+          Cadastro de pacientes e exames sincronizados com equipamentos integrados
         </p>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs text-muted-foreground font-medium">Total Syncs</CardTitle>
@@ -69,76 +117,178 @@ const RelatorioAmostrasSyncPage = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-              <ArrowDownUp className="h-3 w-3 text-primary" /> Registros
+              <Users className="h-3 w-3 text-primary" /> Pacientes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-foreground">{totalRecordsCreated + totalRecordsUpdated}</p>
-            <p className="text-[10px] text-muted-foreground">{totalRecordsCreated} criados · {totalRecordsUpdated} atualizados</p>
+            <p className="text-2xl font-bold text-foreground">{uniquePatients.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+              <FlaskConical className="h-3 w-3 text-primary" /> Exames
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-foreground">{examsList.length}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Logs Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Data/Hora</TableHead>
-                <TableHead>Equipamento</TableHead>
-                <TableHead>Direção</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Mensagem</TableHead>
-                <TableHead className="text-right">Criados</TableHead>
-                <TableHead className="text-right">Atualizados</TableHead>
-                <TableHead className="text-right">Falhas</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">Carregando...</TableCell>
-                </TableRow>
-              ) : logs.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                    <Clock className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                    Nenhuma sincronização registrada
-                  </TableCell>
-                </TableRow>
-              ) : (
-                logs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {new Date(log.created_at).toLocaleString("pt-BR")}
-                    </TableCell>
-                    <TableCell className="font-medium text-sm">
-                      {(log as any).integrations?.name || "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs">
-                        {log.direction === "outbound" ? "⬆ Envio" : "⬇ Recebimento"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={log.status === "success" ? "default" : "destructive"} className="text-xs">
-                        {log.status === "success" ? "Sucesso" : "Erro"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground max-w-[250px] truncate">
-                      {log.error_message || log.message || "—"}
-                    </TableCell>
-                    <TableCell className="text-right text-sm font-medium">{log.records_created}</TableCell>
-                    <TableCell className="text-right text-sm font-medium">{log.records_updated}</TableCell>
-                    <TableCell className="text-right text-sm font-medium text-destructive">{log.records_failed}</TableCell>
+      {/* Tabs */}
+      <Tabs defaultValue="patients" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="patients">
+            <Users className="h-4 w-4 mr-1.5" /> Pacientes Sincronizados
+          </TabsTrigger>
+          <TabsTrigger value="exams">
+            <FlaskConical className="h-4 w-4 mr-1.5" /> Exames Sincronizados
+          </TabsTrigger>
+          <TabsTrigger value="logs">
+            <ArrowDownUp className="h-4 w-4 mr-1.5" /> Log de Sincronização
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Patients Tab */}
+        <TabsContent value="patients">
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Paciente</TableHead>
+                    <TableHead>CPF</TableHead>
+                    <TableHead>Nascimento</TableHead>
+                    <TableHead>Sexo</TableHead>
+                    <TableHead>Pedido</TableHead>
+                    <TableHead>Médico</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {samplesLoading ? (
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Carregando...</TableCell></TableRow>
+                  ) : uniquePatients.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum paciente sincronizado</TableCell></TableRow>
+                  ) : uniquePatients.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">{p.name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{p.cpf}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {p.birth_date ? new Date(p.birth_date + "T00:00:00").toLocaleDateString("pt-BR") : "—"}
+                      </TableCell>
+                      <TableCell className="text-sm">{p.gender === "M" ? "Masculino" : p.gender === "F" ? "Feminino" : p.gender}</TableCell>
+                      <TableCell className="text-sm font-mono">{p.order_number}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{p.doctor_name || "—"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Exams Tab */}
+        <TabsContent value="exams">
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Exame</TableHead>
+                    <TableHead>Paciente</TableHead>
+                    <TableHead>Código Barras</TableHead>
+                    <TableHead>Setor</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Data Coleta</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {samplesLoading ? (
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Carregando...</TableCell></TableRow>
+                  ) : examsList.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum exame sincronizado</TableCell></TableRow>
+                  ) : examsList.map((e, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="font-medium">{e.exam}</TableCell>
+                      <TableCell className="text-sm">{e.patient}</TableCell>
+                      <TableCell className="text-sm font-mono text-muted-foreground">{e.barcode}</TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs">{e.sector}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant={e.status === "completed" ? "default" : "secondary"} className="text-xs">
+                          {e.status === "completed" ? "Concluído" : e.status === "analyzed" ? "Analisado" : "Em Processo"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {new Date(e.collectedAt).toLocaleString("pt-BR")}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Logs Tab */}
+        <TabsContent value="logs">
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data/Hora</TableHead>
+                    <TableHead>Equipamento</TableHead>
+                    <TableHead>Direção</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Mensagem</TableHead>
+                    <TableHead className="text-right">Criados</TableHead>
+                    <TableHead className="text-right">Atualizados</TableHead>
+                    <TableHead className="text-right">Falhas</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Carregando...</TableCell></TableRow>
+                  ) : logs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                        <Clock className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                        Nenhuma sincronização registrada
+                      </TableCell>
+                    </TableRow>
+                  ) : logs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        {new Date(log.created_at).toLocaleString("pt-BR")}
+                      </TableCell>
+                      <TableCell className="font-medium text-sm">
+                        {(log as any).integrations?.name || "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs">
+                          {log.direction === "outbound" ? "⬆ Envio" : "⬇ Recebimento"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={log.status === "success" ? "default" : "destructive"} className="text-xs">
+                          {log.status === "success" ? "Sucesso" : "Erro"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[250px] truncate">
+                        {log.error_message || log.message || "—"}
+                      </TableCell>
+                      <TableCell className="text-right text-sm font-medium">{log.records_created}</TableCell>
+                      <TableCell className="text-right text-sm font-medium">{log.records_updated}</TableCell>
+                      <TableCell className="text-right text-sm font-medium text-destructive">{log.records_failed}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
