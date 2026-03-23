@@ -22,6 +22,7 @@ interface ExamForm {
 }
 interface ParamForm {
   section: string; name: string; unit: string; reference_range: string; sort_order: number;
+  lis_code: string; lis_name: string; equip_code: string; equip_analyte: string;
 }
 interface RefRangeForm {
   age_group: string; gender: string; reference_value: string; sort_order: number;
