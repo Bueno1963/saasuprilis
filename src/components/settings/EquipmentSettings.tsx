@@ -23,7 +23,7 @@ interface EquipForm {
 
 const defaultValues: EquipForm = { name: "", manufacturer: "", model: "", serial_number: "", sector: "", protocol: "ASTM", status: "active", notes: "" };
 
-const EquipmentSettings = ({ onBack }: Props) => {
+const EquipmentSettings = ({ onBack, onNavigateIntegrations }: Props) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
