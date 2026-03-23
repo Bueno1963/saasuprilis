@@ -372,24 +372,22 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
                             </Button>
                           </div>
                         ) : (
-                          row.examId && (
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7"
-                              onClick={() => {
-                                setEditingIdx(i);
-                                setEditValues({
-                                  lisCode: row.lisCode,
-                                  lisName: row.lisName,
-                                  equipCode: row.equipCode,
-                                  equipName: row.equipName,
-                                });
-                              }}
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                          )
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7"
+                            onClick={() => {
+                              setEditingIdx(i);
+                              setEditValues({
+                                lisCode: row.lisCode,
+                                lisName: row.lisName,
+                                equipCode: row.equipCode,
+                                equipName: row.equipName,
+                              });
+                            }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>
