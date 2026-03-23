@@ -77,7 +77,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
     queryFn: async () => {
       let query = supabase
         .from("exam_catalog")
-        .select("code, name, sector, status, equipment")
+        .select("id, code, name, sector, status, equipment")
         .eq("status", "active");
 
       if (isSupported) {
