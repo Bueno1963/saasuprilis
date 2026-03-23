@@ -158,30 +158,56 @@ const RelatorioAmostrasSyncPage = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Paciente</TableHead>
-                    <TableHead>CPF</TableHead>
-                    <TableHead>Nascimento</TableHead>
-                    <TableHead>Sexo</TableHead>
                     <TableHead>Pedido</TableHead>
-                    <TableHead>Médico</TableHead>
+                    <TableHead>Exames</TableHead>
+                    <TableHead>Enviar</TableHead>
+                    <TableHead>Receber</TableHead>
+                    <TableHead>Log/Situação</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {samplesLoading ? (
                     <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Carregando...</TableCell></TableRow>
-                  ) : uniquePatients.length === 0 ? (
+                  ) : syncedSamples.length === 0 ? (
                     <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum paciente sincronizado</TableCell></TableRow>
-                  ) : uniquePatients.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.name}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{p.cpf}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {p.birth_date ? new Date(p.birth_date + "T00:00:00").toLocaleDateString("pt-BR") : "—"}
-                      </TableCell>
-                      <TableCell className="text-sm">{p.gender === "M" ? "Masculino" : p.gender === "F" ? "Feminino" : p.gender}</TableCell>
-                      <TableCell className="text-sm font-mono">{p.order_number}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{p.doctor_name || "—"}</TableCell>
-                    </TableRow>
-                  ))}
+                  ) : syncedSamples.map((s: any) => {
+                    const patientName = s.orders?.patients?.name || "—";
+                    const orderNumber = s.orders?.order_number || "—";
+                    const exams: string[] = s.orders?.exams || [];
+                    const sampleLogs = logs.filter((l) => l.message?.includes(s.barcode) || l.message?.includes(orderNumber));
+                    const outboundLog = sampleLogs.find((l) => l.direction === "outbound");
+                    const inboundLog = sampleLogs.find((l) => l.direction === "inbound");
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell className="font-medium">{patientName}</TableCell>
+                        <TableCell className="text-sm font-mono">{orderNumber}</TableCell>
+                        <TableCell className="text-sm">{exams.join(", ") || "—"}</TableCell>
+                        <TableCell>
+                          {outboundLog ? (
+                            <Badge variant={outboundLog.status === "success" ? "default" : "destructive"} className="text-xs">
+                              {outboundLog.status === "success" ? "✓ Enviado" : "✗ Erro"}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {inboundLog ? (
+                            <Badge variant={inboundLog.status === "success" ? "default" : "destructive"} className="text-xs">
+                              {inboundLog.status === "success" ? "✓ Recebido" : "✗ Erro"}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
+                          {sampleLogs.length > 0
+                            ? sampleLogs[0].error_message || sampleLogs[0].message || s.status
+                            : s.status === "completed" ? "Concluído" : s.status === "analyzed" ? "Analisado" : "Em Processo"}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardContent>
