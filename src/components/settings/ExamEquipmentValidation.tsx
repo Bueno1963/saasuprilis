@@ -68,7 +68,7 @@ const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
-  const [editValues, setEditValues] = useState({ lisCode: "", lisName: "", equipCode: "", equipName: "" });
+  const [editValues, setEditValues] = useState({ lisCode: "", lisName: "", equipCode: "" });
   const [saving, setSaving] = useState(false);
   const [autoRegistering, setAutoRegistering] = useState(false);
   const isMaxBio = /maxbio/i.test(equipmentName);
