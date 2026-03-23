@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical, RefreshCw, Pencil, Save, X } from "lucide-react";
+import { CheckCircle2, XCircle, AlertTriangle, Search, FlaskConical, RefreshCw, Pencil, Save, X, Printer } from "lucide-react";
 import { toast } from "sonner";
 
 /**
