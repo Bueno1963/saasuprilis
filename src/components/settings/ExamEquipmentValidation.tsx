@@ -65,7 +65,9 @@ interface ValidationRow {
 const ExamEquipmentValidation = ({ integrationId, equipmentName }: Props) => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [editValues, setEditValues] = useState({ lisCode: "", lisName: "", equipCode: "", equipName: "" });
+  const [saving, setSaving] = useState(false);
   const isMaxBio = /maxbio/i.test(equipmentName);
   const isMaxCell = /maxcell/i.test(equipmentName);
   const isSupported = isMaxBio || isMaxCell;
