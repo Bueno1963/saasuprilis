@@ -216,7 +216,7 @@ const IntegrationsListPage = ({ onBack, docsSlot }: Props) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
+                <TableHead>Equipamento</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Protocolo</TableHead>
                 <TableHead>Endpoint</TableHead>
