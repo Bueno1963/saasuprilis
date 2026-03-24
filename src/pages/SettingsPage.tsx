@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Cpu, FlaskConical, HeartHandshake, Users, Plug, Printer, FlaskRound, LayoutTemplate, ListTree, ShieldCheck, PenTool, BookOpen } from "lucide-react";
+import { Building2, FlaskConical, HeartHandshake, Users, Printer, FlaskRound, LayoutTemplate, ListTree, PenTool, BookOpen } from "lucide-react";
 import LabSettings from "@/components/settings/LabSettings";
-import EquipmentSettings from "@/components/settings/EquipmentSettings";
 import ExamCatalogSettings from "@/components/settings/ExamCatalogSettings";
 import InsuranceSettings from "@/components/settings/InsuranceSettings";
 import UsersSettings from "@/components/settings/UsersSettings";
-import IntegrationsSettings from "@/components/settings/IntegrationsSettings";
 import PrinterSettings from "@/components/settings/PrinterSettings";
 import SupportLabSettings from "@/components/settings/SupportLabSettings";
 import ReportLayoutListSettings from "@/components/settings/ReportLayoutListSettings";
@@ -14,16 +12,14 @@ import CadastroParametrosSettings from "@/components/settings/CadastroParametros
 import SectorSignersSettings from "@/components/settings/SectorSignersSettings";
 import UserManualSettings from "@/components/settings/UserManualSettings";
 
-type Section = "menu" | "lab" | "equipment" | "exams" | "insurance" | "users" | "integrations" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers" | "user_manual";
+type Section = "menu" | "lab" | "exams" | "insurance" | "users" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers" | "user_manual";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
-  { key: "equipment" as Section, title: "Interface Terceirizada", desc: "Gerenciamento de analisadores e protocolos de interfaceamento", icon: Cpu },
   { key: "exams" as Section, title: "Exames", desc: "Catálogo de exames, valores de referência e regras de decisão", icon: FlaskConical },
   { key: "insurance" as Section, title: "Convênios", desc: "Tabelas de preços, regras de faturamento e glosas", icon: HeartHandshake },
   { key: "users" as Section, title: "Usuários", desc: "Controle de acesso, perfis e permissões do sistema", icon: Users },
   { key: "sector_signers" as Section, title: "Assinantes por Setor", desc: "Responsável técnico e assinatura manuscrita por setor do laudo", icon: PenTool },
-  { key: "integrations" as Section, title: "Integrações", desc: "HL7, ASTM, API externas e portal de resultados", icon: Plug },
   { key: "printers" as Section, title: "Impressoras", desc: "Cadastro de impressoras para impressão de laudos e etiquetas", icon: Printer },
   { key: "support_lab" as Section, title: "Lab. de Apoio", desc: "Integração com laboratórios terceirizados para exames encaminhados", icon: FlaskRound },
   { key: "report_layouts" as Section, title: "Cadastro de Layout", desc: "Modelos de impressão de laudos por exame: colunas, cabeçalho, rodapé e observações", icon: LayoutTemplate },
