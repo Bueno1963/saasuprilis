@@ -614,13 +614,14 @@ const ValidarExames = () => {
                           const val = resolveParamValue(paramValues, param.name, sectionName) || "";
                           const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
                           const showAbsoluteCol = isLeucograma;
+                          const isLeucocitosPrimary = isLeucograma && param.name === "Leucócitos";
                           const absoluteValue = (isDiffParam && leucoValue > 0 && val.trim())
                             ? Math.round((parseFloat(val) / 100) * leucoValue).toLocaleString("pt-BR")
                             : "";
                           return (
                             <TableRow key={param.id} className={cn("h-8", !val.trim() && "bg-muted/20")}>
                               <TableCell className="font-medium text-sm py-1">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
-                              <TableCell className="py-1">
+                              <TableCell className="py-1" colSpan={isLeucocitosPrimary ? 2 : 1}>
                                 {(() => {
                                   const refRange = param.reference_range || "";
                                   const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
