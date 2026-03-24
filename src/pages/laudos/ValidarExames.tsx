@@ -599,9 +599,9 @@ const ValidarExames = () => {
                         {sectionParams.map(param => {
                           const val = resolveParamValue(paramValues, param.name, sectionName) || "";
                           return (
-                            <TableRow key={param.id} className={cn(!val.trim() && "bg-muted/20")}>
-                              <TableCell className="font-medium text-sm">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
-                              <TableCell>
+                            <TableRow key={param.id} className={cn("h-8", !val.trim() && "bg-muted/20")}>
+                              <TableCell className="font-medium text-sm py-1">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
+                              <TableCell className="py-1">
                                 {(() => {
                                   const refRange = param.reference_range || "";
                                   const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
@@ -717,13 +717,13 @@ const ValidarExames = () => {
                                       }}
                                       onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
                                       placeholder={isDiffParam ? "0" : "..."}
-                                      className={cn("max-w-[160px] font-mono text-sm", !val.trim() && "border-destructive/50")}
+                                      className={cn("max-w-[160px] font-mono text-sm h-7", !val.trim() && "border-destructive/50")}
                                     />
                                   );
                                 })()}
                               </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">{param.unit || ""}</TableCell>
-                              <TableCell className="text-xs text-muted-foreground">
+                              <TableCell className="text-sm text-muted-foreground py-1">{param.unit || ""}</TableCell>
+                              <TableCell className="text-xs text-muted-foreground py-1">
                                 {(param.reference_range || "").includes("|") ? "" : param.reference_range || ""}
                               </TableCell>
                             </TableRow>
