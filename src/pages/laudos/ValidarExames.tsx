@@ -599,8 +599,8 @@ const ValidarExames = () => {
                         {sectionParams.map(param => {
                           const val = resolveParamValue(paramValues, param.name, sectionName) || "";
                           return (
-                            <TableRow key={param.id} className={cn(!val.trim() && "bg-muted/20")}>
-                              <TableCell className="font-medium text-sm">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
+                            <TableRow key={param.id} className={cn("h-8", !val.trim() && "bg-muted/20")}>
+                              <TableCell className="font-medium text-sm py-1">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
                               <TableCell>
                                 {(() => {
                                   const refRange = param.reference_range || "";
