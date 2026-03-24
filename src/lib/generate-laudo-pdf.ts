@@ -377,8 +377,8 @@ export async function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
     const DIFFERENTIAL_PARAMS = [
       "basófilos", "basofilos", "eosinófilos", "eosinofilos",
       "mielócitos", "mielocitos", "metamielócitos", "metamielocitos",
+      "mielócito", "mielocito", "pró mielócito", "pro mielocito", "promielócito", "promielocito",
       "bastões", "bastoes", "bastonetes", "segmentados",
-      "neutrófilos", "neutrofilos",
       "linfócitos típicos", "linfocitos tipicos", "linfócitos atípicos", "linfocitos atipicos",
       "linfócitos", "linfocitos",
       "monócitos", "monocitos"
@@ -399,7 +399,7 @@ export async function drawLaudoOnDoc(doc: jsPDF, data: LaudoData) {
       const hWidth = fullWidth;
       const hRight = hMargin + hWidth;
 
-      const HIDE_WHEN_ZERO = ["mielocitos", "metamielocitos", "linfocitos atipicos", "monocitos"];
+      const HIDE_WHEN_ZERO = ["mielocitos", "metamielocitos", "linfocitos atipicos", "monocitos", "mielocito", "pro mielocito", "promielocito"];
       const shouldHideWhenZero = (name: string) => {
         const norm = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
         return HIDE_WHEN_ZERO.some(h => norm === h || norm.startsWith(h));
