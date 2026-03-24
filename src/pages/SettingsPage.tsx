@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, FlaskConical, HeartHandshake, Users, Printer, FlaskRound, LayoutTemplate, ListTree, PenTool, BookOpen } from "lucide-react";
+import { Building2, FlaskConical, HeartHandshake, Users, Printer, FlaskRound, LayoutTemplate, ListTree, PenTool, BookOpen, Cpu } from "lucide-react";
 import LabSettings from "@/components/settings/LabSettings";
 import ExamCatalogSettings from "@/components/settings/ExamCatalogSettings";
 import InsuranceSettings from "@/components/settings/InsuranceSettings";
@@ -11,8 +11,9 @@ import ReportLayoutListSettings from "@/components/settings/ReportLayoutListSett
 import CadastroParametrosSettings from "@/components/settings/CadastroParametrosSettings";
 import SectorSignersSettings from "@/components/settings/SectorSignersSettings";
 import UserManualSettings from "@/components/settings/UserManualSettings";
+import I9LISSettings from "@/components/settings/I9LISSettings";
 
-type Section = "menu" | "lab" | "exams" | "insurance" | "users" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers" | "user_manual";
+type Section = "menu" | "lab" | "exams" | "insurance" | "users" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers" | "user_manual" | "i9lis";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
@@ -25,6 +26,7 @@ const sections = [
   { key: "report_layouts" as Section, title: "Cadastro de Layout", desc: "Modelos de impressão de laudos por exame: colunas, cabeçalho, rodapé e observações", icon: LayoutTemplate },
   { key: "cadastro_parametros" as Section, title: "Cadastro de Parâmetros", desc: "Modelo de exames por setor com parâmetros para digitação de laudos", icon: ListTree },
   { key: "user_manual" as Section, title: "Manual do Usuário", desc: "Guia completo de funcionalidades e fluxos do sistema", icon: BookOpen },
+  { key: "i9lis" as Section, title: "I9LIS", desc: "Manual de integração entre o I9LIS Interface e sistemas LIS", icon: Cpu },
 ];
 
 const SettingsPage = () => {
@@ -42,6 +44,7 @@ const SettingsPage = () => {
   if (section === "cadastro_parametros") return <CadastroParametrosSettings onBack={goBack} />;
   if (section === "sector_signers") return <SectorSignersSettings onBack={goBack} />;
   if (section === "user_manual") return <UserManualSettings onBack={goBack} />;
+  if (section === "i9lis") return <I9LISSettings onBack={goBack} />;
 
   return (
     <div className="p-6 space-y-6">
