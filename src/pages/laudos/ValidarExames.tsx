@@ -717,7 +717,7 @@ const ValidarExames = () => {
                                       }}
                                       onBlur={() => { if (hasUnsaved) handleSaveValue(r.id); }}
                                       placeholder={isDiffParam ? "0" : "..."}
-                                      className={cn("max-w-[160px] font-mono text-sm", !val.trim() && "border-destructive/50")}
+                                      className={cn("max-w-[160px] font-mono text-sm h-7", !val.trim() && "border-destructive/50")}
                                     />
                                   );
                                 })()}
