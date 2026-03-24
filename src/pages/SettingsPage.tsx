@@ -11,8 +11,9 @@ import ReportLayoutListSettings from "@/components/settings/ReportLayoutListSett
 import CadastroParametrosSettings from "@/components/settings/CadastroParametrosSettings";
 import SectorSignersSettings from "@/components/settings/SectorSignersSettings";
 import UserManualSettings from "@/components/settings/UserManualSettings";
+import I9LISSettings from "@/components/settings/I9LISSettings";
 
-type Section = "menu" | "lab" | "exams" | "insurance" | "users" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers" | "user_manual";
+type Section = "menu" | "lab" | "exams" | "insurance" | "users" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers" | "user_manual" | "i9lis";
 
 const sections = [
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
