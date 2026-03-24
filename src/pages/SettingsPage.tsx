@@ -44,6 +44,7 @@ const SettingsPage = () => {
   if (section === "cadastro_parametros") return <CadastroParametrosSettings onBack={goBack} />;
   if (section === "sector_signers") return <SectorSignersSettings onBack={goBack} />;
   if (section === "user_manual") return <UserManualSettings onBack={goBack} />;
+  if (section === "i9lis") return <I9LISSettings onBack={goBack} />;
 
   return (
     <div className="p-6 space-y-6">
