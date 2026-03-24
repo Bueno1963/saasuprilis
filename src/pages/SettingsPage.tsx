@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, FlaskConical, HeartHandshake, Users, Printer, FlaskRound, LayoutTemplate, ListTree, PenTool, BookOpen } from "lucide-react";
+import { Building2, FlaskConical, HeartHandshake, Users, Printer, FlaskRound, LayoutTemplate, ListTree, PenTool, BookOpen, Cpu } from "lucide-react";
 import LabSettings from "@/components/settings/LabSettings";
 import ExamCatalogSettings from "@/components/settings/ExamCatalogSettings";
 import InsuranceSettings from "@/components/settings/InsuranceSettings";
