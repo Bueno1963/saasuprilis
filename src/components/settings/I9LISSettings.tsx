@@ -106,7 +106,7 @@ const I9LISSettings = ({ onBack }: Props) => {
                 onChange={(e) => setConfig(p => ({ ...p, descargaPath: e.target.value }))}
               />
             </div>
-            <div className="bg-muted/40 rounded p-2 text-xs text-muted-foreground space-y-1">
+            <div className="bg-muted/40 rounded p-2 text-xs text-foreground/70 space-y-1">
               <p><strong>Fluxo:</strong> Aparelho analisa → I9LIS grava resultados → LIS consome e limpa</p>
               <p><strong>Tabela:</strong> I9LIS_DESCARGA (AMOSTRA, ORDEM, COD_EXAME, RESULTADO…)</p>
             </div>
