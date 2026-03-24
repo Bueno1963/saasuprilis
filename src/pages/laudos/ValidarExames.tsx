@@ -44,8 +44,9 @@ const LEUCOGRAMA_OBS_OPTIONS = [
 // Parameters whose values must sum to 100%
 const DIFFERENTIAL_COUNT_PARAMS = [
   "Basófilos", "Eosinófilos", "Mielócitos", "Metamielócitos",
-  "Bastões", "Bastonetes", "Segmentados", "Neutrófilos",
+  "Bastões", "Bastonetes", "Segmentados",
   "Linfócitos típicos", "Linfócitos atípicos", "Linfócitos", "Monócitos",
+  "Mielócito", "Pró Mielócito",
 ];
 
 interface ExamParam {
