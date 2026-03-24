@@ -249,7 +249,7 @@ const RelatorioAmostrasSyncPage = () => {
                             onClick={() => handleForceSend(s)}
                           >
                             <Send className="h-3 w-3" />
-                            {outboundLog?.status === "success" ? "Reenviar" : "Enviar"}
+                            {outboundLog?.status === "success" ? "Carga ✓" : "Carga"}
                           </Button>
                         </TableCell>
                         <TableCell>
