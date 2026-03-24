@@ -722,8 +722,8 @@ const ValidarExames = () => {
                                   );
                                 })()}
                               </TableCell>
-                              <TableCell className="text-sm text-muted-foreground py-1">{param.unit || ""}</TableCell>
-                              <TableCell className="text-xs text-muted-foreground py-1">
+                              <TableCell className="text-sm text-foreground py-1">{param.unit || ""}</TableCell>
+                              <TableCell className="text-sm text-foreground py-1">
                                 {(param.reference_range || "").includes("|") ? "" : param.reference_range || ""}
                               </TableCell>
                             </TableRow>
