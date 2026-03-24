@@ -590,7 +590,8 @@ const ValidarExames = () => {
                   </TableHeader>
                   <TableBody>
                     {[...sections.entries()].map(([sectionName, sectionParams]) => {
-                      const isLeucograma = sectionName === "LEUCOGRAMA";
+                      const normalizedSectionName = sectionName.trim().toLowerCase();
+                      const isLeucograma = normalizedSectionName === "leucograma";
                       const leucoValue = isLeucograma ? parseFloat(resolveParamValue(paramValues, "Leucócitos", sectionName) || "0") || 0 : 0;
                       return (
                       <>{sectionName && (
