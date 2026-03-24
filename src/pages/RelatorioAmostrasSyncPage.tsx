@@ -218,8 +218,8 @@ const RelatorioAmostrasSyncPage = () => {
                     <TableHead>Paciente</TableHead>
                     <TableHead>Pedido</TableHead>
                     <TableHead>Exames</TableHead>
-                    <TableHead>Enviar</TableHead>
-                    <TableHead>Receber</TableHead>
+                     <TableHead>Carga</TableHead>
+                     <TableHead>Descarga</TableHead>
                     <TableHead>Log/Situação</TableHead>
                   </TableRow>
                 </TableHeader>
