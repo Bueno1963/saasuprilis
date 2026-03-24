@@ -80,7 +80,7 @@ const I9LISSettings = ({ onBack }: Props) => {
                 onChange={(e) => setConfig(p => ({ ...p, cargaPath: e.target.value }))}
               />
             </div>
-            <div className="bg-muted/40 rounded p-2 text-xs text-muted-foreground space-y-1">
+            <div className="bg-muted/40 rounded p-2 text-xs text-foreground/70 space-y-1">
               <p><strong>Fluxo:</strong> LIS grava pedidos → I9LIS processa e apaga → envia ao aparelho</p>
               <p><strong>Tabela:</strong> I9LIS_CARGA (AMOSTRA, ORDEM, REG_PAC, NOME, COD_EXAME…)</p>
             </div>
