@@ -740,6 +740,12 @@ const ValidarExames = () => {
                                   );
                                 })()}
                               </TableCell>
+                              {showAbsoluteCol && (
+                                <TableCell className="text-sm font-mono text-foreground py-1">
+                                  {absoluteValue}
+                                </TableCell>
+                              )}
+                              {!showAbsoluteCol && null}
                               <TableCell className="text-sm text-foreground py-1">{param.unit || ""}</TableCell>
                               <TableCell className="text-sm text-foreground py-1">
                                 {(param.reference_range || "").includes("|") ? "" : param.reference_range || ""}
@@ -769,12 +775,14 @@ const ValidarExames = () => {
                                 <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400">✓</span>
                               )}
                             </TableCell>
+                            {isLeucograma && <TableCell />}
                             <TableCell className="text-sm text-muted-foreground">%</TableCell>
                             <TableCell />
                           </TableRow>
                         )}
                       </>
-                    ))}
+                    );
+                    })}
                   </TableBody>
                 </Table>
               </CardContent>
