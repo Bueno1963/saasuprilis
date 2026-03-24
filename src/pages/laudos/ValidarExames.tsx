@@ -601,7 +601,7 @@ const ValidarExames = () => {
                           return (
                             <TableRow key={param.id} className={cn("h-8", !val.trim() && "bg-muted/20")}>
                               <TableCell className="font-medium text-sm py-1">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
-                              <TableCell>
+                              <TableCell className="py-1">
                                 {(() => {
                                   const refRange = param.reference_range || "";
                                   const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
