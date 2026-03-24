@@ -67,7 +67,7 @@ const I9LISSettings = ({ onBack }: Props) => {
               <FolderInput className="h-5 w-5 text-primary" />
               Carga (LIS → I9LIS)
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-foreground/70">
               O LIS popula a tabela I9LIS_CARGA com pedidos de exames. O I9LIS Interface verifica a cada intervalo configurado.
             </p>
           </CardHeader>
