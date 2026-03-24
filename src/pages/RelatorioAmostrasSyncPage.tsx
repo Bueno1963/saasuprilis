@@ -264,10 +264,10 @@ const RelatorioAmostrasSyncPage = () => {
                             {inboundLog?.status === "success" ? "Recebido ✓" : "Receber"}
                           </Button>
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
+                        <TableCell className="text-xs max-w-[200px] truncate">
                           {sampleLogs.length > 0
-                            ? sampleLogs[0].error_message || sampleLogs[0].message || s.status
-                            : s.status === "completed" ? "Concluído" : s.status === "analyzed" ? "Analisado" : "Em Processo"}
+                            ? <span className={sampleLogs[0].message?.includes("Envio manual forçado") ? "text-destructive font-semibold" : "text-muted-foreground"}>{sampleLogs[0].error_message || sampleLogs[0].message || s.status}</span>
+                            : <span className="text-muted-foreground">{s.status === "completed" ? "Concluído" : s.status === "analyzed" ? "Analisado" : "Em Processo"}</span>}
                         </TableCell>
                       </TableRow>
                     );
