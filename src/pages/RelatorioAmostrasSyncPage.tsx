@@ -261,7 +261,7 @@ const RelatorioAmostrasSyncPage = () => {
                             onClick={() => handleForceReceive(s)}
                           >
                             <Download className="h-3 w-3" />
-                            {inboundLog?.status === "success" ? "Recebido ✓" : "Receber"}
+                            {inboundLog?.status === "success" ? "Descarga ✓" : "Descarga"}
                           </Button>
                         </TableCell>
                         <TableCell className="text-xs max-w-[200px] truncate">
