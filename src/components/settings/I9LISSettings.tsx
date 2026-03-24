@@ -67,7 +67,7 @@ const I9LISSettings = ({ onBack }: Props) => {
               <FolderInput className="h-5 w-5 text-primary" />
               Carga (LIS → I9LIS)
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-foreground/70">
               O LIS popula a tabela I9LIS_CARGA com pedidos de exames. O I9LIS Interface verifica a cada intervalo configurado.
             </p>
           </CardHeader>
@@ -80,7 +80,7 @@ const I9LISSettings = ({ onBack }: Props) => {
                 onChange={(e) => setConfig(p => ({ ...p, cargaPath: e.target.value }))}
               />
             </div>
-            <div className="bg-muted/40 rounded p-2 text-xs text-muted-foreground space-y-1">
+            <div className="bg-muted/40 rounded p-2 text-xs text-foreground/70 space-y-1">
               <p><strong>Fluxo:</strong> LIS grava pedidos → I9LIS processa e apaga → envia ao aparelho</p>
               <p><strong>Tabela:</strong> I9LIS_CARGA (AMOSTRA, ORDEM, REG_PAC, NOME, COD_EXAME…)</p>
             </div>
@@ -93,7 +93,7 @@ const I9LISSettings = ({ onBack }: Props) => {
               <FolderOutput className="h-5 w-5 text-primary" />
               Descarga (I9LIS → LIS)
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-foreground/70">
               O I9LIS Interface grava os resultados na tabela I9LIS_DESCARGA. O LIS consome e limpa periodicamente.
             </p>
           </CardHeader>
@@ -106,7 +106,7 @@ const I9LISSettings = ({ onBack }: Props) => {
                 onChange={(e) => setConfig(p => ({ ...p, descargaPath: e.target.value }))}
               />
             </div>
-            <div className="bg-muted/40 rounded p-2 text-xs text-muted-foreground space-y-1">
+            <div className="bg-muted/40 rounded p-2 text-xs text-foreground/70 space-y-1">
               <p><strong>Fluxo:</strong> Aparelho analisa → I9LIS grava resultados → LIS consome e limpa</p>
               <p><strong>Tabela:</strong> I9LIS_DESCARGA (AMOSTRA, ORDEM, COD_EXAME, RESULTADO…)</p>
             </div>
