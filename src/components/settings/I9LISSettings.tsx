@@ -93,7 +93,7 @@ const I9LISSettings = ({ onBack }: Props) => {
               <FolderOutput className="h-5 w-5 text-primary" />
               Descarga (I9LIS → LIS)
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-foreground/70">
               O I9LIS Interface grava os resultados na tabela I9LIS_DESCARGA. O LIS consome e limpa periodicamente.
             </p>
           </CardHeader>
