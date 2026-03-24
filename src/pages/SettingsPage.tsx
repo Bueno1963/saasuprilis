@@ -26,6 +26,7 @@ const sections = [
   { key: "report_layouts" as Section, title: "Cadastro de Layout", desc: "Modelos de impressão de laudos por exame: colunas, cabeçalho, rodapé e observações", icon: LayoutTemplate },
   { key: "cadastro_parametros" as Section, title: "Cadastro de Parâmetros", desc: "Modelo de exames por setor com parâmetros para digitação de laudos", icon: ListTree },
   { key: "user_manual" as Section, title: "Manual do Usuário", desc: "Guia completo de funcionalidades e fluxos do sistema", icon: BookOpen },
+  { key: "i9lis" as Section, title: "I9LIS", desc: "Manual de integração entre o I9LIS Interface e sistemas LIS", icon: Cpu },
 ];
 
 const SettingsPage = () => {
