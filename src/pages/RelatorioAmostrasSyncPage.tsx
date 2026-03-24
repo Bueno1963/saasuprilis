@@ -218,8 +218,8 @@ const RelatorioAmostrasSyncPage = () => {
                     <TableHead>Paciente</TableHead>
                     <TableHead>Pedido</TableHead>
                     <TableHead>Exames</TableHead>
-                    <TableHead>Enviar</TableHead>
-                    <TableHead>Receber</TableHead>
+                     <TableHead>Carga</TableHead>
+                     <TableHead>Descarga</TableHead>
                     <TableHead>Log/Situação</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -249,7 +249,7 @@ const RelatorioAmostrasSyncPage = () => {
                             onClick={() => handleForceSend(s)}
                           >
                             <Send className="h-3 w-3" />
-                            {outboundLog?.status === "success" ? "Reenviar" : "Enviar"}
+                            {outboundLog?.status === "success" ? "Carga ✓" : "Carga"}
                           </Button>
                         </TableCell>
                         <TableCell>
@@ -261,7 +261,7 @@ const RelatorioAmostrasSyncPage = () => {
                             onClick={() => handleForceReceive(s)}
                           >
                             <Download className="h-3 w-3" />
-                            {inboundLog?.status === "success" ? "Recebido ✓" : "Receber"}
+                            {inboundLog?.status === "success" ? "Descarga ✓" : "Descarga"}
                           </Button>
                         </TableCell>
                         <TableCell className="text-xs max-w-[200px] truncate">
