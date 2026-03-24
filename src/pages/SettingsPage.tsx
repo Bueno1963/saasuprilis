@@ -33,11 +33,9 @@ const SettingsPage = () => {
   const goBack = () => setSection("menu");
 
   if (section === "lab") return <LabSettings onBack={goBack} />;
-  if (section === "equipment") return <EquipmentSettings onBack={goBack} onNavigateIntegrations={() => setSection("integrations")} />;
   if (section === "exams") return <ExamCatalogSettings onBack={goBack} />;
   if (section === "insurance") return <InsuranceSettings onBack={goBack} />;
   if (section === "users") return <UsersSettings onBack={goBack} />;
-  if (section === "integrations") return <IntegrationsSettings onBack={goBack} />;
   if (section === "printers") return <PrinterSettings onBack={goBack} />;
   if (section === "support_lab") return <SupportLabSettings onBack={goBack} />;
   if (section === "report_layouts") return <ReportLayoutListSettings onBack={goBack} />;
