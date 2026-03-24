@@ -578,26 +578,44 @@ const ValidarExames = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                <Table>
+               <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Parâmetro</TableHead>
                       <TableHead>Resultado</TableHead>
+                      <TableHead className="hidden" id="leuco-mm3-head">/mm³</TableHead>
                       <TableHead>Unidade</TableHead>
                       <TableHead>Referência</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {[...sections.entries()].map(([sectionName, sectionParams]) => (
+                    {[...sections.entries()].map(([sectionName, sectionParams]) => {
+                      const isLeucograma = sectionName === "LEUCOGRAMA";
+                      const leucoValue = isLeucograma ? parseFloat(resolveParamValue(paramValues, "Leucócitos", sectionName) || "0") || 0 : 0;
+                      return (
                       <>{sectionName && (
                           <TableRow key={`section-${sectionName}`} className="bg-muted/50">
-                            <TableCell colSpan={4} className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-1.5">
+                            <TableCell colSpan={isLeucograma ? 5 : 4} className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-1.5">
                               {sectionName}
                             </TableCell>
                           </TableRow>
                         )}
+                        {isLeucograma && (
+                          <TableRow className="bg-muted/30">
+                            <TableHead className="font-medium text-xs text-muted-foreground">Parâmetro</TableHead>
+                            <TableHead className="font-medium text-xs text-muted-foreground">%</TableHead>
+                            <TableHead className="font-medium text-xs text-muted-foreground">/mm³</TableHead>
+                            <TableHead className="font-medium text-xs text-muted-foreground">Unidade</TableHead>
+                            <TableHead className="font-medium text-xs text-muted-foreground">Referência</TableHead>
+                          </TableRow>
+                        )}
                         {sectionParams.map(param => {
                           const val = resolveParamValue(paramValues, param.name, sectionName) || "";
+                          const isDiffParam = DIFFERENTIAL_COUNT_PARAMS.includes(param.name);
+                          const showAbsoluteCol = isLeucograma;
+                          const absoluteValue = (isDiffParam && leucoValue > 0 && val.trim())
+                            ? Math.round((parseFloat(val) / 100) * leucoValue).toLocaleString("pt-BR")
+                            : "";
                           return (
                             <TableRow key={param.id} className={cn("h-8", !val.trim() && "bg-muted/20")}>
                               <TableCell className="font-medium text-sm py-1">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
@@ -722,6 +740,12 @@ const ValidarExames = () => {
                                   );
                                 })()}
                               </TableCell>
+                              {showAbsoluteCol && (
+                                <TableCell className="text-sm font-mono text-foreground py-1">
+                                  {absoluteValue}
+                                </TableCell>
+                              )}
+                              {!showAbsoluteCol && null}
                               <TableCell className="text-sm text-foreground py-1">{param.unit || ""}</TableCell>
                               <TableCell className="text-sm text-foreground py-1">
                                 {(param.reference_range || "").includes("|") ? "" : param.reference_range || ""}
@@ -751,12 +775,14 @@ const ValidarExames = () => {
                                 <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400">✓</span>
                               )}
                             </TableCell>
+                            {isLeucograma && <TableCell />}
                             <TableCell className="text-sm text-muted-foreground">%</TableCell>
                             <TableCell />
                           </TableRow>
                         )}
                       </>
-                    ))}
+                    );
+                    })}
                   </TableBody>
                 </Table>
               </CardContent>
