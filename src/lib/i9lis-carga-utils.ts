@@ -2,16 +2,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY = "i9lis_config";
 
-interface I9LISCargaRecord {
-  AMOSTRA: string;
-  ORDEM: string;
-  REG_PAC: string;
-  NOME: string;
-  COD_EXAME: string;
-  NOME_EXAME: string;
-  MATERIAL: string;
-  SETOR: string;
-  DATA_COLETA: string;
+/** Pads/truncates a string to exact fixed width */
+function fw(value: string, len: number): string {
+  return (value || "").padEnd(len).slice(0, len);
 }
 
 /**
