@@ -21,6 +21,7 @@ interface Props { onBack: () => void; }
 interface ExamForm {
   code: string; name: string; material: string; sector: string; method: string;
   unit: string; reference_range: string; turnaround_hours: number; price: number; status: string; equipment: string;
+  auto_i9lis: boolean;
 }
 
 const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector: "Bioquímica", method: "", unit: "", reference_range: "", turnaround_hours: 24, price: 0, status: "active", equipment: "" };
