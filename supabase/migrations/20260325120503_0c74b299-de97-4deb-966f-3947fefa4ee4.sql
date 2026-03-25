@@ -1,0 +1,1 @@
+UPDATE public.samples SET barcode = 'LAB20260325001' WHERE barcode = 'TEMP';
