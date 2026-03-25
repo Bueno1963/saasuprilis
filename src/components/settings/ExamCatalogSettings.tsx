@@ -567,6 +567,18 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
                   </Select>
                 )} />
               </div>
+              <div className="space-y-1">
+                <Label>Gerar Arq. I9LIS Automático</Label>
+                <Controller name="auto_i9lis" control={control} render={({ field }) => (
+                  <Select value={field.value ? "sim" : "nao"} onValueChange={v => field.onChange(v === "sim")}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sim">Sim</SelectItem>
+                      <SelectItem value="nao">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )} />
+              </div>
             </div>
             <Button type="submit" className="w-full" disabled={save.isPending}>Salvar</Button>
           </form>
