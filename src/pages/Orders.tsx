@@ -162,7 +162,10 @@ const Orders = () => {
           barcode: "TEMP",
         }));
         const { error: sampleError } = await supabase.from("samples").insert(sampleRows);
-        if (sampleError) console.error("Erro ao criar amostras:", sampleError);
+        if (sampleError) {
+          console.error("Erro ao criar amostras:", sampleError);
+          toast.error("Erro ao criar amostras na esteira: " + sampleError.message);
+        }
       }
 
       return orderData;
@@ -234,7 +237,10 @@ const Orders = () => {
             barcode: "TEMP",
           }));
           const { error: sampleError } = await supabase.from("samples").insert(sampleRows);
-          if (sampleError) console.error("Erro ao criar amostras:", sampleError);
+          if (sampleError) {
+            console.error("Erro ao criar amostras:", sampleError);
+            toast.error("Erro ao criar amostras na esteira: " + sampleError.message);
+          }
         }
       }
 
