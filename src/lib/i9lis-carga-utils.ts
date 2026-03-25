@@ -1,23 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const STORAGE_KEY = "i9lis_config";
-
-interface I9LISCargaRecord {
-  AMOSTRA: string;
-  ORDEM: string;
-  REG_PAC: string;
-  NOME: string;
-  COD_EXAME: string;
-  NOME_EXAME: string;
-  MATERIAL: string;
-  SETOR: string;
-  DATA_COLETA: string;
+/** Pads/truncates a string to exact fixed width */
+function fw(value: string, len: number): string {
+  return (value || "").padEnd(len).slice(0, len);
 }
 
 /**
- * Generates an I9LIS_CARGA file (.RCB) for a Bioquímica sample
- * moving to "processing" (Em Análise) status.
- * Downloads the file to the user's browser using the configured carga path as reference.
+ * Generates an I9LIS_CARGA file (.RCB) using fixed-width positional format.
+ * Line 11 = patient data, Line 10 = sample + exam codes.
+ * Downloads the file to the user's browser.
  */
 export async function generateI9LISCargaFile(sample: {
   id: string;
@@ -27,14 +18,12 @@ export async function generateI9LISCargaFile(sample: {
   sample_type?: string;
   collected_at?: string;
 }): Promise<boolean> {
-  // Only for Bioquímica sector
   if (sample.sector !== "Bioquímica") return false;
 
   try {
-    // Fetch order + patient info
     const { data: order } = await supabase
       .from("orders")
-      .select("order_number, exams, patients(name, cpf)")
+      .select("order_number, exams, priority, patients(name, cpf, birth_date, gender)")
       .eq("id", sample.order_id)
       .single();
 
@@ -43,7 +32,6 @@ export async function generateI9LISCargaFile(sample: {
     const patient = order.patients as any;
     const exams: string[] = order.exams || [];
 
-    // Fetch exam details from catalog
     const { data: examDetails } = await supabase
       .from("exam_catalog")
       .select("code, name, material, sector")
@@ -53,32 +41,78 @@ export async function generateI9LISCargaFile(sample: {
 
     if (!examDetails || examDetails.length === 0) return false;
 
+    // ── Date helpers ──
     const collectedDate = sample.collected_at
       ? new Date(sample.collected_at).toISOString().slice(0, 10).replace(/-/g, "")
       : new Date().toISOString().slice(0, 10).replace(/-/g, "");
 
-    // Build records
-    const records: I9LISCargaRecord[] = examDetails.map((exam) => ({
-      AMOSTRA: sample.barcode,
-      ORDEM: order.order_number,
-      REG_PAC: patient?.cpf || "",
-      NOME: patient?.name || "",
-      COD_EXAME: exam.code,
-      NOME_EXAME: exam.name,
-      MATERIAL: exam.material || sample.sample_type || "Soro",
-      SETOR: "Bioquímica",
-      DATA_COLETA: collectedDate,
-    }));
+    const collectedTime = sample.collected_at
+      ? new Date(sample.collected_at).toTimeString().slice(0, 5).replace(":", "")
+      : new Date().toTimeString().slice(0, 5).replace(":", "");
 
-    // Generate file content — pipe-delimited, one line per exam
-    const header = "AMOSTRA|ORDEM|REG_PAC|NOME|COD_EXAME|NOME_EXAME|MATERIAL|SETOR|DATA_COLETA";
-    const lines = records.map(
-      (r) =>
-        `${r.AMOSTRA}|${r.ORDEM}|${r.REG_PAC}|${r.NOME}|${r.COD_EXAME}|${r.NOME_EXAME}|${r.MATERIAL}|${r.SETOR}|${r.DATA_COLETA}`
-    );
-    const fileContent = [header, ...lines].join("\r\n");
+    // Birth date DDMMYYYY
+    let dtNasc = "";
+    if (patient?.birth_date) {
+      const bd = new Date(patient.birth_date);
+      dtNasc =
+        String(bd.getDate()).padStart(2, "0") +
+        String(bd.getMonth() + 1).padStart(2, "0") +
+        bd.getFullYear();
+    }
 
-    // Download the file to the browser
+    // Gender
+    const sexo = (patient?.gender || "I").charAt(0).toUpperCase(); // M, F or I
+
+    // ── LINE 11 — Patient data ──
+    // Pos 1-2: "11" | 3-14: REG_PAC(12) | 15-64: NOME(50) | 65-71: IDADE(7) | 72-79: DT_NASC(8) | 80: SEXO(1)
+    const line11 =
+      "11" +
+      fw(patient?.cpf || "", 12) +
+      fw(patient?.name || "", 50) +
+      fw("", 7) + // IDADE (optional)
+      fw(dtNasc, 8) +
+      fw(sexo, 1);
+
+    // ── LINE 10 — Sample + exams (fixed-width per I9LIS spec) ──
+    // Pos  1-2 : Tipo "10"
+    // Pos  3-20: Amostra (18)
+    // Pos 21   : Ordem (1)
+    // Pos 22-28: Diluição (7)
+    // Pos 29-40: Agrupamento (12)
+    // Pos 41   : (space)
+    // Pos 42-45: Hora coleta (4)
+    // Pos 46   : Prioridade (1)
+    // Pos 47-54: Material (8)
+    // Pos 55-60: Instrumento (6)
+    // Pos 61-72: Reg. paciente (12)
+    // Pos 73-80: Origem (8)
+    // Pos 81-88: Data coleta (8, aaaammdd)
+    // Pos 89+  : Exames (8 chars each, up to 20)
+
+    const prioridade = order.priority === "urgent" ? "U" : "N";
+    const material = examDetails[0]?.material || sample.sample_type || "Soro";
+    const examCodes = examDetails.map((e) => fw(e.code, 8)).join("");
+
+    const line10 =
+      "10" +
+      fw(sample.barcode, 18) +
+      fw("1", 1) +
+      fw("", 7) + // diluição
+      fw(order.order_number, 12) + // agrupamento
+      " " + // pos 41 gap
+      fw(collectedTime, 4) +
+      fw(prioridade, 1) +
+      fw(material, 8) +
+      fw("", 6) + // instrumento
+      fw(patient?.cpf || "", 12) +
+      fw("", 8) + // origem
+      fw(collectedDate, 8) +
+      examCodes;
+
+    // File: line 11 first (patient), then line 10 (sample/exams)
+    const fileContent = [line11, line10].join("\r\n");
+
+    // Download
     const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -89,7 +123,7 @@ export async function generateI9LISCargaFile(sample: {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    // Log the sync event if an integration exists
+    // Log sync
     const { data: integrations } = await supabase
       .from("integrations")
       .select("id, name")
@@ -104,8 +138,8 @@ export async function generateI9LISCargaFile(sample: {
         direction: "outbound",
         source_system: "LIS",
         destination_system: "I9LIS",
-        message: `Arquivo I9LIS_CARGA gerado automaticamente: ${sample.barcode} — ${exams.length} exame(s) — Paciente: ${patient?.name || "—"}`,
-        records_created: records.length,
+        message: `Arquivo I9LIS_CARGA gerado: ${sample.barcode} — ${examDetails.length} exame(s) — Paciente: ${patient?.name || "—"}`,
+        records_created: examDetails.length,
         records_updated: 0,
         records_failed: 0,
         duration_ms: 0,
