@@ -21,9 +21,10 @@ interface Props { onBack: () => void; }
 interface ExamForm {
   code: string; name: string; material: string; sector: string; method: string;
   unit: string; reference_range: string; turnaround_hours: number; price: number; status: string; equipment: string;
+  auto_i9lis: boolean;
 }
 
-const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector: "Bioquímica", method: "", unit: "", reference_range: "", turnaround_hours: 24, price: 0, status: "active", equipment: "" };
+const defaultValues: ExamForm = { code: "", name: "", material: "Sangue", sector: "Bioquímica", method: "", unit: "", reference_range: "", turnaround_hours: 24, price: 0, status: "active", equipment: "", auto_i9lis: false };
 
 const DEFAULT_SECTORS = ["Bioquímica", "Hematologia", "Imunologia", "Microbiologia", "Parasitologia", "Uroanálise"];
 const DEFAULT_MATERIALS = ["Sangue", "Soro", "Plasma", "Urina", "Fezes", "Líquor", "Escarro", "Swab", "Tecido"];
@@ -158,7 +159,7 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
 
   const save = useMutation({
     mutationFn: async (values: ExamForm) => {
-      const payload = { ...values, price: Number(values.price), turnaround_hours: Number(values.turnaround_hours) };
+      const payload = { ...values, price: Number(values.price), turnaround_hours: Number(values.turnaround_hours), auto_i9lis: Boolean(values.auto_i9lis) };
       if (editId) {
         const { error } = await supabase.from("exam_catalog").update(payload).eq("id", editId);
         if (error) throw error;
@@ -562,6 +563,18 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
                     <SelectContent>
                       <SelectItem value="active">Ativo</SelectItem>
                       <SelectItem value="inactive">Inativo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )} />
+              </div>
+              <div className="space-y-1">
+                <Label>Gerar Arq. I9LIS Automático</Label>
+                <Controller name="auto_i9lis" control={control} render={({ field }) => (
+                  <Select value={field.value ? "sim" : "nao"} onValueChange={v => field.onChange(v === "sim")}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sim">Sim</SelectItem>
+                      <SelectItem value="nao">Não</SelectItem>
                     </SelectContent>
                   </Select>
                 )} />
