@@ -157,6 +157,7 @@ const Orders = () => {
       if (sectorMaterialMap.size > 0) {
         const sampleRows = Array.from(sectorMaterialMap.entries()).map(([sector, material]) => ({
           order_id: orderData.id,
+          tenant_id: orderData.tenant_id,
           sample_type: material,
           sector,
           barcode: "TEMP",
