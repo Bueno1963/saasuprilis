@@ -5,9 +5,47 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, ArrowDownUp, CheckCircle2, XCircle, Clock, Users, FlaskConical, Send, Download } from "lucide-react";
+import { BarChart3, ArrowDownUp, CheckCircle2, XCircle, Clock, Users, FlaskConical, Send, Download, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+
+/** Gera conteúdo .RCB (linha tipo 10) conforme manual I9LIS e dispara download */
+const downloadRcbFile = (sample: any) => {
+  const pad = (v: string, len: number) => (v || "").padEnd(len).slice(0, len);
+  const now = new Date();
+  const barcode = pad(sample.barcode || "", 18);
+  const ordem = pad("1", 1);
+  const diluicao = pad("", 7);
+  const agrupamento = pad(sample.orders?.order_number || "", 12);
+  const horaColeta = pad(
+    `${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`,
+    4
+  );
+  const prioridade = pad("", 1);
+  const material = pad("SG", 8);
+  const instrumento = pad("", 6);
+  const regPac = pad(sample.orders?.patient_id?.slice(0, 12) || "", 12);
+  const origem = pad("", 8);
+  const dataColeta = pad(
+    sample.collected_at
+      ? new Date(sample.collected_at).toISOString().slice(0, 10).replace(/-/g, "")
+      : "",
+    8
+  );
+  const exams: string[] = sample.orders?.exams || [];
+  const examsField = exams.map((e: string) => pad(e, 8)).join("").padEnd(160).slice(0, 160);
+
+  const line = `10${barcode}${ordem}${diluicao}${agrupamento} ${horaColeta}${prioridade}${material}${instrumento}${regPac}${origem}${dataColeta}${examsField}`;
+
+  const blob = new Blob([line + "\r\n"], { type: "application/octet-stream" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${(sample.barcode || "amostra").replace(/\s/g, "_")}.RCB`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`Arquivo .RCB gerado para amostra ${sample.barcode}`);
+};
 
 const RelatorioAmostrasSyncPage = () => {
   const qc = useQueryClient();
