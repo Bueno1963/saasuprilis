@@ -197,6 +197,24 @@ const SampleKanbanTab = () => {
           reported_by_name: performerName,
         });
       }
+
+      // Auto-generate I9LIS_CARGA for Bioquímica samples going to processing
+      if (goToProcessing) {
+        const sample = samples.find(s => s.id === id);
+        if (sample && sample.sector === "Bioquímica") {
+          const generated = await generateI9LISCargaFile({
+            id: sample.id,
+            barcode: sample.barcode,
+            sector: sample.sector,
+            order_id: sample.order_id,
+            sample_type: sample.sample_type,
+            collected_at: sample.collected_at,
+          });
+          if (generated) {
+            toast.success("Arquivo I9LIS_CARGA gerado automaticamente");
+          }
+        }
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["samples"] });
