@@ -159,7 +159,7 @@ const ExamCatalogSettings = ({ onBack }: Props) => {
 
   const save = useMutation({
     mutationFn: async (values: ExamForm) => {
-      const payload = { ...values, price: Number(values.price), turnaround_hours: Number(values.turnaround_hours) };
+      const payload = { ...values, price: Number(values.price), turnaround_hours: Number(values.turnaround_hours), auto_i9lis: Boolean(values.auto_i9lis) };
       if (editId) {
         const { error } = await supabase.from("exam_catalog").update(payload).eq("id", editId);
         if (error) throw error;
