@@ -1,0 +1,1 @@
+ALTER TABLE public.exam_catalog ADD COLUMN auto_i9lis boolean NOT NULL DEFAULT false;

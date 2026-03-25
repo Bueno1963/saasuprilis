@@ -453,6 +453,7 @@ export type Database = {
       }
       exam_catalog: {
         Row: {
+          auto_i9lis: boolean
           code: string
           created_at: string
           equipment: string | null
@@ -473,6 +474,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auto_i9lis?: boolean
           code: string
           created_at?: string
           equipment?: string | null
@@ -493,6 +495,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auto_i9lis?: boolean
           code?: string
           created_at?: string
           equipment?: string | null
