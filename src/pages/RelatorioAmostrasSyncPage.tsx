@@ -279,16 +279,27 @@ const RelatorioAmostrasSyncPage = () => {
                         <TableCell className="text-sm font-mono">{orderNumber}</TableCell>
                         <TableCell className="text-sm">{exams.join(", ") || "—"}</TableCell>
                         <TableCell>
-                          <Button
-                            size="sm"
-                            variant={outboundLog?.status === "success" ? "secondary" : "default"}
-                            className="gap-1 text-xs h-7"
-                            disabled={sendingId === s.id}
-                            onClick={() => handleForceSend(s)}
-                          >
-                            <Send className="h-3 w-3" />
-                            {outboundLog?.status === "success" ? "Carga ✓" : "Carga"}
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant={outboundLog?.status === "success" ? "secondary" : "default"}
+                              className="gap-1 text-xs h-7"
+                              disabled={sendingId === s.id}
+                              onClick={() => handleForceSend(s)}
+                            >
+                              <Send className="h-3 w-3" />
+                              {outboundLog?.status === "success" ? "Carga ✓" : "Carga"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="gap-1 text-xs h-7 px-2"
+                              title="Baixar arquivo .RCB"
+                              onClick={() => downloadRcbFile(s)}
+                            >
+                              <FileDown className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Button
