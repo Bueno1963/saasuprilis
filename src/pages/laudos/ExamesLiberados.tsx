@@ -230,7 +230,7 @@ const ExamesLiberados = () => {
   }, [results, searchLower]);
 
   const togglePatient = (key: string) => {
-    setExpandedPatients(prev => {
+    setCollapsedPatients(prev => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key); else next.add(key);
       return next;
@@ -238,7 +238,7 @@ const ExamesLiberados = () => {
   };
 
   const toggleOrder = (key: string) => {
-    setExpandedOrders(prev => {
+    setCollapsedOrders(prev => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key); else next.add(key);
       return next;
