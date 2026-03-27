@@ -554,9 +554,9 @@ const ValidarExames = () => {
 
           return (
             <Card key={r.id}>
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 bg-white">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-bold">{r.exam}</CardTitle>
+                  <CardTitle className="text-base font-bold text-black">{r.exam}</CardTitle>
                   <div className="flex items-center gap-2">
                     {hasUnsaved && (
                       <Button size="sm" variant="ghost" onClick={() => handleSaveValue(r.id)} disabled={saveValueMutation.isPending}>
