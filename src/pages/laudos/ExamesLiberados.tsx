@@ -379,7 +379,7 @@ const ExamesLiberados = () => {
                   <CardContent className="px-5 pb-4 pt-1 space-y-2">
                     {group.orders.map(order => {
                       const orderKey = `${patientKey}::${order.orderNumber}`;
-                      const isOrderExpanded = expandedOrders.has(orderKey);
+                      const isOrderExpanded = !collapsedOrders.has(orderKey);
                       const latestRelease = order.results[0]?.released_at;
 
                       return (
