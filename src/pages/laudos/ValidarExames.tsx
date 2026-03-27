@@ -700,7 +700,10 @@ const ValidarExames = () => {
                                      );
                                    }
 
-                                  const options = (!isDiffParam && refRange.includes("|")) ? refRange.split("|").map(o => o.trim()).filter(Boolean) : [];
+                                  // Only treat as dropdown if options look like categorical values (no digits/units pattern)
+                                  const rawOptions = (!isDiffParam && refRange.includes("|")) ? refRange.split("|").map(o => o.trim()).filter(Boolean) : [];
+                                  const looksLikeRefRange = rawOptions.some(o => /\d+[\.,]\d+.*\d+[\.,]\d+/.test(o) || /[HMhm]:/.test(o));
+                                  const options = looksLikeRefRange ? [] : rawOptions;
                                   if (options.length >= 2) {
                                     return (
                                       <Select value={val || undefined} onValueChange={v => { setParamValue(r.id, param.name, v, r); }}>
