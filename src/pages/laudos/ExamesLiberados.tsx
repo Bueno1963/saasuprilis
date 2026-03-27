@@ -346,7 +346,7 @@ const ExamesLiberados = () => {
         <div className="space-y-3">
           {grouped.map(group => {
             const patientKey = group.patientCpf || group.patientName;
-            const isPatientExpanded = expandedPatients.has(patientKey);
+            const isPatientExpanded = !collapsedPatients.has(patientKey);
 
             return (
               <Card key={patientKey}>
