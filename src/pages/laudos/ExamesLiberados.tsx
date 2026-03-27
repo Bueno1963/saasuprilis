@@ -405,12 +405,13 @@ const ExamesLiberados = () => {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead>Exame</TableHead>
+                                  <TableHead>Parâmetro</TableHead>
                                   <TableHead>Resultado</TableHead>
-                                  <TableHead>Flag</TableHead>
-                                  <TableHead>Liberado em</TableHead>
+                                  <TableHead>Unidade</TableHead>
+                                  <TableHead>Referência</TableHead>
+                                  <TableHead>Data Liberação</TableHead>
+                                  <TableHead>Ação</TableHead>
                                   <TableHead>Liberado por</TableHead>
-                                  <TableHead className="text-right">Ações</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -419,83 +420,79 @@ const ExamesLiberados = () => {
                                   const params = getExamParams(r);
                                   const isComposite = !!params;
                                   const paramValues = isComposite ? getParamValues(r) : {};
+                                  const releasedDate = r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—";
+                                  const analystName = analyst?.full_name || "—";
 
-                                  return (
-                                    <React.Fragment key={r.id}>
-                                      <TableRow className={isComposite ? "border-b-0" : ""}>
-                                        <TableCell className="font-semibold">{r.exam}</TableCell>
-                                        <TableCell className="font-mono font-semibold">
-                                          {isComposite ? (
-                                            <span className="text-xs text-muted-foreground italic">{params!.length} parâmetros</span>
-                                          ) : (
-                                            <>{r.value} {r.unit}</>
-                                          )}
+                                  if (isComposite) {
+                                    return params!.map((p, idx) => (
+                                      <TableRow key={`${r.id}-${p.id || idx}`} className={idx === 0 ? "border-t-2 border-muted" : ""}>
+                                        <TableCell className="font-medium text-sm">{p.name}</TableCell>
+                                        <TableCell className="font-mono font-semibold">{resolveParamValue(paramValues, p.name, p.section) || "—"}</TableCell>
+                                        <TableCell className="text-muted-foreground">{p.unit || ""}</TableCell>
+                                        <TableCell className="text-muted-foreground text-sm">{p.reference_range || ""}</TableCell>
+                                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                                          {idx === 0 ? releasedDate : ""}
                                         </TableCell>
                                         <TableCell>
-                                          <Badge variant={r.flag === "normal" ? "secondary" : "destructive"} className="text-xs">{r.flag}</Badge>
+                                          {idx === 0 && isAdmin && (
+                                            <AlertDialog>
+                                              <AlertDialogTrigger asChild>
+                                                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => e.stopPropagation()} disabled={revertMutation.isPending}>
+                                                  <Undo2 className="w-3.5 h-3.5 mr-1" /> Reverter
+                                                </Button>
+                                              </AlertDialogTrigger>
+                                              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                                                <AlertDialogHeader>
+                                                  <AlertDialogTitle>Reverter liberação?</AlertDialogTitle>
+                                                  <AlertDialogDescription>
+                                                    O exame <span className="font-semibold">{r.exam}</span> do pedido <span className="font-mono font-semibold">{order.orderNumber}</span> será revertido para "validado".
+                                                  </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                  <AlertDialogAction onClick={() => revertMutation.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Reverter Liberação</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                              </AlertDialogContent>
+                                            </AlertDialog>
+                                          )}
                                         </TableCell>
-                                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                                          {r.released_at ? format(new Date(r.released_at), "dd/MM/yyyy HH:mm") : "—"}
-                                        </TableCell>
-                                        <TableCell className="text-sm">{analyst?.full_name || "—"}</TableCell>
-                                        <TableCell className="text-right">
-                                          <div className="flex items-center justify-end gap-1">
-                                            <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrintOrder(group, order); }}>
-                                              <Printer className="w-3.5 h-3.5 mr-1" /> PDF Pedido
-                                            </Button>
-                                            {isAdmin && (
-                                              <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => e.stopPropagation()} disabled={revertMutation.isPending}>
-                                                    <Undo2 className="w-3.5 h-3.5 mr-1" /> Reverter
-                                                  </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                                                  <AlertDialogHeader>
-                                                    <AlertDialogTitle>Reverter liberação?</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                      O exame <span className="font-semibold">{r.exam}</span> do pedido <span className="font-mono font-semibold">{order.orderNumber}</span> será revertido para "validado".
-                                                    </AlertDialogDescription>
-                                                  </AlertDialogHeader>
-                                                  <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => revertMutation.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Reverter Liberação</AlertDialogAction>
-                                                  </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                              </AlertDialog>
-                                            )}
-                                          </div>
-                                        </TableCell>
+                                        <TableCell className="text-sm">{idx === 0 ? analystName : ""}</TableCell>
                                       </TableRow>
-                                      {isComposite && (
-                                        <TableRow>
-                                          <TableCell colSpan={6} className="p-0 pl-6 pr-4 pb-3 pt-0">
-                                            <div className="bg-muted/40 rounded-md border">
-                                              <Table>
-                                                <TableHeader>
-                                                  <TableRow className="text-xs">
-                                                    <TableHead className="h-8">Parâmetro</TableHead>
-                                                    <TableHead className="h-8">Resultado</TableHead>
-                                                    <TableHead className="h-8">Unidade</TableHead>
-                                                    <TableHead className="h-8">Referência</TableHead>
-                                                  </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                  {params!.map((p, idx) => (
-                                                    <TableRow key={p.id || idx} className="text-xs">
-                                                      <TableCell className="py-1.5">{p.name}</TableCell>
-                                                      <TableCell className="py-1.5 font-mono font-semibold">{resolveParamValue(paramValues, p.name, p.section) || "—"}</TableCell>
-                                                      <TableCell className="py-1.5 text-muted-foreground">{p.unit || ""}</TableCell>
-                                                      <TableCell className="py-1.5 text-muted-foreground">{p.reference_range || ""}</TableCell>
-                                                    </TableRow>
-                                                  ))}
-                                                </TableBody>
-                                              </Table>
-                                            </div>
-                                          </TableCell>
-                                        </TableRow>
-                                      )}
-                                    </React.Fragment>
+                                    ));
+                                  }
+
+                                  return (
+                                    <TableRow key={r.id}>
+                                      <TableCell className="font-medium text-sm">{r.exam}</TableCell>
+                                      <TableCell className="font-mono font-semibold">{r.value}</TableCell>
+                                      <TableCell className="text-muted-foreground">{r.unit}</TableCell>
+                                      <TableCell className="text-muted-foreground text-sm">{r.reference_range}</TableCell>
+                                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">{releasedDate}</TableCell>
+                                      <TableCell>
+                                        {isAdmin && (
+                                          <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => e.stopPropagation()} disabled={revertMutation.isPending}>
+                                                <Undo2 className="w-3.5 h-3.5 mr-1" /> Reverter
+                                              </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                                              <AlertDialogHeader>
+                                                <AlertDialogTitle>Reverter liberação?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                  O exame <span className="font-semibold">{r.exam}</span> do pedido <span className="font-mono font-semibold">{order.orderNumber}</span> será revertido para "validado".
+                                                </AlertDialogDescription>
+                                              </AlertDialogHeader>
+                                              <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => revertMutation.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Reverter Liberação</AlertDialogAction>
+                                              </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                          </AlertDialog>
+                                        )}
+                                      </TableCell>
+                                      <TableCell className="text-sm">{analystName}</TableCell>
+                                    </TableRow>
                                   );
                                 })}
                               </TableBody>
