@@ -582,12 +582,12 @@ const ValidarExames = () => {
               <CardContent className="p-0">
                <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Parâmetro</TableHead>
-                      <TableHead>Resultado</TableHead>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="text-gray-600">Parâmetro</TableHead>
+                      <TableHead className="text-gray-600">Resultado</TableHead>
                       <TableHead className="hidden" id="leuco-mm3-head">/mm³</TableHead>
-                      <TableHead>Unidade</TableHead>
-                      <TableHead>Referência</TableHead>
+                      <TableHead className="text-gray-600">Unidade</TableHead>
+                      <TableHead className="text-gray-600">Referência</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
