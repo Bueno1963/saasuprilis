@@ -597,19 +597,19 @@ const ValidarExames = () => {
                       const leucoValue = isLeucograma ? parseFloat(resolveParamValue(paramValues, "Leucócitos", sectionName) || "0") || 0 : 0;
                       return (
                       <>{sectionName && (
-                          <TableRow key={`section-${sectionName}`} className="bg-muted/50">
-                            <TableCell colSpan={isLeucograma ? 5 : 4} className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-1.5">
+                          <TableRow key={`section-${sectionName}`} className="bg-gray-100">
+                            <TableCell colSpan={isLeucograma ? 5 : 4} className="font-bold text-xs uppercase tracking-wider text-gray-500 py-1.5">
                               {sectionName}
                             </TableCell>
                           </TableRow>
                         )}
                         {isLeucograma && (
-                          <TableRow className="bg-muted/30">
-                            <TableHead className="font-medium text-xs text-muted-foreground">Parâmetro</TableHead>
-                            <TableHead className="font-medium text-xs text-muted-foreground">%</TableHead>
-                            <TableHead className="font-medium text-xs text-muted-foreground">/mm³</TableHead>
-                            <TableHead className="font-medium text-xs text-muted-foreground">Unidade</TableHead>
-                            <TableHead className="font-medium text-xs text-muted-foreground">Referência</TableHead>
+                          <TableRow className="bg-gray-50">
+                            <TableHead className="font-medium text-xs text-gray-500">Parâmetro</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500">%</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500">/mm³</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500">Unidade</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500">Referência</TableHead>
                           </TableRow>
                         )}
                         {sectionParams.map(param => {
