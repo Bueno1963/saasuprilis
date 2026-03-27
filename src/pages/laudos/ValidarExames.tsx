@@ -621,8 +621,8 @@ const ValidarExames = () => {
                             ? Math.round((parseFloat(val) / 100) * leucoValue).toLocaleString("pt-BR")
                             : "";
                           return (
-                            <TableRow key={param.id} className={cn("h-8", !val.trim() && "bg-muted/20")}>
-                              <TableCell className="font-medium text-sm py-1">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
+                            <TableRow key={param.id} className={cn("h-8 bg-white", !val.trim() && "bg-gray-50/50")}>
+                              <TableCell className="font-medium text-sm py-1 text-black">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
                               <TableCell className="py-1" colSpan={isLeucocitosPrimary ? 2 : 1}>
                                 {(() => {
                                   const refRange = param.reference_range || "";
