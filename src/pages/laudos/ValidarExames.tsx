@@ -407,15 +407,15 @@ const ValidarExames = () => {
     const canValidateAll = allFilled && allSamplesDeAcordo;
 
     return (
-      <div className="p-6 space-y-6 max-w-[80%] bg-foreground/10 min-h-screen">
+      <div className="p-6 space-y-6 max-w-[80%] bg-white min-h-screen text-black">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => setSelectedOrderId(null)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{patient.patientName}</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-2xl font-bold text-black">{patient.patientName}</h1>
+              <p className="text-sm text-gray-500">
                 Pedido: <span className="font-mono">{patient.orderNumber}</span> · {patient.results.length} exame{patient.results.length !== 1 ? "s" : ""}
               </p>
             </div>
