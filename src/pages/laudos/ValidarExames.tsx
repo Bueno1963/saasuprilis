@@ -407,15 +407,15 @@ const ValidarExames = () => {
     const canValidateAll = allFilled && allSamplesDeAcordo;
 
     return (
-      <div className="p-6 space-y-6 max-w-[80%] bg-foreground/10 min-h-screen">
+      <div className="p-6 space-y-6 max-w-[80%] bg-white min-h-screen text-black">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => setSelectedOrderId(null)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{patient.patientName}</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-2xl font-bold text-black">{patient.patientName}</h1>
+              <p className="text-sm text-gray-500">
                 Pedido: <span className="font-mono">{patient.orderNumber}</span> · {patient.results.length} exame{patient.results.length !== 1 ? "s" : ""}
               </p>
             </div>
@@ -554,9 +554,9 @@ const ValidarExames = () => {
 
           return (
             <Card key={r.id}>
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 bg-white">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-bold">{r.exam}</CardTitle>
+                  <CardTitle className="text-base font-bold text-black">{r.exam}</CardTitle>
                   <div className="flex items-center gap-2">
                     {hasUnsaved && (
                       <Button size="sm" variant="ghost" onClick={() => handleSaveValue(r.id)} disabled={saveValueMutation.isPending}>
@@ -582,12 +582,12 @@ const ValidarExames = () => {
               <CardContent className="p-0">
                <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Parâmetro</TableHead>
-                      <TableHead>Resultado</TableHead>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="text-gray-600">Parâmetro</TableHead>
+                      <TableHead className="text-gray-600">Resultado</TableHead>
                       <TableHead className="hidden" id="leuco-mm3-head">/mm³</TableHead>
-                      <TableHead>Unidade</TableHead>
-                      <TableHead>Referência</TableHead>
+                      <TableHead className="text-gray-600">Unidade</TableHead>
+                      <TableHead className="text-gray-600">Referência</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -597,19 +597,19 @@ const ValidarExames = () => {
                       const leucoValue = isLeucograma ? parseFloat(resolveParamValue(paramValues, "Leucócitos", sectionName) || "0") || 0 : 0;
                       return (
                       <>{sectionName && (
-                          <TableRow key={`section-${sectionName}`} className="bg-muted/50">
-                            <TableCell colSpan={isLeucograma ? 5 : 4} className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-1.5">
+                          <TableRow key={`section-${sectionName}`} className="bg-gray-100">
+                            <TableCell colSpan={isLeucograma ? 5 : 4} className="font-bold text-xs uppercase tracking-wider text-gray-500 py-1.5">
                               {sectionName}
                             </TableCell>
                           </TableRow>
                         )}
                         {isLeucograma && (
-                          <TableRow className="bg-muted/30">
-                            <TableHead className="font-medium text-xs text-muted-foreground">Parâmetro</TableHead>
-                            <TableHead className="font-medium text-xs text-muted-foreground">%</TableHead>
-                            <TableHead className="font-medium text-xs text-muted-foreground">/mm³</TableHead>
-                            <TableHead className="font-medium text-xs text-muted-foreground">Unidade</TableHead>
-                            <TableHead className="font-medium text-xs text-muted-foreground">Referência</TableHead>
+                          <TableRow className="bg-gray-50">
+                            <TableHead className="font-medium text-xs text-gray-500">Parâmetro</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500">%</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500">/mm³</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500">Unidade</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500">Referência</TableHead>
                           </TableRow>
                         )}
                         {sectionParams.map(param => {
@@ -621,8 +621,8 @@ const ValidarExames = () => {
                             ? Math.round((parseFloat(val) / 100) * leucoValue).toLocaleString("pt-BR")
                             : "";
                           return (
-                            <TableRow key={param.id} className={cn("h-8", !val.trim() && "bg-muted/20")}>
-                              <TableCell className="font-medium text-sm py-1">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
+                            <TableRow key={param.id} className={cn("h-8 bg-white", !val.trim() && "bg-gray-50/50")}>
+                              <TableCell className="font-medium text-sm py-1 text-black">{param.name === "Linfócitos típicos" ? "Linfócitos" : param.name}</TableCell>
                               <TableCell className="py-1" colSpan={isLeucocitosPrimary ? 2 : 1}>
                                 {(() => {
                                   const refRange = param.reference_range || "";
@@ -748,12 +748,12 @@ const ValidarExames = () => {
                                 })()}
                               </TableCell>
                               {showAbsoluteCol && !isLeucocitosPrimary && (
-                                <TableCell className="text-sm font-mono text-foreground py-1">
+                                <TableCell className="text-sm font-mono text-black py-1">
                                   {absoluteValue}
                                 </TableCell>
                               )}
-                              <TableCell className="text-sm text-foreground py-1">{param.unit || ""}</TableCell>
-                              <TableCell className="text-sm text-foreground py-1">
+                              <TableCell className="text-sm text-gray-600 py-1">{param.unit || ""}</TableCell>
+                              <TableCell className="text-sm text-gray-600 py-1">
                                 {(param.reference_range || "").includes("|") ? "" : param.reference_range || ""}
                               </TableCell>
                             </TableRow>
