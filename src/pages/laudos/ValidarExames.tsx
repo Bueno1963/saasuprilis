@@ -748,12 +748,12 @@ const ValidarExames = () => {
                                 })()}
                               </TableCell>
                               {showAbsoluteCol && !isLeucocitosPrimary && (
-                                <TableCell className="text-sm font-mono text-foreground py-1">
+                                <TableCell className="text-sm font-mono text-black py-1">
                                   {absoluteValue}
                                 </TableCell>
                               )}
-                              <TableCell className="text-sm text-foreground py-1">{param.unit || ""}</TableCell>
-                              <TableCell className="text-sm text-foreground py-1">
+                              <TableCell className="text-sm text-gray-600 py-1">{param.unit || ""}</TableCell>
+                              <TableCell className="text-sm text-gray-600 py-1">
                                 {(param.reference_range || "").includes("|") ? "" : param.reference_range || ""}
                               </TableCell>
                             </TableRow>
