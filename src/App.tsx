@@ -73,6 +73,13 @@ const DynamicGuard = ({ route, children }: { route: string; children: React.Reac
   return <>{children}</>;
 };
 
+const SuperAdminGuard = ({ children }: { children: React.ReactNode }) => {
+  const { role, isLoading } = useUserRole();
+  if (isLoading) return null;
+  if (role !== "super_admin") return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
+
 const DefaultRedirect = () => {
   const { isRouteAllowed, isLoading } = useRolePermissions();
   const { role, isLoading: roleLoading } = useUserRole();
@@ -121,7 +128,7 @@ const ProtectedRoutes = () => {
         <Route path="/laudos/imprimir" element={<DynamicGuard route="/laudos/imprimir"><ImprimirExames /></DynamicGuard>} />
         <Route path="/laudos/cadastro" element={<DynamicGuard route="/laudos/cadastro"><CadastroLaudos /></DynamicGuard>} />
         <Route path="/configuracoes" element={<DynamicGuard route="/configuracoes"><SettingsPage /></DynamicGuard>} />
-        <Route path="/admin" element={<DynamicGuard route="/admin"><SuperAdminPage /></DynamicGuard>} />
+        <Route path="/admin" element={<SuperAdminGuard><SuperAdminPage /></SuperAdminGuard>} />
         <Route path="/financeiro" element={<DynamicGuard route="/financeiro"><FinanceiroPage /></DynamicGuard>} />
         <Route path="/financeiro/plano-contas" element={<DynamicGuard route="/financeiro"><PlanoContasPage /></DynamicGuard>} />
         <Route path="/financeiro/dre" element={<DynamicGuard route="/financeiro"><DREPage /></DynamicGuard>} />
