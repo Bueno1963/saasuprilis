@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import heroMockupImg from "@/assets/saas-hero-mockup.png";
 import saasHeroModern from "@/assets/saas-hero-modern.jpg";
+import suprilabLogo from "@/assets/logo-suprilab.jpg";
 
 /* ──────────────────────────── DATA ──────────────────────────── */
 
@@ -136,9 +137,7 @@ const SaaSLandingPage = () => {
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border/30 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/saas" className="flex items-center gap-2">
-            <span className="text-xl font-extrabold tracking-tight text-[hsl(210,50%,25%)]">
-              Supri<span className="text-[hsl(170,55%,45%)]">LIS</span>
-            </span>
+            <img src={suprilabLogo} alt="Suprilab — Sistema de Gestão Laboratorial" className="h-10 w-auto object-contain" />
             <span className="hidden sm:block text-[10px] text-muted-foreground leading-tight ml-1">Sistema de Gestão<br/>Laboratorial</span>
           </Link>
           <div className="hidden md:flex items-center gap-7 text-base font-medium">
@@ -613,14 +612,12 @@ const SaaSLandingPage = () => {
       <footer className="bg-[hsl(210,50%,15%)] text-white py-10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-extrabold">
-                Supri<span className="text-[hsl(170,55%,55%)]">LIS</span>
-              </span>
-              <span className="text-xs text-white/40 ml-2">Sistema de Gestão Laboratorial</span>
+            <div className="flex items-center gap-3">
+              <img src={suprilabLogo} alt="Suprilab" className="h-9 w-auto object-contain bg-white rounded px-2 py-1" />
+              <span className="text-xs text-white/40">Sistema de Gestão Laboratorial</span>
             </div>
             <p className="text-xs text-white/30">
-              © {new Date().getFullYear()} SupriLIS — Todos os direitos reservados.
+              © {new Date().getFullYear()} Suprilab — Todos os direitos reservados.
             </p>
           </div>
         </div>
