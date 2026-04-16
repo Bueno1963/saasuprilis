@@ -28,7 +28,7 @@ import {
   Columns3,
 } from "lucide-react";
 
-export type AppRole = "admin" | "tecnico" | "recepcao";
+export type AppRole = "super_admin" | "admin" | "tecnico" | "recepcao";
 
 export interface NavItem {
   title: string;

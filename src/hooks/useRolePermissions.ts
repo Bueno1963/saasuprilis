@@ -30,7 +30,7 @@ export const useRolePermissions = () => {
   );
 
   const isRouteAllowed = (route: string) => {
-    if (role === "admin") return true;
+    if (role === "super_admin" || role === "admin") return true;
     // Recepcao always has access to /recepcao
     if (role === "recepcao" && route === "/recepcao") return true;
     if (permissions.length === 0) return false;

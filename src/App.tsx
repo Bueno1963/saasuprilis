@@ -43,6 +43,7 @@ import RazaoContabilPage from "./pages/financeiro/RazaoContabilPage";
 import BalancetePage from "./pages/financeiro/BalancetePage";
 import ImportarExtratoPage from "./pages/financeiro/ImportarExtratoPage";
 import Auth from "./pages/Auth";
+import LoginTenant from "./pages/LoginTenant";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import PortalPaciente from "./pages/portal/PortalPaciente";
@@ -69,6 +70,13 @@ const DynamicGuard = ({ route, children }: { route: string; children: React.Reac
     if (role === "recepcao") return <Navigate to="/recepcao" replace />;
     return <Navigate to="/pacientes" replace />;
   }
+  return <>{children}</>;
+};
+
+const SuperAdminGuard = ({ children }: { children: React.ReactNode }) => {
+  const { role, isLoading } = useUserRole();
+  if (isLoading) return null;
+  if (role !== "super_admin") return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 
@@ -120,7 +128,7 @@ const ProtectedRoutes = () => {
         <Route path="/laudos/imprimir" element={<DynamicGuard route="/laudos/imprimir"><ImprimirExames /></DynamicGuard>} />
         <Route path="/laudos/cadastro" element={<DynamicGuard route="/laudos/cadastro"><CadastroLaudos /></DynamicGuard>} />
         <Route path="/configuracoes" element={<DynamicGuard route="/configuracoes"><SettingsPage /></DynamicGuard>} />
-        <Route path="/admin" element={<DynamicGuard route="/admin"><SuperAdminPage /></DynamicGuard>} />
+        <Route path="/admin" element={<SuperAdminGuard><SuperAdminPage /></SuperAdminGuard>} />
         <Route path="/financeiro" element={<DynamicGuard route="/financeiro"><FinanceiroPage /></DynamicGuard>} />
         <Route path="/financeiro/plano-contas" element={<DynamicGuard route="/financeiro"><PlanoContasPage /></DynamicGuard>} />
         <Route path="/financeiro/dre" element={<DynamicGuard route="/financeiro"><DREPage /></DynamicGuard>} />
@@ -157,6 +165,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<AuthRoute />} />
+            <Route path="/login/:slug" element={<LoginTenant />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/portal-paciente" element={<PortalPaciente />} />
             <Route path="/portal-medico" element={<PortalMedico />} />
