@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import heroMockupImg from "@/assets/saas-hero-mockup.png";
 import saasHeroModern from "@/assets/saas-hero-modern.jpg";
+import suprilabLogo from "@/assets/logo-suprilab.jpg";
 
 /* ──────────────────────────── DATA ──────────────────────────── */
 
@@ -136,9 +137,7 @@ const SaaSLandingPage = () => {
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border/30 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/saas" className="flex items-center gap-2">
-            <span className="text-xl font-extrabold tracking-tight text-[hsl(210,50%,25%)]">
-              Supri<span className="text-[hsl(170,55%,45%)]">LIS</span>
-            </span>
+            <img src={suprilabLogo} alt="Suprilab — Sistema de Gestão Laboratorial" className="h-10 w-auto object-contain" />
             <span className="hidden sm:block text-[10px] text-muted-foreground leading-tight ml-1">Sistema de Gestão<br/>Laboratorial</span>
           </Link>
           <div className="hidden md:flex items-center gap-7 text-base font-medium">
@@ -164,7 +163,7 @@ const SaaSLandingPage = () => {
         </div>
       </nav>
 
-      {/* ── Hero — Solid gradient (matches SupriLIS reference) ── */}
+      {/* ── Hero — Solid gradient (matches Suprilab reference) ── */}
       <section id="inicio" className="relative min-h-[700px] flex items-center justify-center overflow-hidden py-20 md:py-28">
         {/* Solid gradient background — slate-blue → teal */}
         <div className="absolute inset-0 bg-gradient-to-br from-[hsl(215,32%,38%)] via-[hsl(195,38%,42%)] to-[hsl(170,55%,45%)]" />
@@ -232,7 +231,7 @@ const SaaSLandingPage = () => {
               <div className="relative">
                 <img
                   src={heroMockupImg}
-                  alt="Sistema SUPRILIS - Dashboard"
+                  alt="Sistema Suprilab - Dashboard"
                   className="w-full max-w-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border border-white/10"
                 />
                 {/* Glow effect behind mockup */}
@@ -288,7 +287,7 @@ const SaaSLandingPage = () => {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center space-y-3 mb-14">
             <h2 className="text-2xl md:text-3xl font-bold">
-              Módulos do <span className="text-[hsl(170,55%,45%)]">SUPRILIS</span>
+              Módulos do <span className="text-[hsl(170,55%,45%)]">Suprilab</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Soluções integradas para cada necessidade do seu laboratório
@@ -314,7 +313,7 @@ const SaaSLandingPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h2 className="text-2xl md:text-3xl font-bold">
-                Por que escolher o <span className="text-[hsl(170,55%,45%)]">SUPRILIS</span>?
+                Por que escolher o <span className="text-[hsl(170,55%,45%)]">Suprilab</span>?
               </h2>
               <p className="text-muted-foreground">
                 Mais do que um sistema, uma parceria para o crescimento do seu laboratório.
@@ -345,7 +344,7 @@ const SaaSLandingPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center space-y-3 mb-14">
             <h2 className="text-2xl md:text-3xl font-bold">
-              Planos <span className="text-[hsl(170,55%,45%)]">SUPRILIS</span>
+              Planos <span className="text-[hsl(170,55%,45%)]">Suprilab</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Gerencie todo o fluxo do laboratório: da amostra ao resultado. Escolha o plano ideal para o seu volume.
@@ -479,7 +478,7 @@ const SaaSLandingPage = () => {
               Comece agora — 14 dias grátis
             </h2>
             <p className="text-white/70 max-w-2xl mx-auto">
-              Cadastre seu laboratório e experimente o SupriLIS sem compromisso. Sem cartão de crédito.
+              Cadastre seu laboratório e experimente o Suprilab sem compromisso. Sem cartão de crédito.
             </p>
             <div className="flex flex-wrap justify-center gap-6 text-sm text-white/60 pt-2">
               <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[hsl(170,55%,55%)]" />Trial gratuito de 14 dias</span>
@@ -496,7 +495,7 @@ const SaaSLandingPage = () => {
               </div>
               <div className="flex items-center gap-3 text-white/80">
                 <Mail className="w-5 h-5 text-[hsl(170,55%,55%)]" />
-                <span>contato@suprilis.com.br</span>
+                <span>contato@suprilab.com.br</span>
               </div>
             </div>
 
@@ -613,14 +612,12 @@ const SaaSLandingPage = () => {
       <footer className="bg-[hsl(210,50%,15%)] text-white py-10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-extrabold">
-                Supri<span className="text-[hsl(170,55%,55%)]">LIS</span>
-              </span>
-              <span className="text-xs text-white/40 ml-2">Sistema de Gestão Laboratorial</span>
+            <div className="flex items-center gap-3">
+              <img src={suprilabLogo} alt="Suprilab" className="h-9 w-auto object-contain bg-white rounded px-2 py-1" />
+              <span className="text-xs text-white/40">Sistema de Gestão Laboratorial</span>
             </div>
             <p className="text-xs text-white/30">
-              © {new Date().getFullYear()} SupriLIS — Todos os direitos reservados.
+              © {new Date().getFullYear()} Suprilab — Todos os direitos reservados.
             </p>
           </div>
         </div>
