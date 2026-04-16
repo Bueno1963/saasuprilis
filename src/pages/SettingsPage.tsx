@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, FlaskConical, HeartHandshake, Users, Printer, FlaskRound, LayoutTemplate, ListTree, PenTool, BookOpen, Cpu } from "lucide-react";
+import { Building2, FlaskConical, HeartHandshake, Users, Printer, FlaskRound, LayoutTemplate, ListTree, PenTool, BookOpen, Cpu, Network } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 import LabSettings from "@/components/settings/LabSettings";
+import TenantManagementSettings from "@/components/settings/TenantManagementSettings";
 import ExamCatalogSettings from "@/components/settings/ExamCatalogSettings";
 import InsuranceSettings from "@/components/settings/InsuranceSettings";
 import UsersSettings from "@/components/settings/UsersSettings";
@@ -13,9 +15,10 @@ import SectorSignersSettings from "@/components/settings/SectorSignersSettings";
 import UserManualSettings from "@/components/settings/UserManualSettings";
 import I9LISSettings from "@/components/settings/I9LISSettings";
 
-type Section = "menu" | "lab" | "exams" | "insurance" | "users" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers" | "user_manual" | "i9lis";
+type Section = "menu" | "lab" | "exams" | "insurance" | "users" | "printers" | "support_lab" | "report_layouts" | "cadastro_parametros" | "sector_signers" | "user_manual" | "i9lis" | "tenants";
 
 const sections = [
+  { key: "tenants" as Section, title: "Gestão de Laboratórios (SaaS)", desc: "Criar novos laboratórios e gerar URL de acesso independente", icon: Network, superAdminOnly: true },
   { key: "lab" as Section, title: "Laboratório", desc: "Nome, CNPJ, responsável técnico e dados cadastrais", icon: Building2 },
   { key: "exams" as Section, title: "Exames", desc: "Catálogo de exames, valores de referência e regras de decisão", icon: FlaskConical },
   { key: "insurance" as Section, title: "Convênios", desc: "Tabelas de preços, regras de faturamento e glosas", icon: HeartHandshake },
@@ -31,9 +34,12 @@ const sections = [
 
 const SettingsPage = () => {
   const [section, setSection] = useState<Section>("menu");
+  const { role } = useUserRole();
+  const isSuperAdmin = role === "super_admin";
 
   const goBack = () => setSection("menu");
 
+  if (section === "tenants") return <TenantManagementSettings onBack={goBack} />;
   if (section === "lab") return <LabSettings onBack={goBack} />;
   if (section === "exams") return <ExamCatalogSettings onBack={goBack} />;
   if (section === "insurance") return <InsuranceSettings onBack={goBack} />;
@@ -53,7 +59,7 @@ const SettingsPage = () => {
         <p className="text-sm text-muted-foreground">Configurações do sistema laboratorial</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {sections.map(({ key, title, desc, icon: Icon }) => (
+        {sections.filter((s: any) => !s.superAdminOnly || isSuperAdmin).map(({ key, title, desc, icon: Icon }) => (
           <Card
             key={key}
             className="cursor-pointer hover:shadow-lg transition-all"
