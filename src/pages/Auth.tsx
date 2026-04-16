@@ -1,36 +1,32 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FlaskConical, User, Lock, ArrowRight, Shield, Microscope, ClipboardList } from "lucide-react";
+import { User, Lock, ArrowRight, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import suprilisLogo from "@/assets/logo-suprilis.png";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [selectedRole, setSelectedRole] = useState("tecnico");
   const [loading, setLoading] = useState(false);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
-      toast.error("Digite seu email");
-      return;
-    }
+    if (!email) return toast.error("Digite seu email");
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
-      toast.success("Email de recuperação enviado! Verifique sua caixa de entrada.");
+      toast.success("Email de recuperação enviado!");
       setIsForgotPassword(false);
     } catch (error: any) {
-      toast.error(error.message || "Erro ao enviar email de recuperação");
+      toast.error(error.message || "Erro ao enviar email");
     } finally {
       setLoading(false);
     }
@@ -39,24 +35,30 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success("Login realizado com sucesso!");
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: fullName },
-            emailRedirectTo: window.location.origin,
-          },
-        });
-        if (error) throw error;
-        toast.success("Conta criada! Verifique seu email para confirmar.");
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      if (!data.user) throw new Error("Falha ao autenticar");
+
+      // Verify super_admin role — block everyone else
+      const { data: member } = await supabase
+        .from("tenant_members")
+        .select("role, tenant_id, tenants(slug, name)")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+
+      if (member?.role !== "super_admin") {
+        await supabase.auth.signOut();
+        const slug = (member?.tenants as any)?.slug;
+        toast.error(
+          slug
+            ? `Acesso restrito ao Super Admin SUPRILIS. Use o login do seu laboratório: /login/${slug}`
+            : "Acesso restrito ao Super Admin SUPRILIS."
+        );
+        return;
       }
+
+      toast.success("Bem-vindo, Super Admin SUPRILIS!");
     } catch (error: any) {
       toast.error(error.message || "Erro ao autenticar");
     } finally {
@@ -67,123 +69,90 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="flex w-full max-w-[860px] min-h-[480px] rounded-2xl overflow-hidden shadow-2xl border border-border/40">
-      {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
-        {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] via-[hsl(205,70%,35%)] to-[hsl(var(--accent))]" />
-        {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: `radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)`,
-          backgroundSize: '40px 40px'
-        }} />
-
-        <div className="relative z-10 flex flex-col justify-between p-7 w-full">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
-              <FlaskConical className="w-5 h-5 text-white" />
+        {/* Left Panel — SUPRILIS Branding */}
+        <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(215,32%,38%)] via-[hsl(195,38%,42%)] to-[hsl(170,55%,45%)]" />
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)`,
+              backgroundSize: "40px 40px",
+            }}
+          />
+          <div className="relative z-10 flex flex-col justify-between p-7 w-full">
+            <img src={suprilisLogo} alt="SUPRILIS" className="h-12 w-auto object-contain bg-white/95 rounded-lg px-3 py-2 self-start" />
+            <div className="space-y-3 max-w-sm">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-xs font-semibold text-white">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Super Admin SUPRILIS
+              </div>
+              <h1 className="text-2xl font-bold text-white leading-tight">
+                Painel da{" "}
+                <span className="text-[hsl(170,80%,80%)]">Plataforma SaaS</span>
+              </h1>
+              <p className="text-white/75 text-xs leading-relaxed">
+                Acesso exclusivo ao painel de gestão SUPRILIS — controle de laboratórios-clientes,
+                planos, faturamento e métricas globais. Cada laboratório possui sua própria URL de
+                acesso (<code className="text-white/90">/login/[slug]</code>).
+              </p>
             </div>
+            <p className="text-white/40 text-[10px]">© 2026 SUPRILIS — Todos os direitos reservados</p>
           </div>
-
-          {/* Main content */}
-          <div className="space-y-3 max-w-sm">
-            <h1 className="text-2xl font-bold text-white leading-tight">
-              Sistema de Gestão{" "}
-              <span className="text-[hsl(170,80%,70%)]">Laboratorial</span>
-            </h1>
-            <p className="text-white/75 text-xs leading-relaxed">
-              Sistema de gestão laboratorial (LIS) desenvolvido para integrar processos, 
-              equipamentos e informações em um único ambiente. Com interfaceamento próprio, garante 
-              segurança, agilidade e confiabilidade na comunicação com analisadores, do cadastro da 
-              amostra à liberação dos laudos.
-            </p>
-          </div>
-
-          {/* Footer */}
-          <p className="text-white/40 text-[10px]">© 2026 — Todos os direitos reservados</p>
         </div>
-      </div>
 
-      {/* Right Panel - Form */}
-      <div className="flex-1 flex items-center justify-center p-5 sm:p-8 bg-card">
-        <div className="w-full max-w-sm space-y-5">
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-3 justify-center mb-2">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <FlaskConical className="w-4 h-4 text-primary-foreground" />
+        {/* Right Panel — Form */}
+        <div className="flex-1 flex items-center justify-center p-5 sm:p-8 bg-card">
+          <div className="w-full max-w-sm space-y-5">
+            <div className="lg:hidden flex justify-center mb-2">
+              <img src={suprilisLogo} alt="SUPRILIS" className="h-10 w-auto object-contain" />
             </div>
-          </div>
 
-          <div>
-            <h2 className="text-xl font-bold text-foreground">
-              {isForgotPassword ? "Recuperar Senha" : isLogin ? "Acessar Sistema" : "Criar Conta"}
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              {isForgotPassword
-                ? "Digite seu email para receber o link de recuperação"
-                : isLogin ? "Entre com suas credenciais" : "Preencha os dados para cadastro"}
-            </p>
-          </div>
-
-          {isForgotPassword ? (
-            <form onSubmit={handleForgotPassword} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="email-recover">Email</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email-recover"
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="Digite seu email"
-                    required
-                    className="pl-10 h-11 border-border/60 focus:border-accent"
-                  />
-                </div>
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold mb-2">
+                <ShieldCheck className="w-3 h-3" />
+                Acesso restrito
               </div>
+              <h2 className="text-xl font-bold text-foreground">
+                {isForgotPassword ? "Recuperar Senha" : "Super Admin SUPRILIS"}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                {isForgotPassword
+                  ? "Digite seu email para receber o link de recuperação"
+                  : "Painel da plataforma SaaS — acesso exclusivo ao time SUPRILIS"}
+              </p>
+            </div>
 
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
-              >
-                {loading ? "Aguarde..." : "Enviar Link de Recuperação"}
-                {!loading && <ArrowRight className="h-4 w-4" />}
-              </Button>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => setIsForgotPassword(false)}
-                  className="text-sm text-primary hover:underline"
-                >
-                  Voltar ao login
-                </button>
-              </div>
-            </form>
-          ) : (
-            <>
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Nome Completo</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="fullName"
-                        value={fullName}
-                        onChange={e => setFullName(e.target.value)}
-                        placeholder="Dr. João Silva"
-                        required={!isLogin}
-                        className="pl-10 h-11 border-border/60 focus:border-accent"
-                      />
-                    </div>
-                  </div>
-                )}
-
+            {isForgotPassword ? (
+              <form onSubmit={handleForgotPassword} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Usuário</Label>
+                  <Label htmlFor="email-recover">Email</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email-recover"
+                      type="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="Digite seu email"
+                      required
+                      className="pl-10 h-11"
+                    />
+                  </div>
+                </div>
+                <Button type="submit" disabled={loading} className="w-full h-12 gap-2 rounded-xl">
+                  {loading ? "Aguarde..." : "Enviar Link de Recuperação"}
+                  {!loading && <ArrowRight className="h-4 w-4" />}
+                </Button>
+                <div className="text-center">
+                  <button type="button" onClick={() => setIsForgotPassword(false)} className="text-sm text-primary hover:underline">
+                    Voltar ao login
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -191,9 +160,9 @@ const Auth = () => {
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      placeholder="Digite seu usuário"
+                      placeholder="superadmin@suprilis.com.br"
                       required
-                      className="pl-10 h-11 border-border/60 focus:border-accent"
+                      className="pl-10 h-11"
                     />
                   </div>
                 </div>
@@ -201,15 +170,9 @@ const Auth = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Senha</Label>
-                    {isLogin && (
-                      <button
-                        type="button"
-                        onClick={() => setIsForgotPassword(true)}
-                        className="text-xs text-accent hover:underline"
-                      >
-                        Esqueci minha senha
-                      </button>
-                    )}
+                    <button type="button" onClick={() => setIsForgotPassword(true)} className="text-xs text-accent hover:underline">
+                      Esqueci minha senha
+                    </button>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -221,65 +184,26 @@ const Auth = () => {
                       placeholder="Digite sua senha"
                       required
                       minLength={6}
-                      className="pl-10 h-11 border-border/60 focus:border-accent"
+                      className="pl-10 h-11"
                     />
                   </div>
                 </div>
 
-                {isLogin && (
-                  <div className="space-y-2">
-                    <Label>Perfil de acesso</Label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { value: "admin", label: "Admin", icon: Shield },
-                        { value: "tecnico", label: "Técnico", icon: Microscope },
-                        { value: "recepcao", label: "Recepção", icon: ClipboardList },
-                      ].map((p) => {
-                        const Icon = p.icon;
-                        const selected = selectedRole === p.value;
-                        return (
-                          <button
-                            key={p.value}
-                            type="button"
-                            onClick={() => setSelectedRole(p.value)}
-                            className={`flex flex-col items-center gap-1.5 rounded-xl border p-3 text-xs font-medium transition-all ${
-                              selected
-                                ? "border-accent bg-accent/10 text-accent shadow-sm"
-                                : "border-border/60 text-muted-foreground hover:border-accent/40 hover:bg-muted/50"
-                            }`}
-                          >
-                            <Icon className="h-5 w-5" />
-                            {p.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-12 text-base font-medium gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-lg shadow-accent/25 transition-all"
-                >
-                  {loading ? "Aguarde..." : isLogin ? "Entrar" : "Criar Conta"}
+                <Button type="submit" disabled={loading} className="w-full h-12 gap-2 rounded-xl bg-[hsl(170,55%,45%)] hover:bg-[hsl(170,55%,38%)]">
+                  {loading ? "Aguarde..." : "Entrar no Painel"}
                   {!loading && <ArrowRight className="h-4 w-4" />}
                 </Button>
-              </form>
 
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-sm text-primary hover:underline"
-                >
-                  {isLogin ? "Não tem conta? Cadastre-se" : "Já tem conta? Faça login"}
-                </button>
-              </div>
-            </>
-          )}
+                <div className="pt-3 border-t border-border/40 space-y-2 text-center">
+                  <p className="text-xs text-muted-foreground">É usuário de um laboratório?</p>
+                  <Link to="/saas" className="text-xs text-accent hover:underline">
+                    Acesse pela URL do seu laboratório (/login/[slug])
+                  </Link>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
-      </div>
       </div>
     </div>
   );
