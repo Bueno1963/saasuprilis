@@ -43,6 +43,7 @@ import RazaoContabilPage from "./pages/financeiro/RazaoContabilPage";
 import BalancetePage from "./pages/financeiro/BalancetePage";
 import ImportarExtratoPage from "./pages/financeiro/ImportarExtratoPage";
 import Auth from "./pages/Auth";
+import LoginTenant from "./pages/LoginTenant";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import PortalPaciente from "./pages/portal/PortalPaciente";
@@ -157,6 +158,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<AuthRoute />} />
+            <Route path="/login/:slug" element={<LoginTenant />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/portal-paciente" element={<PortalPaciente />} />
             <Route path="/portal-medico" element={<PortalMedico />} />
