@@ -164,15 +164,10 @@ const SaaSLandingPage = () => {
         </div>
       </nav>
 
-      {/* ── Hero — Full-Screen Parallax ── */}
-      <section id="inicio" className="relative h-screen min-h-[650px] max-h-[950px] flex items-center justify-center overflow-hidden">
-        {/* Parallax background */}
-        <div
-          className="absolute inset-0 bg-fixed bg-cover bg-center"
-          style={{ backgroundImage: `url(${saasHeroModern})` }}
-        />
-        {/* Multi-layer gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[hsl(210,50%,12%)]/85 via-[hsl(200,45%,18%)]/70 to-[hsl(170,55%,25%)]/80" />
+      {/* ── Hero — Solid gradient (matches SupriLIS reference) ── */}
+      <section id="inicio" className="relative min-h-[700px] flex items-center justify-center overflow-hidden py-20 md:py-28">
+        {/* Solid gradient background — slate-blue → teal */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(215,32%,38%)] via-[hsl(195,38%,42%)] to-[hsl(170,55%,45%)]" />
 
         {/* Animated floating particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
